@@ -1,0 +1,20 @@
+{{- if .Values.broker.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pinot.broker.fullname" . }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.broker.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  clusterIP: None
+  ports:
+    - port: {{ .Values.broker.service.port }}
+  selector:
+    app: {{ include "pinot.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.broker.name }}
+{{- end }}

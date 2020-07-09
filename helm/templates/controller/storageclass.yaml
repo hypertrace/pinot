@@ -1,0 +1,17 @@
+{{- if and .Values.controller.enabled .Values.controller.storageclass.enabled }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.controller.storageclass.name }}
+  {{- with .Values.controller.storageclass.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+provisioner: {{ .Values.controller.storageclass.provisioner }}
+reclaimPolicy: {{ .Values.controller.storageclass.reclaimPolicy }}
+volumeBindingMode: {{ .Values.controller.storageclass.volumeBindingMode }}
+{{- with .Values.controller.storageclass.parameters }}
+parameters:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}

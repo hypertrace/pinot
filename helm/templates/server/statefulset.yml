@@ -1,0 +1,152 @@
+{{- if .Values.server.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "pinot.server.fullname" . }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.server.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "pinot.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.server.name }}
+  serviceName: {{ include "pinot.server.fullname" . }}
+  replicas: {{ .Values.server.replicaCount }}
+  updateStrategy:
+    type: {{ .Values.server.updateStrategy.type }}
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: {{ include "pinot.name" . }}
+        release: {{ .Release.Name }}
+        component: {{ .Values.server.name }}
+      annotations: {{ toYaml .Values.server.podAnnotations | nindent 8 }}
+    spec:
+      containers:
+        - name: pinot-server
+          image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: [
+            "StartServer",
+            "-clusterName", "{{ .Values.cluster.name }}",
+            "-zkAddress", {{ include "zookeeper.path" . | quote }},
+            "-configFileName", "/var/pinot/server/config/pinot-server.conf"
+          ]
+          env:
+            - name: JAVA_OPTS
+              value: "{{ .Values.server.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.server.log4j2ConfFile }} -Dplugins.dir={{ .Values.server.pluginsDir }}  {{ if .Values.server.jmx.enabled }}{{ .Values.server.jmx.opts }}{{ end }}"
+          ports:
+            - name: request
+              containerPort: {{ .Values.server.ports.netty }}
+              protocol: TCP
+            - name: admin
+              containerPort: {{ .Values.server.ports.admin }}
+              protocol: TCP
+            {{- if .Values.server.jmx.enabled }}
+            - name: jmx
+              containerPort: {{ .Values.server.jmx.port }}
+              protocol: TCP
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /var/pinot/server/config
+            - name: pinot-server-storage
+              mountPath: "{{ .Values.server.persistence.mountPath }}"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.server.ports.admin }}
+            initialDelaySeconds: {{ .Values.server.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.server.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.server.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.server.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.server.ports.admin }}
+            initialDelaySeconds: {{ .Values.server.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.server.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.server.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.server.readinessProbe.failureThreshold }}
+          resources: {{ toYaml .Values.server.resources | nindent 12 }}
+        {{- if .Values.server.prometheus.jmx.enabled }}
+        - name: prometheus-jmx-exporter
+          image: "{{ .Values.server.prometheus.jmx.image.repository }}:{{ .Values.server.prometheus.jmx.image.tag }}"
+          imagePullPolicy: "{{ .Values.server.prometheus.jmx.image.pullPolicy }}"
+          command:
+            - java
+            - -XX:+UnlockExperimentalVMOptions
+            - -XX:+UseCGroupMemoryLimitForHeap
+            - -XX:MaxRAMFraction=1
+            - -XshowSettings:vm
+            - -jar
+            - jmx_prometheus_httpserver.jar
+            - {{ .Values.server.prometheus.jmx.port | quote }}
+            - /etc/jmx-config/prometheus-pinot-server.yml
+          ports:
+            - name: prometheus-jmx
+              containerPort: {{ .Values.server.prometheus.jmx.port }}
+          resources:
+            {{- toYaml .Values.server.prometheus.jmx.resources | nindent 12 }}
+          volumeMounts:
+            - name: jmx-config
+              mountPath: /etc/jmx-config
+        {{- end }}
+      restartPolicy: Always
+      serviceAccountName: {{ include "pinot.server.serviceAccountName" . }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "pinot.server.fullname" . }}-config
+        - name: jmx-config
+          configMap:
+            name: {{ include "pinot.server.fullname" . }}-jmx-config
+        {{- if not .Values.server.persistence.enabled }}
+        - name: pinot-server-storage
+          emptyDir: {}
+        {{- end }}
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if .Values.server.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: pinot-server-storage
+      spec:
+        accessModes:
+          - {{ .Values.server.persistence.accessMode | quote }}
+        {{- if .Values.server.persistence.storageClass }}
+        {{- if (eq "-" .Values.server.persistence.storageClass) }}
+        storageClassName: ""
+        {{- else }}
+        storageClassName: {{ .Values.server.persistence.storageClass }}
+        {{- end }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.server.persistence.size }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,21 @@
+{{- if and .Values.broker.enabled .Values.broker.external.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pinot.broker.external" . }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.broker.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.broker.external.type }}
+  ports:
+    - name: external-broker
+      port: {{ .Values.broker.external.port }}
+  selector:
+    app: {{ include "pinot.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.broker.name }}
+{{- end }}

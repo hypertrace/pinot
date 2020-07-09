@@ -1,0 +1,109 @@
+version: 2.1
+
+executors:
+  gradle_docker:
+    docker:
+      - image: cimg/openjdk:11.0
+  helm:
+    docker:
+      - image: hypertrace/helm-gcs-packager:0.1.1
+
+commands:
+  gradle:
+    description: 'Run the provided gradle command'
+    parameters:
+      args:
+        type: string
+      when:
+        default: "on_success"
+        type: enum
+        enum: ["on_fail", "on_success", "always"]
+    steps:
+      - run:
+          name: << parameters.args >>
+          command: ./gradlew << parameters.args >> --info --max-workers=2 -Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.console=plain
+          when: << parameters.when >>
+  setup_build_environment:
+    description: 'Checkout, restore the cache, and setup docker'
+    steps:
+      - checkout
+      - restore_cache:
+          keys: # Use gradle version for cache, so it doesn't download every time
+            - v1-dependencies-{{ checksum "./gradle/wrapper/gradle-wrapper.properties" }}
+      - setup_remote_docker
+  save_populated_cache:
+    description: "Save the gradle binary to the cache so it doesn't have to redownload"
+    steps:
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "./gradle/wrapper/gradle-wrapper.properties" }}
+
+jobs:
+  build:
+    executor: gradle_docker
+    steps:
+      - setup_build_environment
+      - gradle:
+          args: dockerBuildImages
+      - save_populated_cache
+  publish:
+    executor: gradle_docker
+    steps:
+      - setup_build_environment
+      - gradle:
+          args: :tag -Prelease
+      - add_ssh_keys:
+          fingerprints:
+            - '51:2e:8c:f6:b6:7b:ac:ac:cc:1b:b8:39:3d:82:e5:38'
+      - run: git push origin $(./gradlew -q :printVersion)
+      - gradle:
+          args: dockerPushImages
+  validate-charts:
+    executor: helm
+    steps:
+      - checkout
+      - run:
+          name: Helm Charts Lint and Template Render
+          command: |
+            helm lint --strict ./helm/
+            helm template ./helm/
+  package-charts:
+    executor: helm
+    steps:
+      - checkout
+      - run:
+          name: Package and Publish Helm Charts
+          # Read the "name:" from Chart.yaml. The chart version is <chart-name>-<semver git tag>
+          command: |
+            CHART_VERSION=$(git describe --abbrev=0)
+            CHART_NAME=$(awk '/^name:/ {print $2}' ./helm/Chart.yaml)
+            export GOOGLE_APPLICATION_CREDENTIALS=${HOME}/helm-gcs-key.json
+            echo ${HELM_GCS_CREDENTIALS} > ${GOOGLE_APPLICATION_CREDENTIALS}
+            helm repo add helm-gcs ${HELM_GCS_REPOSITORY}
+            helm package --version ${CHART_VERSION} --app-version ${CHART_VERSION} ./helm/
+            helm gcs push ${CHART_NAME}-${CHART_VERSION}.tgz helm-gcs --public --retry
+
+workflows:
+  version: 2
+  build-and-publish:
+    jobs:
+      - build
+      - validate-charts
+      - publish:
+          context: hypertrace-publishing
+          requires:
+            - build
+            - validate-charts
+          filters:
+            branches:
+              only:
+                - master
+      - package-charts:
+          context: hypertrace-publishing
+          requires:
+            - publish
+          filters:
+            branches:
+              only:
+                - master

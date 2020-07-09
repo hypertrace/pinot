@@ -1,0 +1,21 @@
+{{- if .Values.server.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pinot.server.fullname" . }}-config
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.server.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  pinot-server.conf: |-
+    pinot.server.netty.port={{ .Values.server.ports.netty }}
+    pinot.server.adminapi.port={{ .Values.server.ports.admin }}
+    pinot.server.instance.dataDir={{ .Values.server.dataDir }}
+    pinot.server.instance.segmentTarDir={{ .Values.server.segmentTarDir }}
+    pinot.set.instance.id.to.hostname=true
+    pinot.server.instance.realtime.alloc.offheap=true
+    pinot.server.query.executor.timeout=60000
+{{- end }}

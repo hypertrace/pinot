@@ -1,0 +1,22 @@
+{{- if and .Values.controller.enabled .Values.controller.dashboard.enabled }}
+{{- range $path, $bytes := .Files.Glob "files/dashboards/*.json" }}
+{{- $filename := trimSuffix (ext $path) (base $path) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-%s" (include "pinot.controller.fullname" $) $filename | trunc 63 | trimSuffix "-" }}
+  namespace: {{ $.Values.controller.dashboard.namespace }}
+  labels:
+    app: {{ include "pinot.name" $ }}
+    chart: {{ include "pinot.chart" $ }}
+    component: {{ $.Values.controller.name }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    grafana_dashboard: "1"
+    monitoring: "shared"
+data:
+{{ base $path | indent 2 }}: |-
+{{ $.Files.Get $path | indent 4}}
+{{- end }}
+{{- end }}

@@ -1,0 +1,22 @@
+{{- if and .Values.controller.enabled .Values.controller.external.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pinot.controller.external" . }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.controller.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.controller.external.type }}
+  ports:
+    - name: external-controller
+      port: {{ .Values.controller.external.port }}
+  selector:
+    app: {{ include "pinot.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.controller.component }}
+{{- end }}

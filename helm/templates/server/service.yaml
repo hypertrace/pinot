@@ -1,0 +1,25 @@
+{{- if .Values.server.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pinot.server.fullname" . }}-svc
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.server.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: request
+      port: {{ .Values.server.ports.netty }}
+    {{- if .Values.server.prometheus.jmx.enabled }}
+    - name: prometheus-jmx
+      port: {{ .Values.server.prometheus.jmx.port }}
+    {{- end }}
+  selector:
+    app: {{ include "pinot.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.server.name }}
+{{- end }}

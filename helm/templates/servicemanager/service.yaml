@@ -1,0 +1,25 @@
+{{- if and .Values.servicemanager.enabled .Values.servicemanager.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pinot.servicemanager.fullname" . }}-svc
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.servicemanager.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: controller
+      port: {{ .Values.controller.service.port }}
+    - name: server-netty
+      port: {{ .Values.server.ports.netty }}
+    - name: broker
+      port: {{ .Values.broker.service.port }}
+  selector:
+    app: {{ include "pinot.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.servicemanager.name }}
+{{- end }}

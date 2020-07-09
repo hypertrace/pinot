@@ -1,0 +1,19 @@
+{{- if .Values.broker.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pinot.broker.fullname" . }}-config
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.broker.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  pinot-broker.conf: |-
+    pinot.broker.client.queryPort={{ .Values.broker.port }}
+    pinot.broker.routing.table.builder.class={{ .Values.broker.routingTable.builderClass }}
+    pinot.preferHostnameInDefaultInstanceId=true
+    pinot.set.instance.id.to.hostname=true
+    pinot.broker.timeoutMs={{ .Values.broker.timeoutMs }}
+{{- end }}

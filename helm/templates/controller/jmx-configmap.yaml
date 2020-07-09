@@ -1,0 +1,71 @@
+{{- if .Values.controller.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pinot.controller.fullname" . }}-jmx-config
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.controller.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  prometheus-pinot-controller.yml: |-
+    jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:{{ .Values.controller.jmx.port }}/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+    rules:
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllercontroller(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_$1_$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllerhelix\\.(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_helix_$1_$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllerhelixZookeeperReconnects\"><>(\\w+)"
+        name: "pinot_controller_helix_ZookeeperReconnects_$1"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controlleridealstateZnodeSize.(\\w+)_(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_idealstateZnodeSize_$3"
+        labels:
+          table: "$1"
+          tableType: "$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllernumberOfReplicas.(\\w+)_(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_numberOfReplicas_$3"
+        labels:
+          table: "$1"
+          tableType: "$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllerpercentOfReplicas.(\\w+)_(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_percentOfReplicas_$3"
+        labels:
+          table: "$1"
+          tableType: "$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllerpercentSegmentsAvailable.(\\w+)_(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_percentSegmentsAvailable_$3"
+        labels:
+          table: "$1"
+          tableType: "$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllersegmentCount.(\\w+)_(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_segmentCount_$3"
+        labels:
+          table: "$1"
+          tableType: "$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllersegmentsInErrorState.(\\w+)_(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_segmentsInErrorState_$3"
+        labels:
+          table: "$1"
+          tableType: "$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllernumberSegmentUploadTimeoutExceeded\"><>(\\w+)"
+        name: "pinot_controller_numberSegmentUploadTimeoutExceeded_$1"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllernumberTimesScheduleTasksCalled\"><>(\\w+)"
+        name: "pinot_controller_numberTimesScheduleTasksCalled_$1"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllerperiodicTaskNumTablesProcessed.(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_periodicTaskNumTablesProcessed_$1_$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllerpinotControllerLeader\"><>(\\w+)"
+        name: "pinot_controller_pinotControllerLeader_$1"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllerpinotControllerPartitionLeader.(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_partitionLeader_$1_$2"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ControllerMetrics\", name=\"pinot.controllerrealtimeTableCount\"><>(\\w+)"
+        name: "pinot_controller_realtimeTableCount_$1"
+      - pattern: "\"org.apache.pinot.common.metrics\"<type=\"ValidationMetrics\", name=\"pinot.controller.(\\w+)\\.(\\w+)\"><>(\\w+)"
+        name: "pinot_controller_validateion_$2_$3"
+        labels:
+          table: "$1"
+{{- end }}
