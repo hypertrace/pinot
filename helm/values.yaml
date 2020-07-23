@@ -17,6 +17,9 @@ controller:
   port: 9000
   replicaCount: 1
 
+  vip:
+    enabled: false
+
   persistence:
     enabled: true
     accessMode: ReadWriteOnce
