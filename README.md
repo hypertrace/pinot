@@ -38,4 +38,3 @@ $ helm upgrade my-release ./helm --install --namespace hypertrace -f values.yaml
 
 ## Default Values
 - You can find all user-configurable settings, their defaults in [values.yaml](helm/values.yaml).
-
