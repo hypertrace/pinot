@@ -10,6 +10,8 @@ ENV PINOT_HOME=/opt/pinot
 
 VOLUME ["${PINOT_HOME}/configs", "${PINOT_HOME}/data"]
 
+RUN apt-get update && apt-get install -y curl --no-install-recommends
+
 COPY --from=builder ${PINOT_HOME} ${PINOT_HOME}
 
 # expose ports for controller/broker/server/admin
