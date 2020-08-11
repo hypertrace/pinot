@@ -4,8 +4,6 @@ plugins {
 
 hypertraceDocker {
   defaultImage {
-    imageName.set("pinot")
-    tags.forEach { it.onlyIf { false } }
-    tag("servicemanager")
+    imageName.set("pinot-servicemanager")
   }
 }
