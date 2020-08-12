@@ -30,7 +30,9 @@ RUN adduser -g '' -h ${PINOT_HOME} -D ${USER} && \
 
 USER ${USER}
 
-COPY --from=pinot --chown=${USER} /pinot ${PINOT_HOME}
+# use hard-coded username as a workaround to circleci build failure.
+# see https://github.com/moby/moby/issues/35018 for more details.
+COPY --from=pinot --chown=pinot /pinot ${PINOT_HOME}
 
 # expose ports for controller/broker/server/admin
 EXPOSE 9000 8099 8098 8097 8096 9514
