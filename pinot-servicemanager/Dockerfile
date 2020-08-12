@@ -21,13 +21,16 @@ ENV JAVA_OPTS="-Xms128M -Xmx192M -XX:MaxDirectMemorySize=64M -XX:+ExitOnOutOfMem
 
 WORKDIR ${PINOT_HOME}
 
-# Setup pinot user so that the image doesn't run as root
-RUN adduser -g '' -h ${PINOT_HOME} -D pinot && \
-    mkdir -p ${PINOT_VAR}/server/data ${PINOT_VAR}/controller/data && \
-    chown -R pinot ${PINOT_VAR}
+ARG USER=pinot
 
-USER pinot
-COPY --from=pinot --chown=pinot /pinot ${PINOT_HOME}
+# Setup pinot user so that the image doesn't run as root
+RUN adduser -g '' -h ${PINOT_HOME} -D ${USER} && \
+    mkdir -p ${PINOT_VAR}/server/data ${PINOT_VAR}/controller/data && \
+    chown -R ${USER} ${PINOT_VAR}
+
+USER ${USER}
+
+COPY --from=pinot --chown=${USER} /pinot ${PINOT_HOME}
 
 # expose ports for controller/broker/server/admin
 EXPOSE 9000 8099 8098 8097 8096 9514
