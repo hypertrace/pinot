@@ -9,6 +9,8 @@ imagePullSecrets: []
 
 cluster:
   name: pinot
+  storage:
+    scheme: file
 
 controller:
   name: controller
@@ -29,6 +31,10 @@ controller:
 
   data:
     dir: /var/pinot/controller/data
+
+  local:
+    temp:
+      dir: /var/pinot/controller/data/temp
 
   jvmOpts: "-Xms128M -Xmx320M"
 

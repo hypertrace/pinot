@@ -74,6 +74,10 @@ spec:
               mountPath: /var/pinot/controller/config
             - name: pinot-controller-storage
               mountPath: "{{ .Values.controller.persistence.mountPath }}"
+            {{- if eq .Values.cluster.storage.scheme "gs" }}
+            - name: gcs-iam-secret
+                mountPath: "/account"
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /pinot-controller/admin
@@ -128,6 +132,11 @@ spec:
         {{- if not .Values.controller.persistence.enabled }}
         - name: pinot-controller-storage
           emptyDir: {}
+        {{- end }}
+        {{- if eq .Values.cluster.storage.scheme "gs" }}
+        - name: gcs-iam-secret
+          secret:
+            secretName: {{ .Values.cluster.storage.gs.secretName }}
         {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:

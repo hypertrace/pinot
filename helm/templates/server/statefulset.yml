@@ -58,6 +58,10 @@ spec:
               mountPath: /var/pinot/server/config
             - name: pinot-server-storage
               mountPath: "{{ .Values.server.persistence.mountPath }}"
+            {{- if eq .Values.cluster.storage.scheme "gs" }}
+            - name: gcs-iam-secret
+                mountPath: "/account"
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /health
@@ -110,6 +114,11 @@ spec:
         {{- if not .Values.server.persistence.enabled }}
         - name: pinot-server-storage
           emptyDir: {}
+        {{- end }}
+        {{- if eq .Values.cluster.storage.scheme "gs" }}
+        - name: gcs-iam-secret
+          secret:
+            secretName: {{ .Values.cluster.storage.gs.secretName }}
         {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:

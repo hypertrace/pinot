@@ -17,7 +17,16 @@ data:
     controller.vip.host={{ include "pinot.controller.fullname" . }}
     controller.vip.port={{ .Values.controller.service.port }}
     {{- end }}
-    controller.data.dir={{ .Values.controller.data.dir }}
     controller.zk.str={{ include "zookeeper.path" . }}
     pinot.set.instance.id.to.hostname=true
+    controller.data.dir={{ .Values.controller.data.dir }}
+    {{- if eq .Values.cluster.storage.scheme "gs" }}
+    controller.enable.split.commit=true
+    controller.local.temp.dir={{ .Values.controller.local.temp.dir }}
+    pinot.controller.storage.factory.class.gs=org.apache.pinot.plugin.filesystem.GcsPinotFS
+    pinot.controller.storage.factory.gs.projectId={{ .Values.storage.gs.projectId }}
+    pinot.controller.storage.factory.gs.gcpKey={{ .Values.storage.gs.gcpKey }}
+    pinot.controller.segment.fetcher.protocols=file,http,gs
+    pinot.controller.segment.fetcher.gs.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
+    {{- end }}
 {{- end }}
