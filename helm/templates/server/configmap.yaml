@@ -21,8 +21,8 @@ data:
     {{- if eq .Values.cluster.storage.scheme "gs" }}
     pinot.server.instance.enable.split.commit=true
     pinot.server.storage.factory.class.gs=org.apache.pinot.plugin.filesystem.GcsPinotFS
-    pinot.server.storage.factory.gs.projectId={{ .Values.storage.gs.projectId }}
-    pinot.server.storage.factory.gs.gcpKey={{ .Values.storage.gs.gcpKey }}
+    pinot.server.storage.factory.gs.projectId={{ .Values.cluster.storage.gs.projectId }}
+    pinot.server.storage.factory.gs.gcpKey={{ .Values.cluster.storage.gs.gcpKey }}
     pinot.server.segment.fetcher.protocols=file,http,gs
     pinot.server.segment.fetcher.gs.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
     {{- end }}

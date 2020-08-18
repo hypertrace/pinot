@@ -76,7 +76,7 @@ spec:
               mountPath: "{{ .Values.controller.persistence.mountPath }}"
             {{- if eq .Values.cluster.storage.scheme "gs" }}
             - name: gcs-iam-secret
-                mountPath: "/account"
+              mountPath: "/account"
             {{- end }}
           livenessProbe:
             httpGet:
