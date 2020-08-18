@@ -24,8 +24,8 @@ data:
     controller.enable.split.commit=true
     controller.local.temp.dir={{ .Values.controller.local.temp.dir }}
     pinot.controller.storage.factory.class.gs=org.apache.pinot.plugin.filesystem.GcsPinotFS
-    pinot.controller.storage.factory.gs.projectId={{ .Values.storage.gs.projectId }}
-    pinot.controller.storage.factory.gs.gcpKey={{ .Values.storage.gs.gcpKey }}
+    pinot.controller.storage.factory.gs.projectId={{ .Values.cluster.storage.gs.projectId }}
+    pinot.controller.storage.factory.gs.gcpKey={{ .Values.cluster.storage.gs.gcpKey }}
     pinot.controller.segment.fetcher.protocols=file,http,gs
     pinot.controller.segment.fetcher.gs.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
     {{- end }}
