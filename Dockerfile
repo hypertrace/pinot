@@ -1,8 +1,10 @@
-# pinot-confluent-avro plugin was missing from the distribution.
+# TODO: Move to stable release containing the following fixes
+# Temporarily using snapshot build including the following fixes.
 # https://github.com/apache/incubator-pinot/pull/5248
+# https://github.com/apache/incubator-pinot/pull/5890
 
 # Base image version is same as appVersion in helm/Chart.yaml file. Make sure to update it in both files.
-FROM apachepinot/pinot:0.4.0-889889e20@sha256:5a1c436273c7196832d831eb2566a32e8f1dace13e2e2010ec42dfd873038d19 AS builder
+FROM laxmanch/pinot:0.4.0-89cc0e113@sha256:f769db0a6095568f90b52f16b7cf8354a6533acf62e67459ea0d0c6444fd4b27 AS builder
 
 FROM openjdk:8-jdk-slim
 
