@@ -1,17 +1,21 @@
-FROM apachepinot/pinot:0.5.0-SNAPSHOT-331b874cd-20200821 as install
+# Using the same image as we use in CircleCI to avoid transfer costs
+FROM cimg/openjdk:14.0.2 AS install
 
+USER root
 WORKDIR /install
 
 COPY etc/* etc/
 
+ARG USER=adriancole
+ARG TAG=33ce4636bf0aaf95d5d48fab392b0e11a4366587
+
 # Cherry-pick jars we need from Pinot from their image and extract them
 # to speed startup
 RUN mkdir classes && cd classes && \
-  for JAR in \
-  /opt/pinot/lib/* \
-  /opt/pinot/plugins/pinot-input-format/pinot-confluent-avro/* \
-  /opt/pinot/plugins/pinot-stream-ingestion/pinot-kafka-2.0/* \
-  ; do jar -xf $JAR; done
+  for ARTIFACT in pinot-distribution pinot-confluent-avro pinot-kafka-2.0; do \
+  JAR=/tmp/${ARTIFACT}.jar && \
+  curl -sSL https://jitpack.io/com/github/${USER}/incubator-pinot/${ARTIFACT}/${TAG}/${ARTIFACT}-${TAG}-shaded.jar > ${JAR} && \
+  $JAVA_HOME/bin/jar -xf $JAR && rm $JAR; done
 
 # Share the same base image to reduce layers used in testing
 FROM hypertrace/java:11
