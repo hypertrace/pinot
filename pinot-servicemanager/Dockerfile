@@ -1,3 +1,4 @@
+# TODO: update SNAPSHOT to get parallel branch content
 FROM apachepinot/pinot:0.5.0-SNAPSHOT-331b874cd-20200821 as install
 
 WORKDIR /install

@@ -7,6 +7,7 @@ set -u +e
 
 IP="$(hostname -i || echo '127.0.0.1')"
 
+# TODO: use servicemanager endpoint for composite healthcheck
 nc -z ${IP} 8097 > /dev/null 2>&1
 SERVER_RC=$?
 if [ "$SERVER_RC" == "0" ]; then
