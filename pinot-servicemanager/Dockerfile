@@ -1,18 +1,25 @@
-# TODO: update SNAPSHOT to get parallel branch content
+# TODO: Update when pinot releases a SNAPSHOT or version at or past:
+# 21a372b2f58f9c6e27fe9710d6952ed519342061 (parallel start)
 FROM apachepinot/pinot:0.5.0-SNAPSHOT-331b874cd-20200821 as install
 
 WORKDIR /install
 
 COPY etc/* etc/
 
-# Cherry-pick jars we need from Pinot from their image and extract them
-# to speed startup
+# Pinot starts
 RUN mkdir classes && cd classes && \
   for JAR in \
   /opt/pinot/lib/* \
   /opt/pinot/plugins/pinot-input-format/pinot-confluent-avro/* \
-  /opt/pinot/plugins/pinot-stream-ingestion/pinot-kafka-2.0/* \
   ; do jar -xf $JAR; done
+
+# TODO: CircleCI is unable to extract the Kafka jar even if locally we can:
+#   java.io.FileNotFoundException: kafka/coordinator/transaction/TransactionStateManager$$anonfun$enableTransactionalIdExpiration$1$$anonfun$apply$mcV$sp$1$$anonfun$kafka$coordinator$transaction$TransactionStateManager$$anonfun$$anonfun$$removeFromCacheCallback$1$1$$anonfun$apply$1$$anonfun$apply$mcV$sp$2.class (File name too long)
+#	  at java.io.FileOutputStream.open0(Native Method)
+# Leave this in a jar for now.
+RUN mkdir libs && cp \
+  /opt/pinot/plugins/pinot-stream-ingestion/pinot-kafka-2.0/* \
+  libs;
 
 # Share the same base image to reduce layers used in testing
 FROM hypertrace/java:11
