@@ -42,7 +42,6 @@ commands:
           # See https://discuss.circleci.com/t/changing-docker-storage-driver/36494/2
           command: |
             ssh remote-docker \<< EOF
-              cat /etc/systemd/system/docker.service.d/10-machine.conf
               sudo sed -i 's/aufs/overlay2/' /etc/systemd/system/docker.service.d/10-machine.conf
               sudo systemctl daemon-reload
               sudo systemctl restart docker.service
