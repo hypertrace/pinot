@@ -1,7 +1,9 @@
 # Choose libraries we need from Pinot's image.
-FROM apachepinot/pinot:0.5.0-SNAPSHOT-a892fb40b-20200829 as pinot
+FROM apachepinot/pinot:0.5.0-SNAPSHOT-a892fb40b-20200829 as install
 
-WORKDIR /pinot
+WORKDIR /install
+
+COPY etc/* etc/
 
 # TODO: use maven to do get deps so that we can avoid shaded jars
 RUN mkdir libs && cp \
@@ -10,22 +12,11 @@ RUN mkdir libs && cp \
   /opt/pinot/plugins/pinot-stream-ingestion/pinot-kafka-2.0/* \
   libs;
 
-# Using the same image as we use in CircleCI to avoid transfer costs
-# and avoid nuance in Pinot image until we stop using it for normal Maven
-FROM cimg/openjdk:14.0.2 AS install
-
-WORKDIR /install
-USER root
-
-COPY etc/* etc/
-
-COPY --from=pinot /pinot .
-
 # Pinot starts faster when classes are extracted
 # TODO: When we switch to Maven for pinot, use maven-dependency-plugin:unpack
-RUN mkdir classes && \
-  (for JAR in libs/*; do unzip -qo $JAR -d classes; done) && \
-  rm -rf libs
+RUN mkdir classes && cd classes && \
+  (for JAR in ../libs/*; do jar -xf $JAR; done) && \
+  cd .. && rm -rf libs
 
 # Share the same base image to reduce layers used in testing
 FROM hypertrace/java:11

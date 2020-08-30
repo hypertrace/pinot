@@ -36,6 +36,17 @@ commands:
       #   Use the latest value from https://circleci.com/docs/2.0/building-docker-images/#docker-version
       - setup_remote_docker:
           version: 19.03.12
+      - run:
+        name: Switch to overlay2 storage driver
+        # Edit docker service file to use overlay2 instead of aufs to avoid file too long errors
+        # See https://discuss.circleci.com/t/changing-docker-storage-driver/36494/2
+        command: |
+          ssh remote-docker \<< EOF
+            cat /etc/systemd/system/docker.service.d/10-machine.conf
+            sudo sed -i 's/aufs/overlay2/' /etc/systemd/system/docker.service.d/10-machine.conf
+            sudo systemctl daemon-reload
+            sudo systemctl restart docker.service
+          EOF
   save_populated_cache:
     description: "Save the gradle binary to the cache so it doesn't have to redownload"
     steps:
