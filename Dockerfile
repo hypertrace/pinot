@@ -7,6 +7,7 @@
 FROM laxmanch/pinot:0.4.0-89cc0e113@sha256:f769db0a6095568f90b52f16b7cf8354a6533acf62e67459ea0d0c6444fd4b27 AS builder
 
 FROM openjdk:8-jdk-slim
+LABEL maintainer="Hypertrace https://www.hypertrace.org/"
 
 ENV PINOT_HOME=/opt/pinot
 
