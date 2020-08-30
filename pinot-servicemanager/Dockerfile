@@ -1,45 +1,50 @@
-FROM apachepinot/pinot:0.5.0-SNAPSHOT-31d4194a2-20200731 as pinot
+# Choose libraries we need from Pinot's image.
+FROM apachepinot/pinot:0.5.0-SNAPSHOT-a892fb40b-20200829 as install
 
-WORKDIR /pinot
-COPY pinot-admin.sh bin/pinot-admin.sh
+WORKDIR /install
+
 COPY etc/* etc/
 
-# Cherry-pick files we need from Pinot from their image
-RUN cd /opt/pinot && \
-  tar -cpf - lib/* \
-  plugins/pinot-input-format/pinot-confluent-avro \
-  plugins/pinot-stream-ingestion/pinot-kafka-2.0 | \
-  (cd /pinot; tar -xpf -)
+# TODO: use maven to do get deps so that we can avoid shaded jars
+RUN mkdir libs && cp \
+  /opt/pinot/lib/* \
+  /opt/pinot/plugins/pinot-input-format/pinot-confluent-avro/* \
+  /opt/pinot/plugins/pinot-stream-ingestion/pinot-kafka-2.0/* \
+  libs;
 
-# Prepage changes over base Java image
+# Pinot starts faster when classes are extracted
+# TODO: When we switch to Maven for pinot, use maven-dependency-plugin:unpack
+RUN mkdir classes && cd classes && \
+  (for JAR in ../libs/*; do jar -xf $JAR; done) && \
+  cd .. && rm -rf libs
+
+# Share the same base image to reduce layers used in testing
 FROM hypertrace/java:11
-LABEL MAINTAINER Hypertrace "https://www.hypertrace.org/"
+MAINTAINER Hypertrace "https://www.hypertrace.org/"
+
+# Add HEALTHCHECK and ENTRYPOINT scripts into the default search path
+COPY docker-bin/* /usr/local/bin/
 
 ENV PINOT_HOME=/opt/pinot
 ENV PINOT_VAR=/var/pinot
-ENV JAVA_OPTS="-Xms128M -Xmx192M -XX:MaxDirectMemorySize=64M -XX:+ExitOnOutOfMemoryError"
+ENV JAVA_OPTS="-Xms256M -Xmx512M -XX:MaxDirectMemorySize=96M -XX:+ExitOnOutOfMemoryError"
 
 WORKDIR ${PINOT_HOME}
 
+# Ensure the process doesn't run as root
 ARG USER=pinot
-
-# Setup pinot user so that the image doesn't run as root
-RUN adduser -g '' -h ${PINOT_HOME} -D ${USER} && \
-    mkdir -p ${PINOT_VAR}/server/data ${PINOT_VAR}/controller/data && \
-    chown -R ${USER} ${PINOT_VAR}
-
+RUN adduser -g '' -h ${PWD} -D ${USER} && \
+  mkdir -p ${PINOT_VAR}/server/data ${PINOT_VAR}/controller/data && \
+  chown -R ${USER} ${PINOT_VAR}
 USER ${USER}
 
-# use hard-coded username as a workaround to circleci build failure.
-# see https://github.com/moby/moby/issues/35018 for more details.
-COPY --from=pinot --chown=pinot /pinot ${PINOT_HOME}
+# Copy binaries and config we installed earlier
+COPY --from=install --chown=${USER} /install .
 
-# expose ports for controller/broker/server/admin
-EXPOSE 9000 8099 8098 8097 8096 9514
+# expose ports for controller/broker/server/admin/servicemanager
+EXPOSE 9000 8099 8098 8097 8096 9514 7098
 
-# Healthcheck is against the controller as that's what clients connect to
-HEALTHCHECK --interval=1s --start-period=30s --timeout=1s CMD wget -qO- http://127.0.0.1:9000/pinot-controller/admin &> /dev/null || exit 1
+# We use start period of 45s to avoid marking Pinot unhealthy on slow or contended CI hosts
+HEALTHCHECK --interval=1s --start-period=45s --timeout=5s --retries=15 CMD ["docker-healthcheck"]
 
-ENTRYPOINT ["./bin/pinot-admin.sh"]
-
-CMD ["run"]
+ENTRYPOINT ["start-servicemanager"]
