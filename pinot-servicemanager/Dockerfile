@@ -1,25 +1,31 @@
-# TODO: Update when pinot releases a SNAPSHOT or version at or past:
-# 21a372b2f58f9c6e27fe9710d6952ed519342061 (parallel start)
-FROM apachepinot/pinot:0.5.0-SNAPSHOT-331b874cd-20200821 as install
+# Choose libraries we need from Pinot's image.
+FROM apachepinot/pinot:0.5.0-SNAPSHOT-a892fb40b-20200829 as pinot
+
+WORKDIR /pinot
+
+# TODO: use maven to do get deps so that we can avoid shaded jars
+RUN mkdir libs && cp \
+  /opt/pinot/lib/* \
+  /opt/pinot/plugins/pinot-input-format/pinot-confluent-avro/* \
+  /opt/pinot/plugins/pinot-stream-ingestion/pinot-kafka-2.0/* \
+  libs;
+
+# Using the same image as we use in CircleCI to avoid transfer costs
+# and avoid nuance in Pinot image until we stop using it for normal Maven
+FROM cimg/openjdk:14.0.2 AS install
 
 WORKDIR /install
+USER root
 
 COPY etc/* etc/
 
-# Pinot starts
-RUN mkdir classes && cd classes && \
-  for JAR in \
-  /opt/pinot/lib/* \
-  /opt/pinot/plugins/pinot-input-format/pinot-confluent-avro/* \
-  ; do jar -xf $JAR; done
+COPY --from=pinot /pinot .
 
-# TODO: CircleCI is unable to extract the Kafka jar even if locally we can:
-#   java.io.FileNotFoundException: kafka/coordinator/transaction/TransactionStateManager$$anonfun$enableTransactionalIdExpiration$1$$anonfun$apply$mcV$sp$1$$anonfun$kafka$coordinator$transaction$TransactionStateManager$$anonfun$$anonfun$$removeFromCacheCallback$1$1$$anonfun$apply$1$$anonfun$apply$mcV$sp$2.class (File name too long)
-#	  at java.io.FileOutputStream.open0(Native Method)
-# Leave this in a jar for now.
-RUN mkdir libs && cp \
-  /opt/pinot/plugins/pinot-stream-ingestion/pinot-kafka-2.0/* \
-  libs;
+# Pinot starts faster when classes are extracted
+# TODO: When we switch to Maven for pinot, use maven-dependency-plugin:unpack
+RUN mkdir classes && \
+  (for JAR in libs/*; do unzip -qo $JAR -d classes; done) && \
+  rm -rf libs
 
 # Share the same base image to reduce layers used in testing
 FROM hypertrace/java:11
