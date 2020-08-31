@@ -1,5 +1,10 @@
 # Pinot
+Pinot is a real-time distributed OLAP datastore, built to deliver scalable real-time analytics with low latency. It can ingest from batch data sources (such as Hadoop HDFS, Amazon S3, Azure ADLS, Google Cloud Storage) as well as stream data sources (such as Apache Kafka). 
+
 This repo publishes the docker image and helm chart for [Apache Pinot](https://pinot.apache.org/).
+
+## How do we use Pinot?
+Hypertrace uses Pinot as underlying OLAP engine for realtime streaming ingestion of the traces, index them and serve the time-series and analytics queries from the hypertrace UI/dashboard.
 
 ## Prerequisites
 * Kubernetes 1.10+
