@@ -8,7 +8,7 @@ executors:
       - image: cimg/openjdk:14.0.2
   helm:
     docker:
-      - image: hypertrace/helm-gcs-packager:0.2.0
+      - image: hypertrace/helm-gcs-packager:0.3.0
 
 commands:
   gradle:
