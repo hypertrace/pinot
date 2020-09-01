@@ -89,7 +89,10 @@ jobs:
       - checkout
       - run:
           name: Add release tag
-          command: git tag -am "Released by $CIRCLE_USERNAME" $(git describe --abbrev=0 --tags | sed 's/^release-//')
+          command: |
+            git config --global user.email "${CIRCLE_USERNAME}@hypertrace.org"
+            git config --global user.name "$CIRCLE_USERNAME"
+            git tag -am "Released by $CIRCLE_USERNAME" $(git describe --abbrev=0 --tags | sed 's/^release-//')
       - run:
           name: Remove trigger tag
           command: git tag -d release-$(git describe --abbrev=0)
