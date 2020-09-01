@@ -4,6 +4,7 @@ nameOverride: ""
 image:
   repository: hypertrace/pinot
   pullPolicy: IfNotPresent
+  tagOverride: ""
 
 imagePullSecrets: []
 

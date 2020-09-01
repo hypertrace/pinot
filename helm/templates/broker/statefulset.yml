@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
         - name: pinot-broker
-          image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
+          image: {{ include "pinot.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args: [
             "StartBroker",

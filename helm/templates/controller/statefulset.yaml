@@ -54,7 +54,7 @@ spec:
       {{- end }}
       containers:
         - name: pinot-controller
-          image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
+          image: {{ include "pinot.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args: [ "StartController", "-configFileName", "/var/pinot/controller/config/pinot-controller.conf" ]
           env:
