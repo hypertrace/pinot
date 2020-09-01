@@ -1,0 +1,88 @@
+{
+  "schemaName" : "ServiceCallView",
+  "dimensionFieldSpecs" : [ {
+    "name" : "tenant_id",
+    "dataType" : "STRING"
+  }, {
+    "name" : "trace_id",
+    "dataType" : "BYTES"
+  }, {
+    "name" : "transaction_name",
+    "dataType" : "STRING"
+  }, {
+    "name" : "client_event_id",
+    "dataType" : "BYTES"
+  }, {
+    "name" : "server_event_id",
+    "dataType" : "BYTES"
+  }, {
+    "name" : "caller_service",
+    "dataType" : "STRING"
+  }, {
+    "name" : "caller_api",
+    "dataType" : "STRING"
+  }, {
+    "name" : "callee_service",
+    "dataType" : "STRING"
+  }, {
+    "name" : "callee_api",
+    "dataType" : "STRING"
+  }, {
+    "name" : "request_url",
+    "dataType" : "STRING"
+  }, {
+    "name" : "request_method",
+    "dataType" : "STRING"
+  }, {
+    "name" : "protocol_name",
+    "dataType" : "STRING"
+  }, {
+    "name" : "response_status_code",
+    "dataType" : "INT",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "end_time_millis",
+    "dataType" : "LONG",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "caller_service_id_str",
+    "dataType" : "STRING"
+  }, {
+    "name" : "caller_api_id_str",
+    "dataType" : "STRING"
+  }, {
+    "name" : "callee_service_id_str",
+    "dataType" : "STRING"
+  }, {
+    "name" : "callee_api_id_str",
+    "dataType" : "STRING"
+  }, {
+    "name" : "callee_backend_id",
+    "dataType" : "STRING"
+  }, {
+    "name" : "callee_backend_name",
+    "dataType" : "STRING"
+  } ],
+  "metricFieldSpecs" : [ {
+    "name" : "duration_millis",
+    "dataType" : "LONG"
+  }, {
+    "name" : "error_count",
+    "dataType" : "INT"
+  }, {
+    "name" : "exception_count",
+    "dataType" : "INT"
+  }, {
+    "name" : "num_calls",
+    "dataType" : "INT",
+    "defaultNullValue" : 1
+  } ],
+  "timeFieldSpec" : {
+    "incomingGranularitySpec" : {
+      "name" : "start_time_millis",
+      "dataType" : "LONG",
+      "timeType" : "MILLISECONDS"
+    },
+    "defaultNullValue" : 0
+  }
+}

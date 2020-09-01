@@ -1,0 +1,62 @@
+{
+  "schemaName" : "rawServiceView",
+  "dimensionFieldSpecs" : [ {
+    "name" : "tenant_id",
+    "dataType" : "STRING"
+  }, {
+    "name" : "trace_id",
+    "dataType" : "BYTES"
+  }, {
+    "name" : "span_id",
+    "dataType" : "BYTES"
+  }, {
+    "name" : "service_name",
+    "dataType" : "STRING"
+  }, {
+    "name" : "api_name",
+    "dataType" : "STRING"
+  }, {
+    "name" : "end_time_millis",
+    "dataType" : "LONG"
+  }, {
+    "name" : "duration_millis",
+    "dataType" : "LONG"
+  }, {
+    "name" : "span_kind",
+    "dataType" : "STRING"
+  }, {
+    "name" : "error_count",
+    "dataType" : "INT",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "exception_count",
+    "dataType" : "INT",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "protocol_name",
+    "dataType" : "STRING"
+  }, {
+    "name" : "status_code",
+    "dataType" : "STRING"
+  }, {
+    "name" : "service_id",
+    "dataType" : "STRING"
+  }, {
+    "name" : "api_id",
+    "dataType" : "STRING"
+  }, {
+    "name" : "num_calls",
+    "dataType" : "INT",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "api_discovery_state",
+    "dataType" : "STRING"
+  } ],
+  "timeFieldSpec" : {
+    "incomingGranularitySpec" : {
+      "name" : "start_time_millis",
+      "dataType" : "LONG",
+      "timeType" : "MILLISECONDS"
+    }
+  }
+}
