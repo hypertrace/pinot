@@ -171,7 +171,7 @@ Create the name of the service account to use
 {{- end -}}
 
 {{/*
-Docker image to use
+Docker image to use for service manager
 */}}
 {{- define "pinot.servicemanager.image" -}}
   {{- if and .Values.servicemanager.image.repository .Values.servicemanager.image.tag -}}
@@ -179,6 +179,17 @@ Docker image to use
     {{- if .Values.servicemanager.image.sha256 -}}
       {{- printf "@sha256:%s" .Values.servicemanager.image.sha256 }}
     {{- end -}}
+  {{- else -}}
+    {{- printf "%s:%s" .Values.image.repository .Chart.Version }}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Docker image to use for controller, broker and server
+*/}}
+{{- define "pinot.image" -}}
+  {{- if and .Values.image.tagOverride  -}}
+    {{- printf "%s:%s" .Values.image.repository .Values.image.tagOverride }}
   {{- else -}}
     {{- printf "%s:%s" .Values.image.repository .Chart.Version }}
   {{- end -}}
