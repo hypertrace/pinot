@@ -74,6 +74,9 @@ jobs:
       - setup_build_environment
       - gradle:
           args: :tag
+      - run:
+          name: Remove trigger tag
+          command: git tag -d release-$(git describe --abbrev=0)
       - gradle:
           args: dockerPushImages
       - add_ssh_keys:
