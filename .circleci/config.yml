@@ -73,18 +73,7 @@ jobs:
     steps:
       - setup_build_environment
       - gradle:
-          args: :tag
-      - run:
-          name: Remove trigger tag
-          command: git tag -d release-$(git describe --abbrev=0)
-      - gradle:
           args: dockerPushImages
-      - add_ssh_keys:
-          fingerprints:
-            - '51:2e:8c:f6:b6:7b:ac:ac:cc:1b:b8:39:3d:82:e5:38'
-      - run:
-          name: Update remote tags
-          command: git push origin :refs/tags/release-$(git describe --abbrev=0) refs/tags/$(git describe --abbrev=0)
   validate-charts:
     executor: helm
     steps:
@@ -99,6 +88,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Add release tag
+          command: git tag -am "Released by $CIRCLE_USERNAME" $(git describe --abbrev=0 --tags | sed 's/^release-//')
+      - run:
+          name: Remove trigger tag
+          command: git tag -d release-$(git describe --abbrev=0)
+      - run:
           name: Package and Publish Helm Charts
           # Read the "name:" from Chart.yaml. The chart version is <chart-name>-<semver git tag>
           command: |
@@ -109,6 +104,12 @@ jobs:
             helm repo add helm-gcs ${HELM_GCS_REPOSITORY}
             helm package --version ${CHART_VERSION} --app-version ${CHART_VERSION} ./helm/
             helm gcs push ${CHART_NAME}-${CHART_VERSION}.tgz helm-gcs --public --retry
+      - add_ssh_keys:
+          fingerprints:
+            - '51:2e:8c:f6:b6:7b:ac:ac:cc:1b:b8:39:3d:82:e5:38'
+      - run:
+          name: Update remote tags
+          command: git push origin refs/tags/$(git describe --abbrev=0) :refs/tags/release-$(git describe --abbrev=0)
 
 workflows:
   version: 2
