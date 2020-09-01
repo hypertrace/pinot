@@ -1,0 +1,97 @@
+{
+  "schemaName" : "backendEntityView",
+  "dimensionFieldSpecs" : [ {
+    "name" : "tenant_id",
+    "dataType" : "STRING"
+  }, {
+    "name" : "trace_id",
+    "dataType" : "BYTES"
+  }, {
+    "name" : "span_id",
+    "dataType" : "BYTES"
+  }, {
+    "name" : "backend_id",
+    "dataType" : "STRING"
+  }, {
+    "name" : "backend_host",
+    "dataType" : "STRING",
+    "defaultNullValue" : ""
+  }, {
+    "name" : "backend_port",
+    "dataType" : "STRING"
+  }, {
+    "name" : "backend_protocol",
+    "dataType" : "STRING"
+  }, {
+    "name" : "backend_path",
+    "dataType" : "STRING"
+  }, {
+    "name" : "end_time_millis",
+    "dataType" : "LONG",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "duration_millis",
+    "dataType" : "LONG",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "span_kind",
+    "dataType" : "STRING"
+  }, {
+    "name" : "error_count",
+    "dataType" : "INT",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "exception_count",
+    "dataType" : "INT",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "num_calls",
+    "dataType" : "INT",
+    "defaultNullValue" : 0
+  }, {
+    "name" : "backend_name",
+    "dataType" : "STRING",
+    "defaultNullValue" : ""
+  }, {
+    "name" : "backend_trace_id",
+    "dataType" : "STRING",
+    "defaultNullValue" : ""
+  }, {
+    "name" : "display_name",
+    "dataType" : "STRING",
+    "defaultNullValue" : ""
+  }, {
+    "name" : "status_code",
+    "dataType" : "STRING"
+  }, {
+    "name" : "status_message",
+    "dataType" : "STRING"
+  }, {
+    "name" : "status",
+    "dataType" : "STRING"
+  }, {
+    "name" : "tags__KEYS",
+    "dataType" : "STRING",
+    "singleValueField" : false,
+    "defaultNullValue" : ""
+  }, {
+    "name" : "tags__VALUES",
+    "dataType" : "STRING",
+    "singleValueField" : false,
+    "defaultNullValue" : ""
+  }, {
+    "name" : "caller_service_id",
+    "dataType" : "STRING"
+  }, {
+    "name" : "caller_api_id",
+    "dataType" : "STRING"
+  } ],
+  "timeFieldSpec" : {
+    "incomingGranularitySpec" : {
+      "name" : "start_time_millis",
+      "dataType" : "LONG",
+      "timeType" : "MILLISECONDS"
+    },
+    "defaultNullValue" : 0
+  }
+}
