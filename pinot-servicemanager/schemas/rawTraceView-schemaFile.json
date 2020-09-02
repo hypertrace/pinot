@@ -1,42 +1,51 @@
 {
-  "schemaName" : "rawTraceView",
-  "dimensionFieldSpecs" : [ {
-    "name" : "tenant_id",
-    "dataType" : "STRING"
-  }, {
-    "name" : "trace_id",
-    "dataType" : "BYTES"
-  }, {
-    "name" : "transaction_name",
-    "dataType" : "STRING"
-  }, {
-    "name" : "services",
-    "dataType" : "STRING",
-    "singleValueField" : false,
-    "defaultNullValue" : "[]"
-  }, {
-    "name" : "end_time_millis",
-    "dataType" : "LONG",
-    "defaultNullValue" : -1
-  }, {
-    "name" : "duration_millis",
-    "dataType" : "LONG",
-    "defaultNullValue" : 0
-  }, {
-    "name" : "num_services",
-    "dataType" : "INT",
-    "defaultNullValue" : 0
-  }, {
-    "name" : "num_spans",
-    "dataType" : "INT",
-    "defaultNullValue" : 0
-  } ],
-  "timeFieldSpec" : {
-    "incomingGranularitySpec" : {
-      "name" : "start_time_millis",
-      "dataType" : "LONG",
-      "timeType" : "MILLISECONDS"
+  "schemaName": "rawTraceView",
+  "dimensionFieldSpecs": [
+    {
+      "name": "tenant_id",
+      "dataType": "STRING"
     },
-    "defaultNullValue" : -1
+    {
+      "name": "trace_id",
+      "dataType": "BYTES"
+    },
+    {
+      "name": "transaction_name",
+      "dataType": "STRING"
+    },
+    {
+      "name": "services",
+      "dataType": "STRING",
+      "singleValueField": false,
+      "defaultNullValue": "[]"
+    },
+    {
+      "name": "end_time_millis",
+      "dataType": "LONG",
+      "defaultNullValue": -1
+    },
+    {
+      "name": "duration_millis",
+      "dataType": "LONG",
+      "defaultNullValue": 0
+    },
+    {
+      "name": "num_services",
+      "dataType": "INT",
+      "defaultNullValue": 0
+    },
+    {
+      "name": "num_spans",
+      "dataType": "INT",
+      "defaultNullValue": 0
+    }
+  ],
+  "timeFieldSpec": {
+    "incomingGranularitySpec": {
+      "name": "start_time_millis",
+      "dataType": "LONG",
+      "timeType": "MILLISECONDS"
+    },
+    "defaultNullValue": -1
   }
 }
