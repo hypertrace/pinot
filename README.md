@@ -6,7 +6,7 @@ This repo publishes the docker image and helm chart for [Apache Pinot](https://p
 ## How do we use Pinot?
 Hypertrace uses Pinot as underlying OLAP engine for realtime streaming ingestion of the traces, index them and serve the time-series and analytics queries from the hypertrace UI/dashboard.
 
-| ![space-1.jpg](https://hypertrace-docs.s3.amazonaws.com/Hypertrace-architecture.png) | 
+| ![space-1.jpg](https://hypertrace-docs.s3.amazonaws.com/HT-architecture.png) | 
 |:--:| 
 | *Hypertrace Architecture* |
 
