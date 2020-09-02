@@ -26,6 +26,9 @@ spec:
         app: {{ include "pinot.name" . }}
         release: {{ .Release.Name }}
         component: {{ .Values.controller.name }}
+      {{- with .Values.controller.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       annotations:
         {{- toYaml .Values.controller.podAnnotations | nindent 8 }}
     spec:
