@@ -1,5 +1,5 @@
 {
-  "schemaName" : "ServiceCallView",
+  "schemaName" : "serviceCallView",
   "dimensionFieldSpecs" : [ {
     "name" : "tenant_id",
     "dataType" : "STRING"
