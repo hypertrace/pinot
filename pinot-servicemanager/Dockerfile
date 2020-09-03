@@ -3,8 +3,6 @@ FROM apachepinot/pinot:0.5.0-rc1 as install
 
 WORKDIR /install
 
-COPY etc/* etc/
-
 # TODO: use maven to do get deps so that we can avoid shaded jars
 RUN mkdir libs && cp \
   /opt/pinot/lib/* \
@@ -17,6 +15,9 @@ RUN mkdir libs && cp \
 RUN mkdir classes && cd classes && \
   (for JAR in ../libs/*; do jar -xf $JAR; done) && \
   cd .. && rm -rf libs
+
+ADD install /tmp/install
+RUN /tmp/install && rm /tmp/install
 
 # Share the same base image to reduce layers used in testing
 FROM hypertrace/java:11
