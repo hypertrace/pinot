@@ -24,35 +24,32 @@ logger.servicemanager.level=info
 EOF
 
 cat > etc/pinot-broker.conf <<-'EOF'
-pinot.broker.client.queryPort=8099
-pinot.broker.routing.table.builder.class=random
-pinot.preferHostnameInDefaultInstanceId=true
-pinot.set.instance.id.to.hostname=true
-pinot.broker.timeoutMs=60000
 pinot.service.role=BROKER
+pinot.set.instance.id.to.hostname=true
+pinot.broker.routing.table.builder.class=random
+pinot.broker.timeoutMs=60000
 EOF
 
 # We set the following at startup:
 # * controller.data.dir
 cat > etc/pinot-controller.conf <<-'EOF'
-controller.helix.cluster.name=hypertrace-views
-controller.port=9000
-# TODO: see if this can be CLI arg or ENV
-controller.zk.str=kafka-zookeeper:2181
-pinot.set.instance.id.to.hostname=true
 pinot.service.role=CONTROLLER
+pinot.set.instance.id.to.hostname=true
+# controller requires explicit port
+controller.port=9000
+controller.helix.cluster.name=hypertrace-views
+# TODO: see if this can be CLI arg or ENV
+controller.zk.str=zookeeper:2181
 EOF
 
 # We set the following at startup:
 # * pinot.server.instance.dataDir
 # * pinot.server.instance.segmentTarDir
 cat > etc/pinot-server.conf <<-'EOF'
-pinot.server.netty.port=8098
-pinot.server.adminapi.port=8097
+pinot.service.role=SERVER
 pinot.set.instance.id.to.hostname=true
 pinot.server.instance.realtime.alloc.offheap=true
 pinot.server.query.executor.timeout=60000
-pinot.service.role=SERVER
 EOF
 
 echo "*** Image build complete"

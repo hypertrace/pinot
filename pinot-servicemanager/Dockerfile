@@ -1,5 +1,6 @@
 # Choose libraries we need from Pinot's image.
-FROM apachepinot/pinot:0.5.0-rc1 as install
+# TODO: 0.5.0-rc2 does not have parallel start: 21a372b2f58f9c6e27fe9710d6952ed519342061
+FROM apachepinot/pinot:0.5.0-SNAPSHOT-4c20bb567-20200902 as install
 
 WORKDIR /install
 
