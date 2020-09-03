@@ -16,7 +16,7 @@ RUN mkdir classes && cd classes && \
   (for JAR in ../libs/*; do jar -xf $JAR; done) && \
   cd .. && rm -rf libs
 
-ADD install /tmp/install
+COPY install /tmp/
 RUN /tmp/install && rm /tmp/install
 
 # Share the same base image to reduce layers used in testing
@@ -37,7 +37,7 @@ USER ${USER}
 # Copy binaries and config we installed earlier
 COPY --from=install --chown=${USER} /install .
 
-ENV JAVA_OPTS="-Xms256M -Xmx512M -XX:MaxDirectMemorySize=96M -XX:+ExitOnOutOfMemoryError"
+ENV JAVA_OPTS="-Xms256M -Xmx512M -XX:+ExitOnOutOfMemoryError"
 
 # expose ports for controller/broker/server/admin/servicemanager
 EXPOSE 9000 8099 8098 8097 8096 9514 7098
