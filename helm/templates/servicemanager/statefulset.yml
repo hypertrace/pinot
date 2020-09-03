@@ -26,6 +26,9 @@ spec:
         app: {{ include "pinot.name" . }}
         release: {{ .Release.Name }}
         component: {{ .Values.servicemanager.name }}
+      {{- with .Values.servicemanager.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       annotations: {{ toYaml .Values.servicemanager.podAnnotations | nindent 8 }}
     spec:
       {{- if .Values.zookeeper.path }}

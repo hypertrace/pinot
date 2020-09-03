@@ -26,6 +26,9 @@ spec:
         app: {{ include "pinot.name" . }}
         release: {{ .Release.Name }}
         component: {{ .Values.broker.name }}
+      {{- with .Values.broker.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       annotations:
         {{- toYaml .Values.broker.podAnnotations | nindent 8 }}
     spec:
