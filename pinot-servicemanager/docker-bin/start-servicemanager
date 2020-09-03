@@ -14,8 +14,8 @@ exec java \
   -Dlog4j.configurationFile=etc/log4j2.properties \
   -Dapp.name=pinot-admin \
   -Dapp.pid=$$ \
-  -Dapp.home=$PINOT_HOME \
-  -Dbasedir=$PINOT_HOME \
+  -Dapp.home=$PWD \
+  -Dbasedir=$PWD \
   org.apache.pinot.tools.admin.PinotAdministrator \
   StartServiceManager -clusterName hypertrace-views \
   -zkAddress zookeeper:2181 -port 7098 \
