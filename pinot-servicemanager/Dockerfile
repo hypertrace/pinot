@@ -1,9 +1,8 @@
 # Choose libraries we need from Pinot's image.
-FROM apachepinot/pinot:0.5.0-SNAPSHOT-a892fb40b-20200829 as install
+# TODO: 0.5.0-rc2 does not have parallel start: 21a372b2f58f9c6e27fe9710d6952ed519342061
+FROM apachepinot/pinot:0.5.0-SNAPSHOT-4c20bb567-20200902 as install
 
 WORKDIR /install
-
-COPY etc/* etc/
 
 # TODO: use maven to do get deps so that we can avoid shaded jars
 RUN mkdir libs && cp \
@@ -18,28 +17,28 @@ RUN mkdir classes && cd classes && \
   (for JAR in ../libs/*; do jar -xf $JAR; done) && \
   cd .. && rm -rf libs
 
+COPY install /tmp/
+RUN /tmp/install && rm /tmp/install
+
 # Share the same base image to reduce layers used in testing
 FROM hypertrace/java:11
-LABEL maintainer="Hypertrace https://www.hypertrace.org/"
+LABEL MAINTAINER Hypertrace "https://www.hypertrace.org/"
 
 # Add HEALTHCHECK and ENTRYPOINT scripts into the default search path
 COPY docker-bin/* /usr/local/bin/
 
-ENV PINOT_HOME=/opt/pinot
-ENV PINOT_VAR=/var/pinot
-ENV JAVA_OPTS="-Xms256M -Xmx512M -XX:MaxDirectMemorySize=96M -XX:+ExitOnOutOfMemoryError"
-
-WORKDIR ${PINOT_HOME}
+# All content including binaries and logs write under WORKDIR
+ARG USER=pinot
+WORKDIR /opt/pinot
 
 # Ensure the process doesn't run as root
-ARG USER=pinot
-RUN adduser -g '' -h ${PWD} -D ${USER} && \
-  mkdir -p ${PINOT_VAR}/server/data ${PINOT_VAR}/controller/data && \
-  chown -R ${USER} ${PINOT_VAR}
+RUN adduser -g '' -h ${PWD} -D ${USER}
 USER ${USER}
 
 # Copy binaries and config we installed earlier
 COPY --from=install --chown=${USER} /install .
+
+ENV JAVA_OPTS="-Xms256M -Xmx512M -XX:+ExitOnOutOfMemoryError"
 
 # expose ports for controller/broker/server/admin/servicemanager
 EXPOSE 9000 8099 8098 8097 8096 9514 7098

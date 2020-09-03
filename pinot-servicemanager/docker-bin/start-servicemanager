@@ -5,6 +5,21 @@
 # Dockerfile instructions to WORKDIR
 set -eu
 
+# Apply one-time deferred configuration that relies on ENV variables
+#
+CONTROLLER_CONF=./etc/pinot-controller.conf
+CONTROLLER_DATA_DIR=controller.data.dir=$PWD/data/controller
+grep -qF -- $CONTROLLER_DATA_DIR $CONTROLLER_CONF || echo $CONTROLLER_DATA_DIR >> $CONTROLLER_CONF
+#
+SERVER_CONF=./etc/pinot-server.conf
+SERVER_DATA_DIR=pinot.server.instance.dataDir=$PWD/data/server/index
+SERVER_SEGMENT_TAR_DIR=pinot.server.instance.segmentTarDir=$PWD/data/server/segment
+for line in $SERVER_DATA_DIR $SERVER_SEGMENT_TAR_DIR
+do
+  grep -qF -- $line $SERVER_CONF || echo $line >> $SERVER_CONF
+done
+
+
 echo Starting Pinot Service Manager
 # TODO: link to pinot issue why we need internal access
 exec java \
@@ -14,8 +29,8 @@ exec java \
   -Dlog4j.configurationFile=etc/log4j2.properties \
   -Dapp.name=pinot-admin \
   -Dapp.pid=$$ \
-  -Dapp.home=$PINOT_HOME \
-  -Dbasedir=$PINOT_HOME \
+  -Dapp.home=$PWD \
+  -Dbasedir=$PWD \
   org.apache.pinot.tools.admin.PinotAdministrator \
   StartServiceManager -clusterName hypertrace-views \
   -zkAddress zookeeper:2181 -port 7098 \
