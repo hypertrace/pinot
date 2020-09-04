@@ -5,6 +5,7 @@
     "schemaName": "spanEventView",
     "timeColumnName": "start_time_millis",
     "timeType": "MILLISECONDS",
+    "replicasPerPartition":"1",
     "retentionTimeValue": "5",
     "retentionTimeUnit": "DAYS",
     "segmentAssignmentStrategy": "BalanceNumSegmentAssignmentStrategy"
@@ -31,7 +32,9 @@
     "invertedIndexColumns": [
       "tags__KEYS",
       "tags__VALUES"
-    ]
+    ],
+    "loadMode": "MMAP"
   },
-  "loadMode": "MMAP"
+  "metadata": {
+  }
 }

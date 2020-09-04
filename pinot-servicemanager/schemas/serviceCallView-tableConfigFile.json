@@ -5,6 +5,7 @@
     "schemaName": "ServiceCallView",
     "timeColumnName": "start_time_millis",
     "timeType": "MILLISECONDS",
+    "replicasPerPartition":"1",
     "retentionTimeValue": "5",
     "retentionTimeUnit": "DAYS",
     "segmentAssignmentStrategy": "BalanceNumSegmentAssignmentStrategy"
@@ -27,7 +28,9 @@
       "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka20.KafkaConsumerFactory",
       "stream.kafka.consumer.prop.auto.offset.reset": "largest",
       "stream.kafka.topic.name": "service-call-view-events"
-    }
+    },
+    "loadMode": "MMAP"
   },
-  "loadMode": "MMAP"
+  "metadata": {
+  }
 }

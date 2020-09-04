@@ -5,6 +5,7 @@
     "schemaName": "backendEntityView",
     "timeColumnName": "start_time_millis",
     "timeType": "MILLISECONDS",
+    "replicasPerPartition":"1",
     "retentionTimeValue": "5",
     "retentionTimeUnit": "DAYS",
     "segmentAssignmentStrategy": "BalanceNumSegmentAssignmentStrategy"
@@ -29,5 +30,7 @@
       "stream.kafka.topic.name": "backend-entity-view-events"
     },
     "loadMode": "MMAP"
+  },
+  "metadata": {
   }
 }
