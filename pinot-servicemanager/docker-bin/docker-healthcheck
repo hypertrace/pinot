@@ -13,7 +13,7 @@ if [ "$HEALTH_RC" == "0" ]; then
   # install-schema deletes the schemas directory on completion
   test -d schemas
   SCHEMA_RC=$?
-  if [ "$SCHEMA_RC" == "0" ]; then
+  if [ "$SCHEMA_RC" == "1" ]; then
     exit 0
   fi
 
