@@ -14,6 +14,11 @@ while [[ "$timeout" -gt 0 ]] && ! wget -qO- http://${IP}:8097/health > /dev/null
     timeout=$(($timeout - 1))
 done
 
+
+# Wait another couple seconds as /health is imprecise.
+# There's no perfect value and a variable is complete tech debt
+sleep 2
+
 echo "*** Starting schema installation"
 for path in $(ls schemas/*|cut -f 1 -d-|uniq); do
   # TODO: this might be a bit heavy vs using wget on swagger endpoints
