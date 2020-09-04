@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# The schemas directory is a HEALTHCHECK barrier, deleted when this completes.
+set -eu
+
+IP="$(hostname -i || echo '127.0.0.1')"
+
+# BusyBox's wget doesn't support --method option, so we are using nc
+http_post() {
+  HOST=$1
+  PORT="$2"
+  POST_PATH="$3"
+  BODY="$4"
+  BODY_LEN=$( echo -n "${BODY}" | wc -c )
+  echo -ne "POST ${POST_PATH} HTTP/1.0\r\nHost: ${HOST}\r\nContent-Type: application/json\r\nContent-Length: ${BODY_LEN}\r\n\r\n${BODY}" | nc ${HOST} ${PORT}
+}
+
+# Excessively long timeout to avoid having to create an ENV variable, decide its
+# name, etc. 180 seconds is 6 times as long as a modern laptop with contension.
+timeout=180
+echo "Will wait up to ${timeout} seconds for Pinot Server to come up before installing Schema"
+while [[ "$timeout" -gt 0 ]] && ! wget -qO- http://${IP}:8097/health > /dev/null 2>&1; do
+    sleep 1
+    timeout=$(($timeout - 1))
+done
+
+
+# Wait for broker to registers
+timeout=30
+echo "Will wait up to ${timeout} seconds for Pinot Broker to registers with controller"
+while [[ "$timeout" -gt 0 ]] && ! (wget -qO- http://${IP}:9000/brokers/tenants | grep -q DefaultTenant); do
+    sleep 1
+    timeout=$(($timeout - 1))
+done
+
+echo "*** Starting schema installation"
+start_time=$(date +%s)
+for path in $(ls schemas/*|cut -f 1 -d-|uniq); do
+  http_post "$IP" "9000" "/schemas" "$(cat $path-schemaFile.json | tr -d '\n')" && \
+  http_post "$IP" "9000" "/tables" "$(cat $path-tableConfigFile.json | tr -d '\n')" && \
+  rm $path-schemaFile.json $path-tableConfigFile.json
+  echo
+done
+
+end_time=$(date +%s)
+echo "Time taken for setting up schema = $(expr $end_time - $start_time)"
+
+rmdir schemas
+
+echo "*** Schema setup complete"

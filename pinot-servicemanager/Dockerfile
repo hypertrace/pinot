@@ -17,6 +17,8 @@ RUN mkdir classes && cd classes && \
   (for JAR in ../libs/*; do jar -xf $JAR; done) && \
   cd .. && rm -rf libs
 
+COPY schemas/* schemas/
+
 COPY install /tmp/
 RUN /tmp/install && rm /tmp/install
 
