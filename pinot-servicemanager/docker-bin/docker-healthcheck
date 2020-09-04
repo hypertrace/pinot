@@ -7,19 +7,19 @@ set -u +e
 
 IP="$(hostname -i || echo '127.0.0.1')"
 
-# TODO: use servicemanager endpoint for composite healthcheck
-nc -z ${IP} 8097 > /dev/null 2>&1
-SERVER_RC=$?
-if [ "$SERVER_RC" == "0" ]; then
-  nc -z ${IP} 9000 > /dev/null 2>&1
-  BROKER_RC=$?
-  if [ "$BROKER_RC" == "0" ]; then
+wget -qO- http://${IP}:7098/health > /dev/null 2>&1
+HEALTH_RC=$?
+if [ "$HEALTH_RC" == "0" ]; then
+  # install-schema deletes the schemas directory on completion
+  test -d schemas
+  SCHEMA_RC=$?
+  if [ "$SCHEMA_RC" == "0" ]; then
     exit 0
   fi
 
-  echo Pinot Broker port check failed with code: $BROKER_RC
+  echo Pinot schema installation is not complete
   exit 1
 fi
 
-echo Pinot Server port check failed with code: $SERVER_RC
+echo Pinot health check failed with code: $HEALTH_RC
 exit 1

@@ -29,6 +29,9 @@ do
   grep -qF -- $line $SERVER_CONF || echo $line >> $SERVER_CONF
 done
 
+# Try to install schemas while service is coming up
+test -d schemas && install-schema &
+
 echo Starting Pinot Service Manager
 # TODO: link to pinot issue why we need internal access
 exec java \

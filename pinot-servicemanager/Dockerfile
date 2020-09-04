@@ -17,6 +17,8 @@ RUN mkdir classes && cd classes && \
   (for JAR in ../libs/*; do jar -xf $JAR; done) && \
   cd .. && rm -rf libs
 
+COPY schemas/* schemas/
+
 COPY install /tmp/
 RUN /tmp/install && rm /tmp/install
 
@@ -27,7 +29,7 @@ LABEL MAINTAINER Hypertrace "https://www.hypertrace.org/"
 # Add HEALTHCHECK and ENTRYPOINT scripts into the default search path
 COPY docker-bin/* /usr/local/bin/
 
-# All content including binaries and logs write under WORKDIR
+# Copy the fully configured installation with schema here
 ARG USER=pinot
 WORKDIR /opt/pinot
 
@@ -35,7 +37,7 @@ WORKDIR /opt/pinot
 RUN adduser -g '' -h ${PWD} -D ${USER}
 USER ${USER}
 
-# Copy binaries and config we installed earlier
+# Copy the fully configured installation with schema here
 COPY --from=install --chown=${USER} /install .
 
 # expose ports for controller/broker/server/admin/servicemanager

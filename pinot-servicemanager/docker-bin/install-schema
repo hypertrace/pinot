@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# The schemas directory is a HEALTHCHECK barrier, deleted when this completes.
+set -eu
+
+IP="$(hostname -i || echo '127.0.0.1')"
+
+timeout=60
+echo "Will wait up to ${timeout} seconds for Pinot Controller to come up before installing Schema"
+while [[ "$timeout" -gt 0 ]] && ! wget -qO- http://${IP}:8097/health > /dev/null 2>&1; do
+    sleep 1
+    timeout=$(($timeout - 1))
+done
+
+# Wait another couple seconds as /health is imprecise
+sleep 2
+
+echo "*** Starting schema installation"
+for path in $(ls schemas/*|cut -f 1 -d-|uniq); do
+  # TODO: this might be a bit heavy vs using wget on swagger endpoints
+  java --add-opens java.base/jdk.internal.ref=ALL-UNNAMED \
+    -classpath 'classes' org.apache.pinot.tools.admin.PinotAdministrator AddTable \
+    -schemaFile $path-schemaFile.json \
+    -tableConfigFile $path-tableConfigFile.json \
+    -exec &&
+  rm $path-schemaFile.json $path-tableConfigFile.json
+done
+
+rmdir schemas
+
+echo "*** Schema setup complete"
