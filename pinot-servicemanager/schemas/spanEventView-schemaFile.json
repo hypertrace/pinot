@@ -1,0 +1,134 @@
+{
+  "schemaName": "spanEventView",
+  "dimensionFieldSpecs": [
+    {
+      "name": "tenant_id",
+      "dataType": "STRING"
+    },
+    {
+      "name": "span_id",
+      "dataType": "BYTES"
+    },
+    {
+      "name": "span_kind",
+      "dataType": "STRING"
+    },
+    {
+      "name": "parent_span_id",
+      "dataType": "BYTES"
+    },
+    {
+      "name": "trace_id",
+      "dataType": "BYTES"
+    },
+    {
+      "name": "service_id",
+      "dataType": "STRING"
+    },
+    {
+      "name": "api_id",
+      "dataType": "STRING"
+    },
+    {
+      "name": "api_name",
+      "dataType": "STRING"
+    },
+    {
+      "name": "entry_api_id",
+      "dataType": "STRING"
+    },
+    {
+      "name": "protocol_name",
+      "dataType": "STRING"
+    },
+    {
+      "name": "tags__KEYS",
+      "dataType": "STRING",
+      "singleValueField": false,
+      "defaultNullValue": ""
+    },
+    {
+      "name": "tags__VALUES",
+      "dataType": "STRING",
+      "singleValueField": false,
+      "defaultNullValue": ""
+    },
+    {
+      "name": "status_code",
+      "dataType": "STRING"
+    },
+    {
+      "name": "end_time_millis",
+      "dataType": "LONG",
+      "defaultNullValue": 0
+    },
+    {
+      "name": "duration_millis",
+      "dataType": "LONG",
+      "defaultNullValue": 0
+    },
+    {
+      "name": "api_trace_id",
+      "dataType": "BYTES"
+    },
+    {
+      "name": "service_name",
+      "dataType": "STRING"
+    },
+    {
+      "name": "api_boundary_type",
+      "dataType": "STRING"
+    },
+    {
+      "name": "event_name",
+      "dataType": "STRING"
+    },
+    {
+      "name": "status_message",
+      "dataType": "STRING"
+    },
+    {
+      "name": "status",
+      "dataType": "STRING"
+    },
+    {
+      "name": "api_trace_count",
+      "dataType": "INT",
+      "defaultNullValue": 0
+    },
+    {
+      "name": "display_entity_name",
+      "dataType": "STRING"
+    },
+    {
+      "name": "display_span_name",
+      "dataType": "STRING"
+    },
+    {
+      "name": "request_url",
+      "dataType": "STRING"
+    },
+    {
+      "name": "error_count",
+      "dataType": "INT",
+      "defaultNullValue": 0
+    },
+    {
+      "name": "api_discovery_state",
+      "dataType": "STRING"
+    },
+    {
+      "name": "exception_count",
+      "dataType": "INT",
+      "defaultNullValue": 0
+    }
+  ],
+  "timeFieldSpec": {
+    "incomingGranularitySpec": {
+      "name": "start_time_millis",
+      "dataType": "LONG",
+      "timeType": "MILLISECONDS"
+    },
+    "defaultNullValue": 0
+  }
+}

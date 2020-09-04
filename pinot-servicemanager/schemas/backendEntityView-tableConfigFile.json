@@ -1,0 +1,36 @@
+{
+  "tableName": "backendEntityView_REALTIME",
+  "tableType": "REALTIME",
+  "segmentsConfig": {
+    "schemaName": "backendEntityView",
+    "timeColumnName": "start_time_millis",
+    "timeType": "MILLISECONDS",
+    "replicasPerPartition":"1",
+    "retentionTimeValue": "5",
+    "retentionTimeUnit": "DAYS",
+    "segmentAssignmentStrategy": "BalanceNumSegmentAssignmentStrategy"
+  },
+  "tenants": {
+    "broker": "DefaultTenant",
+    "server": "DefaultTenant"
+  },
+  "tableIndexConfig": {
+    "streamConfigs": {
+      "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.inputformat.avro.confluent.KafkaConfluentSchemaRegistryAvroMessageDecoder",
+      "streamType": "kafka",
+      "stream.kafka.decoder.prop.schema.registry.rest.url": "http://schema-registry:8081",
+      "stream.kafka.hlc.zk.connect.string": "zookeeper:2181",
+      "realtime.segment.flush.threshold.size": "500000",
+      "stream.kafka.consumer.type": "LowLevel",
+      "stream.kafka.zk.broker.url": "zookeeper:2181",
+      "realtime.segment.flush.threshold.time": "3600000",
+      "stream.kafka.broker.list": "kafka:9092",
+      "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka20.KafkaConsumerFactory",
+      "stream.kafka.consumer.prop.auto.offset.reset": "largest",
+      "stream.kafka.topic.name": "backend-entity-view-events"
+    },
+    "loadMode": "MMAP"
+  },
+  "metadata": {
+  }
+}
