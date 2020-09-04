@@ -29,7 +29,7 @@ LABEL MAINTAINER Hypertrace "https://www.hypertrace.org/"
 # Add HEALTHCHECK and ENTRYPOINT scripts into the default search path
 COPY docker-bin/* /usr/local/bin/
 
-# Copy binaries and config we installed earlier
+# All content including binaries and logs write under WORKDIR
 ARG USER=pinot
 WORKDIR /opt/pinot
 
@@ -37,7 +37,7 @@ WORKDIR /opt/pinot
 RUN adduser -g '' -h ${PWD} -D ${USER}
 USER ${USER}
 
-# Copy the fully configured installation with schema here
+# Copy binaries and config we installed earlier
 COPY --from=install --chown=${USER} /install .
 
 # expose ports for controller/broker/server/admin/servicemanager
