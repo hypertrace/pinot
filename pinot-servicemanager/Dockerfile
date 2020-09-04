@@ -29,7 +29,7 @@ LABEL MAINTAINER Hypertrace "https://www.hypertrace.org/"
 # Add HEALTHCHECK and ENTRYPOINT scripts into the default search path
 COPY docker-bin/* /usr/local/bin/
 
-# Copy the fully configured installation with schema here
+# Copy binaries and config we installed earlier
 ARG USER=pinot
 WORKDIR /opt/pinot
 
