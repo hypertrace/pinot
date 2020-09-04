@@ -5,15 +5,14 @@ set -eu
 
 IP="$(hostname -i || echo '127.0.0.1')"
 
-timeout=60
+# Excessively long timeout to avoid having to create an ENV variable, decide its
+# name, etc. 180 seconds is 6 times as long as a modern laptop with contension.
+timeout=180
 echo "Will wait up to ${timeout} seconds for Pinot Controller to come up before installing Schema"
 while [[ "$timeout" -gt 0 ]] && ! wget -qO- http://${IP}:8097/health > /dev/null 2>&1; do
     sleep 1
     timeout=$(($timeout - 1))
 done
-
-# Wait another couple seconds as /health is imprecise
-sleep 2
 
 echo "*** Starting schema installation"
 for path in $(ls schemas/*|cut -f 1 -d-|uniq); do
