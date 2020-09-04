@@ -35,14 +35,13 @@ EOF
 
 # We set the following at startup:
 # * controller.data.dir
+# * controller.zk.str
 cat > etc/pinot-controller.conf <<-'EOF'
 pinot.service.role=CONTROLLER
 pinot.set.instance.id.to.hostname=true
 # controller requires explicit port
 controller.port=9000
 controller.helix.cluster.name=hypertrace-views
-# TODO: see if this can be CLI arg or ENV
-controller.zk.str=zookeeper:2181
 EOF
 
 # We set the following at startup:

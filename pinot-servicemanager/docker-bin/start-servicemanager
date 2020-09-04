@@ -5,11 +5,21 @@
 # Dockerfile instructions to WORKDIR
 set -eu
 
+# Default variables so that the script doesn't bomb out on absence
+JAVA_OPTS=${JAVA_OPTS:-"-Xms256M -Xmx512M -XX:+ExitOnOutOfMemoryError"}
+ZK_ADDRESS=${ZK_ADDRESS:-zookeeper:2181}
+
 # Apply one-time deferred configuration that relies on ENV variables
 #
+# TODO: Revert this when relative paths are allowed
+#         https://github.com/apache/incubator-pinot/issues/5975
 CONTROLLER_CONF=./etc/pinot-controller.conf
 CONTROLLER_DATA_DIR=controller.data.dir=$PWD/data/controller
-grep -qF -- $CONTROLLER_DATA_DIR $CONTROLLER_CONF || echo $CONTROLLER_DATA_DIR >> $CONTROLLER_CONF
+CONTROLLER_ZK_STR=controller.zk.str=${ZK_ADDRESS}
+for line in $CONTROLLER_DATA_DIR $CONTROLLER_ZK_STR
+do
+  grep -qF -- $line $CONTROLLER_CONF || echo $line >> $CONTROLLER_CONF
+done
 #
 SERVER_CONF=./etc/pinot-server.conf
 SERVER_DATA_DIR=pinot.server.instance.dataDir=$PWD/data/server/index
@@ -18,7 +28,6 @@ for line in $SERVER_DATA_DIR $SERVER_SEGMENT_TAR_DIR
 do
   grep -qF -- $line $SERVER_CONF || echo $line >> $SERVER_CONF
 done
-
 
 echo Starting Pinot Service Manager
 # TODO: link to pinot issue why we need internal access
@@ -33,5 +42,5 @@ exec java \
   -Dbasedir=$PWD \
   org.apache.pinot.tools.admin.PinotAdministrator \
   StartServiceManager -clusterName hypertrace-views \
-  -zkAddress zookeeper:2181 -port 7098 \
+  -zkAddress $ZK_ADDRESS -port 7098 \
   -bootstrapConfigPaths etc/pinot-controller.conf etc/pinot-broker.conf etc/pinot-server.conf
