@@ -39,3 +39,6 @@ and then run `docker-compose up` to test the setup.
 
 
 
+## Docker Image Source:
+- [DockerHub > Pinot](https://hub.docker.com/r/hypertrace/pinot)
+- [DockerHub > Pinot-servicemanager](https://hub.docker.com/r/hypertrace/pinot-servicemanager)
