@@ -3,7 +3,7 @@ Pinot is a real-time distributed OLAP datastore, built to deliver scalable real-
 
 This repo publishes the docker image and helm chart for [Apache Pinot](https://pinot.apache.org/).
 
-## How do we use Pinot?
+## Description
 Hypertrace uses Pinot as underlying OLAP engine for realtime streaming ingestion of the traces, index them and serve the time-series and analytics queries from the hypertrace UI/dashboard.
 
 | ![space-1.jpg](https://hypertrace-docs.s3.amazonaws.com/HT-architecture.png) | 
@@ -11,14 +11,12 @@ Hypertrace uses Pinot as underlying OLAP engine for realtime streaming ingestion
 | *Hypertrace Architecture* |
 
 
-## Prerequisites
+## Installation
+### Prerequisites
 * Kubernetes 1.10+
 * Helm 3.0+
 
-## Docker Image
-The docker image is published to [Docker Hub](https://hub.docker.com/r/hypertrace/pinot)
-
-## Helm Chart Components
+### Helm Chart Components
 This chart will do the following:
 
 * Create a Pinot cluster having multiple controllers, servers and brokers using [StatefulSets](http://kubernetes.io/docs/concepts/abstractions/controllers/statefulsets/).
@@ -30,14 +28,14 @@ This chart will do the following:
 * Optionally create a Prometheus ServiceMonitor for each enabled jmx exporter container.
 * Optionally create a new storage class.
 
-## Installing the Chart
+### Installing the Chart
 You can install the chart with the release name `pinot` as below.
 
 ```console
 $ helm upgrade pinot ./helm --install --namespace hypertrace
 ```
 
-## Configuration
+### Configuration
 You can specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
@@ -46,5 +44,32 @@ Alternatively, a YAML file that specifies the values for the parameters can be p
 $ helm upgrade my-release ./helm --install --namespace hypertrace -f values.yaml
 ```
 
-## Default Values
+### Default Values
 - You can find all user-configurable settings, their defaults in [values.yaml](helm/values.yaml).
+
+## Building Locally
+To build Pinot image locally, run:
+
+```
+./gradlew dockerBuildImages
+```
+
+`Note:` docker-compose uses `pinot-servicemanager` image so you have to build it from that folder in case you are working on that one. 
+
+## Testing
+You can test the image you built after modification by running docker-compose or helm setup. 
+
+### docker-compose
+Change the tag for `pinot-servicemanager` from `:main` to `:test` in [docker-compose file](https://github.com/hypertrace/hypertrace/blob/main/docker/docker-compose.yml) like this.
+
+```yaml
+  pinot:
+    image: hypertrace/pinot-servicemanager:test
+    container_name: pinot
+    ...
+```
+
+and then run `docker-compose up` to test the setup.
+
+
+
