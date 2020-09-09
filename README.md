@@ -20,7 +20,7 @@ To build Pinot image locally, run:
 
 `Note:` 
 - docker-compose uses `pinot-servicemanager` image so you have to build it from that folder in case you are working on that one. 
-- To read more about installing and configuring helm chart refer [BUILD.md](https://github.com/hypertrace/pinot/BUILD.md).
+- To read more about installing and configuring helm chart refer [BUILD.md](/BUILD.md).
 
 ## Testing
 You can test the image you built after modification by running docker-compose or helm setup. 
