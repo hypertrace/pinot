@@ -37,7 +37,15 @@ Change the tag for `pinot-servicemanager` from `:main` to `:test` in [docker-com
 
 and then run `docker-compose up` to test the setup.
 
+### Helm setup
+Add image repository and tag in values.yaml file [here](https://github.com/hypertrace/hypertrace/blob/main/kubernetes/data-services/values.yaml) like below and then run `./hypertrace.sh install` again and you can test your image!
 
+```yaml
+pinot:
+  image:
+    repository: "hypertrace/pinot"
+    tagOverride: "test"
+ ```
 
 ## Docker Image Source:
 - [DockerHub > Pinot](https://hub.docker.com/r/hypertrace/pinot)
