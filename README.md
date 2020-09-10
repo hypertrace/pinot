@@ -3,48 +3,50 @@ Pinot is a real-time distributed OLAP datastore, built to deliver scalable real-
 
 This repo publishes the docker image and helm chart for [Apache Pinot](https://pinot.apache.org/).
 
-## How do we use Pinot?
+## Description
 Hypertrace uses Pinot as underlying OLAP engine for realtime streaming ingestion of the traces, index them and serve the time-series and analytics queries from the hypertrace UI/dashboard.
 
-| ![space-1.jpg](https://imagizer.imageshack.com/v2/xq90/922/XgN4tF.png) | 
+| ![space-1.jpg](https://hypertrace-docs.s3.amazonaws.com/ht-arch.png) | 
 |:--:| 
 | *Hypertrace Architecture* |
 
 
-## Prerequisites
-* Kubernetes 1.10+
-* Helm 3.0+
+## Building Locally
+To build Pinot image locally, run:
 
-## Docker Image
-The docker image is published to [Docker Hub](https://hub.docker.com/r/hypertrace/pinot)
-
-## Helm Chart Components
-This chart will do the following:
-
-* Create a Pinot cluster having multiple controllers, servers and brokers using [StatefulSets](http://kubernetes.io/docs/concepts/abstractions/controllers/statefulsets/).
-* Create [PodDisruptionBudgets](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-disruption-budget/) for controllers, servers and brokers instances.
-* Create [Headless Services](https://kubernetes.io/docs/concepts/services-networking/service/) to control the domain of the Pinot cluster.
-* Create a Service configured to connect to the available Pinot controllers on the configured client port.
-* Optionally apply a [Pod Anti-Affinity](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#inter-pod-affinity-and-anti-affinity-beta-feature) to spread the pinot cluster across nodes.
-* Optionally start a JMX Exporter container inside Pinot pods.
-* Optionally create a Prometheus ServiceMonitor for each enabled jmx exporter container.
-* Optionally create a new storage class.
-
-## Installing the Chart
-You can install the chart with the release name `pinot` as below.
-
-```console
-$ helm upgrade pinot ./helm --install --namespace hypertrace
+```
+./gradlew dockerBuildImages
 ```
 
-## Configuration
-You can specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
+`Note:` 
+- docker-compose uses `pinot-servicemanager` image so you have to build it from that folder in case you are working on that one. 
+- To read more about installing and configuring helm chart refer [BUILD.md](/BUILD.md).
 
-Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
+## Testing
+You can test the image you built after modification by running docker-compose or helm setup. 
 
-```console
-$ helm upgrade my-release ./helm --install --namespace hypertrace -f values.yaml
+### docker-compose
+Change the tag for `pinot-servicemanager` from `:main` to `:test` in [docker-compose file](https://github.com/hypertrace/hypertrace/blob/main/docker/docker-compose.yml) like this.
+
+```yaml
+  pinot:
+    image: hypertrace/pinot-servicemanager:test
+    container_name: pinot
+    ...
 ```
 
-## Default Values
-- You can find all user-configurable settings, their defaults in [values.yaml](helm/values.yaml).
+and then run `docker-compose up` to test the setup.
+
+### Helm setup
+Add image repository and tag in values.yaml file [here](https://github.com/hypertrace/hypertrace/blob/main/kubernetes/data-services/values.yaml) like below and then run `./hypertrace.sh install` again and you can test your image!
+
+```yaml
+pinot:
+  image:
+    repository: "hypertrace/pinot"
+    tagOverride: "test"
+ ```
+
+## Docker Image Source:
+- [DockerHub > Pinot](https://hub.docker.com/r/hypertrace/pinot)
+- [DockerHub > Pinot-servicemanager](https://hub.docker.com/r/hypertrace/pinot-servicemanager)
