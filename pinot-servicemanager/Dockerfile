@@ -1,6 +1,5 @@
 # Choose libraries we need from Pinot's image.
-# TODO: 0.5.0-rc2 does not have parallel start: 21a372b2f58f9c6e27fe9710d6952ed519342061
-FROM apachepinot/pinot:0.5.0-SNAPSHOT-4c20bb567-20200902 as install
+FROM apachepinot/pinot:0.5.0-SNAPSHOT-e0ed179c2-20200910 as install
 
 WORKDIR /install
 
@@ -19,8 +18,8 @@ RUN mkdir classes && cd classes && \
 
 COPY schemas/* schemas/
 
-COPY install /tmp/
-RUN /tmp/install && rm /tmp/install
+COPY install.sh /tmp/
+RUN /tmp/install.sh && rm /tmp/install.sh
 
 # Share the same base image to reduce layers used in testing
 FROM hypertrace/java:11
