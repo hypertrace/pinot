@@ -105,7 +105,7 @@ jobs:
             export GOOGLE_APPLICATION_CREDENTIALS=${HOME}/helm-gcs-key.json
             echo ${HELM_GCS_CREDENTIALS} > ${GOOGLE_APPLICATION_CREDENTIALS}
             helm repo add helm-gcs ${HELM_GCS_REPOSITORY}
-            helm package --version ${CHART_VERSION} --app-version ${CHART_VERSION} ./helm/
+            helm package --version ${CHART_VERSION} ./helm/
             helm gcs push ${CHART_NAME}-${CHART_VERSION}.tgz helm-gcs --public --retry
       - add_ssh_keys:
           fingerprints:
