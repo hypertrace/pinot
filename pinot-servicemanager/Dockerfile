@@ -41,6 +41,8 @@ USER ${USER}
 # Copy binaries and config we installed earlier
 COPY --from=install --chown=${USER} /install .
 
+COPY build/plugins plugins/
+
 # expose ports for controller/broker/server/admin/servicemanager
 EXPOSE 9000 8099 8098 8097 8096 9514 7098
 

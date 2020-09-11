@@ -36,7 +36,7 @@ echo Starting Pinot Service Manager
 # TODO: link to pinot issue why we need internal access
 exec java \
   --add-opens java.base/jdk.internal.ref=ALL-UNNAMED \
-  -classpath 'classes:libs/*' \
+  -classpath 'classes:plugins/*' \
   $JAVA_OPTS \
   -Dlog4j.configurationFile=etc/log4j2.properties \
   -Dapp.name=pinot-admin \

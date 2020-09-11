@@ -11,3 +11,4 @@ plugins {
 }
 
 include(":pinot-servicemanager")
+include(":pinot-udf")
