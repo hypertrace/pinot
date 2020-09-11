@@ -1,4 +1,6 @@
 # Choose libraries we need from Pinot's image.
+# TODO: 0.5.0 does not have parallel start (PR 5917): 21a372b2f58f9c6e27fe9710d6952ed519342061
+# This is why we are still on SNAPSHOT.
 FROM apachepinot/pinot:0.5.0-SNAPSHOT-e0ed179c2-20200910 as install
 
 WORKDIR /install
