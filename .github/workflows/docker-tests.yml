@@ -42,7 +42,7 @@ jobs:
           arguments: dockerBuildImages
       - name: Test Pinot Service Manager image
         working-directory: ./.github/workflows/servicemanager
-        # Below tests a docker-compose.xml service named 'sut' with a valid HEALTHCHECK instruction:
+        # Below tests a docker-compose.yml service named 'sut' with a valid HEALTHCHECK instruction:
         run: |
           docker-compose up -d
           while status="$(docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" "$(docker-compose ps -q sut)")"; do
@@ -53,4 +53,3 @@ jobs:
             esac
           done
           exit 1
-
