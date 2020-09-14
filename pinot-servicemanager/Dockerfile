@@ -12,6 +12,9 @@ RUN mkdir libs && cp \
   /opt/pinot/plugins/pinot-stream-ingestion/pinot-kafka-2.0/* \
   libs;
 
+# Add custom Hypertrace UDF plugin jars
+COPY build/plugins libs/
+
 # Pinot starts faster when classes are extracted
 # TODO: When we switch to Maven for pinot, use maven-dependency-plugin:unpack
 RUN mkdir classes && cd classes && \
@@ -40,8 +43,6 @@ USER ${USER}
 
 # Copy binaries and config we installed earlier
 COPY --from=install --chown=${USER} /install .
-
-COPY build/plugins plugins/
 
 # expose ports for controller/broker/server/admin/servicemanager
 EXPOSE 9000 8099 8098 8097 8096 9514 7098
