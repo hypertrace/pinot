@@ -63,7 +63,7 @@ jobs:
           args: dockerBuildImages
       - run:
           name: Verify service manager
-          working_directory: pinot-servicemanager
+          working_directory: .circleci/pinot-servicemanager
           command: |
             docker-compose up -d
             while status="$(docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" "$(docker-compose ps -q sut)")"; do
