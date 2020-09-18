@@ -1,0 +1,55 @@
+name: Continuous Build Docker
+on: [push, pull_request]
+
+jobs:
+  build-on-linux:
+    strategy:
+      matrix:
+        docker-version: [19.03]
+    runs-on: ubuntu-latest
+    name: Build and run Docker images
+    steps:
+      - name: Update Packages
+        run: sudo apt-get update -yqq --fix-missing
+      - name: Install Docker
+        uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: ${{ matrix.docker-version }}
+          docker_buildx: false
+      - name: Cache docker
+        uses: actions/cache@v1
+        with:
+          path: ~/.docker
+          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+          restore-keys: ${{ runner.os }}-docker
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 10
+      - name: Install JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+      - name: Cache Gradle
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/build.gradle.kts') }}
+          restore-keys: ${{ runner.os }}-gradle
+      - name: Invoke Docker build with Gradle
+        uses: eskatos/gradle-command-action@v1
+        with:
+          arguments: dockerBuildImages
+      - name: Test Pinot Service Manager image
+        working-directory: ./.github/workflows/servicemanager
+        # Below tests a docker-compose.yml service named 'sut' with a valid HEALTHCHECK instruction:
+        run: |
+          docker-compose up -d
+          while status="$(docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" "$(docker-compose ps -q sut)")"; do
+            case $status in
+              starting) sleep 1;;
+              healthy) exit 0;;
+              unhealthy) exit 1;;
+            esac
+          done
+          exit 1
