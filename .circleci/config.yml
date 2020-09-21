@@ -122,6 +122,7 @@ jobs:
             helm gcs push ${CHART_NAME}-${CHART_VERSION}.tgz helm-gcs --public --retry
       - add_ssh_keys:
           fingerprints:
+            # This ssh key gives write permission needed for the following step.
             - '51:2e:8c:f6:b6:7b:ac:ac:cc:1b:b8:39:3d:82:e5:38'
       - run:
           name: Update remote tags
