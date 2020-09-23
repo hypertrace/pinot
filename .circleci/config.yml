@@ -61,6 +61,19 @@ jobs:
       - setup_build_environment
       - gradle:
           args: dockerBuildImages
+      - run:
+          name: Verify service manager
+          working_directory: .circleci/pinot-servicemanager
+          command: |
+            docker-compose up -d
+            while status="$(docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" "$(docker-compose ps -q sut)")"; do
+              case $status in
+                starting) sleep 1;;
+                healthy) exit 0;;
+                unhealthy) exit 1;;
+              esac
+            done
+            exit 1
       - save_populated_cache
   merge-publish:
     executor: gradle_docker
@@ -109,6 +122,7 @@ jobs:
             helm gcs push ${CHART_NAME}-${CHART_VERSION}.tgz helm-gcs --public --retry
       - add_ssh_keys:
           fingerprints:
+            # This ssh key gives write permission needed for the following step.
             - '51:2e:8c:f6:b6:7b:ac:ac:cc:1b:b8:39:3d:82:e5:38'
       - run:
           name: Update remote tags

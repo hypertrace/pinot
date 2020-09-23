@@ -48,6 +48,7 @@ COPY --from=install --chown=${USER} /install .
 EXPOSE 9000 8099 8098 8097 8096 9514 7098
 
 # We use start period of 45s to avoid marking Pinot unhealthy on slow or contended CI hosts
-HEALTHCHECK --interval=1s --start-period=45s --timeout=5s --retries=15 CMD ["docker-healthcheck"]
+# * timeout is 10s instead of 5s as longer has happened in practice
+HEALTHCHECK --interval=1s --start-period=45s --timeout=10s --retries=15 CMD ["docker-healthcheck"]
 
 ENTRYPOINT ["start-servicemanager"]
