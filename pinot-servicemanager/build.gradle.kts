@@ -4,7 +4,6 @@ plugins {
 
 hypertraceDocker {
   defaultImage {
-    imageName.set("pinot-servicemanager")
     tasks.named(buildTaskName) {
       dependsOn("copyPlugins")
     }
