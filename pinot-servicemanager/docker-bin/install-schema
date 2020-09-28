@@ -17,24 +17,24 @@ http_post() {
   echo
 }
 
+elapsed_seconds() {
+  # Uptime is always longer than the actual uptime in Docker.
+  # To get a more useful result, we subtract the time pid 1 launched.
+  uptime=$(awk '{print $1}' < /proc/uptime)
+  container_start=$(awk '{print $22}' < /proc/1/stat)
+  echo $(( ${uptime%.*} - $container_start / 100 ))
+}
+
 # Excessively long timeout to avoid having to create an ENV variable, decide its
 # name, etc. 180 seconds is 6 times as long as a modern laptop with contension.
 timeout=180
-echo "Will wait up to ${timeout} seconds for Pinot Server to come up before installing Schema"
-while [[ "$timeout" -gt 0 ]] && ! wget -qO- http://${IP}:8097/health > /dev/null 2>&1; do
+echo "Will wait up to ${timeout} seconds for Pinot Broker to register with controller"
+while [[ "$timeout" -gt 0 ]] && ! (wget -qO- http://${IP}:9000/brokers/tenants 2>&-| grep -q DefaultTenant); do
     sleep 1
     timeout=$(($timeout - 1))
 done
 
-# Wait for broker to registers
-timeout=30
-echo "Will wait up to ${timeout} seconds for Pinot Broker to registers with controller"
-while [[ "$timeout" -gt 0 ]] && ! (wget -qO- http://${IP}:9000/brokers/tenants | grep -q DefaultTenant); do
-    sleep 1
-    timeout=$(($timeout - 1))
-done
-
-echo "*** Starting schema installation"
+echo "*** Starting schema installation at $(elapsed_seconds)s since container launch"
 # Runs setup in parallel for each schema
 for path in $(ls schemas/*|cut -f 1 -d-|uniq); do
   (http_post "$IP" "9000" "/schemas" "$(cat $path-schemaFile.json | tr -d '\n')" && \
@@ -47,10 +47,4 @@ wait
 
 rmdir schemas
 
-# Uptime is always longer than the actual uptime in Docker.
-# To get a more useful result, we subtract the time pid 1 launched.
-uptime=$(awk '{print $1}' < /proc/uptime)
-container_start=$(awk '{print $22}' < /proc/1/stat)
-elapsed_seconds=$(( ${uptime%.*} - $container_start / 100 ))
-
-echo "*** Completed schema installation at ${elapsed_seconds}s since launch"
+echo "*** Completed schema installation at $(elapsed_seconds)s since container launch"

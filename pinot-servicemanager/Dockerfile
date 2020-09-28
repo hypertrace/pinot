@@ -1,22 +1,16 @@
 # Choose libraries we need from Pinot's image.
-# TODO: 0.5.0 does not have parallel start (PR 5917): 21a372b2f58f9c6e27fe9710d6952ed519342061
-# This is why we are still on SNAPSHOT.
-FROM apachepinot/pinot:0.6.0-SNAPSHOT-07a6289a0-20200925-jdk11 as install
 
+# Using the same image as we use in CircleCI to avoid transfer costs
+FROM cimg/openjdk:14.0.2 AS install
+
+# Override to build an image from a fork. Ex. kotharironak
+ARG JITPACK_USER=apache
+# Override to use a different expression, such as 'master-SNAPSHOT'
+#   Note: 0.5.0 does not have parallel start (PR 5917): 21a372b2f58f9c6e27fe9710d6952ed519342061
+ARG JITPACK_TAG=23797914c6fea24e34f3ebfca9a73e0fff72c2b7
+
+USER root
 WORKDIR /install
-
-# TODO: use maven to do get deps so that we can avoid shaded jars
-RUN mkdir libs && cp \
-  /opt/pinot/lib/* \
-  /opt/pinot/plugins/pinot-input-format/pinot-confluent-avro/* \
-  /opt/pinot/plugins/pinot-stream-ingestion/pinot-kafka-2.0/* \
-  libs;
-
-# Pinot starts faster when classes are extracted
-# TODO: When we switch to Maven for pinot, use maven-dependency-plugin:unpack
-RUN mkdir classes && cd classes && \
-  (for JAR in ../libs/*; do jar -xf $JAR; done) && \
-  cd .. && rm -rf libs
 
 COPY schemas/* schemas/
 
