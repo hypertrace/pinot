@@ -44,7 +44,7 @@ jobs:
         uses: eskatos/gradle-command-action@v1
         with:
           arguments: dockerBuildImages
-      - name: Test Pinot Service Manager image
+      - name: Verify pinot-servicemanager image
         working-directory: ./.github/workflows/servicemanager
         # Below tests a docker-compose.yml service named 'sut' with a valid HEALTHCHECK instruction:
         run: |
@@ -57,3 +57,6 @@ jobs:
             esac
           done
           exit 1
+      - name: Time pinot-servicemanager bootstrap
+        working-directory: ./.github/workflows/servicemanager
+        run: docker-compose logs sut |grep since

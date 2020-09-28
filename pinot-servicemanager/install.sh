@@ -4,6 +4,21 @@
 # This also trims dependencies to only those used at runtime.
 set -eux
 
+# Choose the main distribution and the plugins we use
+for artifactId in pinot-distribution pinot-confluent-avro pinot-kafka-2.0
+do
+  # Download scripts and config for Kafka and ZooKeeper, but not for Connect
+  wget -qO temp.zip https://jitpack.io/com/github/${JITPACK_USER}/incubator-pinot/${artifactId}/${JITPACK_TAG}/${artifactId}-${JITPACK_TAG}-shaded.jar
+  # Pinot starts faster when classes are extracted
+  unzip -qo temp.zip -d classes
+  # remove license because sometimes a file and other times a directory
+  rm -rf temp.zip classes/META-INF/license
+done
+
+# TODO: try maven-dependency-plugin:unpack instead of wget
+#       https://maven.apache.org/plugins/maven-dependency-plugin/examples/unpacking-artifacts.html
+#       https://github.com/hypertrace/pinot/issues/16
+
 mkdir etc
 
 cat > etc/log4j2.properties <<-'EOF'

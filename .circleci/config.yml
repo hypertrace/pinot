@@ -62,7 +62,7 @@ jobs:
       - gradle:
           args: dockerBuildImages
       - run:
-          name: Verify service manager
+          name: Verify pinot-servicemanager image
           working_directory: .circleci/pinot-servicemanager
           command: |
             docker-compose up -d
@@ -73,7 +73,10 @@ jobs:
                 unhealthy) exit 1;;
               esac
             done
-            exit 1
+      - run:
+          name: Time pinot-servicemanager bootstrap
+          working_directory: .circleci/pinot-servicemanager
+          command: docker-compose logs sut |grep since
       - save_populated_cache
   merge-publish:
     executor: gradle_docker
