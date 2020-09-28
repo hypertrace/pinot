@@ -13,6 +13,8 @@ http_post() {
   BODY="$4"
   BODY_LEN=$( echo -n "${BODY}" | wc -c )
   echo -ne "POST ${POST_PATH} HTTP/1.0\r\nHost: ${HOST}\r\nContent-Type: application/json\r\nContent-Length: ${BODY_LEN}\r\n\r\n${BODY}" | nc ${HOST} ${PORT}
+  # add a newline so that console output doesn't concat unrelated messages
+  echo
 }
 
 # Excessively long timeout to avoid having to create an ENV variable, decide its
@@ -24,7 +26,6 @@ while [[ "$timeout" -gt 0 ]] && ! wget -qO- http://${IP}:8097/health > /dev/null
     timeout=$(($timeout - 1))
 done
 
-
 # Wait for broker to registers
 timeout=30
 echo "Will wait up to ${timeout} seconds for Pinot Broker to registers with controller"
@@ -34,17 +35,22 @@ while [[ "$timeout" -gt 0 ]] && ! (wget -qO- http://${IP}:9000/brokers/tenants |
 done
 
 echo "*** Starting schema installation"
-start_time=$(date +%s)
+# Runs setup in parallel for each schema
 for path in $(ls schemas/*|cut -f 1 -d-|uniq); do
-  http_post "$IP" "9000" "/schemas" "$(cat $path-schemaFile.json | tr -d '\n')" && \
-  http_post "$IP" "9000" "/tables" "$(cat $path-tableConfigFile.json | tr -d '\n')" && \
-  rm $path-schemaFile.json $path-tableConfigFile.json
-  echo
+  (http_post "$IP" "9000" "/schemas" "$(cat $path-schemaFile.json | tr -d '\n')" && \
+   http_post "$IP" "9000" "/tables" "$(cat $path-tableConfigFile.json | tr -d '\n')" && \
+   rm $path-schemaFile.json $path-tableConfigFile.json)&
 done
 
-end_time=$(date +%s)
-echo "Time taken for setting up schema = $(expr $end_time - $start_time)"
+# Wait for the parallel setup jobs to complete
+wait
 
 rmdir schemas
 
-echo "*** Schema setup complete"
+# Uptime is always longer than the actual uptime in Docker.
+# To get a more useful result, we subtract the time pid 1 launched.
+uptime=$(awk '{print $1}' < /proc/uptime)
+container_start=$(awk '{print $22}' < /proc/1/stat)
+elapsed_seconds=$(( ${uptime%.*} - $container_start / 100 ))
+
+echo "*** Completed schema installation at ${elapsed_seconds}s since launch"
