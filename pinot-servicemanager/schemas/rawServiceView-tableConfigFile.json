@@ -16,12 +16,12 @@
   },
   "tableIndexConfig": {
     "streamConfigs": {
-      "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.inputformat.avro.confluent.KafkaConfluentSchemaRegistryAvroMessageDecoder",
       "streamType": "kafka",
-      "stream.kafka.decoder.prop.schema.registry.rest.url": "http://schema-registry:8081",
+      "stream.kafka.consumer.type": "simple",
+      "stream.kafka.decoder.prop.schema": "{\"type\":\"record\",\"name\":\"RawServiceView\",\"namespace\":\"org.hypertrace.viewgenerator.api\",\"fields\":[{\"name\":\"tenant_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"trace_id\",\"type\":\"bytes\"},{\"name\":\"span_id\",\"type\":\"bytes\"},{\"name\":\"service_name\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"api_name\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"start_time_millis\",\"type\":\"long\"},{\"name\":\"end_time_millis\",\"type\":\"long\"},{\"name\":\"duration_millis\",\"type\":\"long\"},{\"name\":\"span_kind\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"error_count\",\"type\":\"int\",\"default\":0},{\"name\":\"exception_count\",\"type\":\"int\",\"default\":0},{\"name\":\"protocol_name\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"status_code\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"service_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"api_id\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"parent_span_id\",\"type\":[\"null\",\"bytes\"],\"default\":null},{\"name\":\"num_calls\",\"type\":\"int\",\"default\":0},{\"name\":\"transaction_name\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"api_discovery_state\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null}]}",
+      "stream.kafka.decoder.class.name": "org.apache.pinot.core.realtime.stream.SimpleAvroMessageDecoder",
       "stream.kafka.hlc.zk.connect.string": "zookeeper:2181",
       "realtime.segment.flush.threshold.size": "500000",
-      "stream.kafka.consumer.type": "LowLevel",
       "stream.kafka.zk.broker.url": "zookeeper:2181",
       "realtime.segment.flush.threshold.time": "3600000",
       "stream.kafka.broker.list": "kafka:9092",

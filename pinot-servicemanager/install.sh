@@ -5,7 +5,7 @@
 set -eux
 
 # Choose the main distribution and the plugins we use
-for artifactId in pinot-distribution pinot-confluent-avro pinot-kafka-2.0
+for artifactId in pinot-distribution pinot-confluent-avro pinot-avro pinot-kafka-2.0
 do
   # Download scripts and config for Kafka and ZooKeeper, but not for Connect
   wget -qO temp.zip https://jitpack.io/com/github/${JITPACK_USER}/incubator-pinot/${artifactId}/${JITPACK_TAG}/${artifactId}-${JITPACK_TAG}-shaded.jar
