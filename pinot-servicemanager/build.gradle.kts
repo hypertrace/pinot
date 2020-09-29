@@ -7,6 +7,7 @@ plugins {
 hypertraceDocker {
   defaultImage {
     imageName.set("pinot-servicemanager")
+    dockerFile.set(file("Dockerfile"))
   }
 }
 

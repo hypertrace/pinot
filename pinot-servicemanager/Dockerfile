@@ -32,6 +32,9 @@ WORKDIR /opt/pinot
 RUN adduser -g '' -h ${PWD} -D ${USER}
 USER ${USER}
 
+# Copy generic avro serde
+COPY --chown=${USER} build/classes/java/main/ ./classes/
+
 # Copy binaries and config we installed earlier
 COPY --from=install --chown=${USER} /install .
 
