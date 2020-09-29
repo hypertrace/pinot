@@ -1,6 +1,5 @@
 plugins {
   `java-library`
-  id("org.hypertrace.docker-java-application-plugin") version "0.7.1" apply true
   id("org.hypertrace.docker-publish-plugin")
 }
 
