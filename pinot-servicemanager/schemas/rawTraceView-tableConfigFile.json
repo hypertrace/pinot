@@ -18,8 +18,7 @@
     "streamConfigs": {
       "streamType": "kafka",
       "stream.kafka.consumer.type": "simple",
-      "stream.kafka.decoder.prop.schema":"{\"type\":\"record\",\"name\":\"RawTraceView\",\"namespace\":\"org.hypertrace.viewgenerator.api\",\"fields\":[{\"name\":\"tenant_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"trace_id\",\"type\":\"bytes\"},{\"name\":\"transaction_name\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null},{\"name\":\"services\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},\"default\":[]},{\"name\":\"start_time_millis\",\"type\":\"long\",\"default\":-1},{\"name\":\"end_time_millis\",\"type\":\"long\",\"default\":-1},{\"name\":\"duration_millis\",\"type\":\"long\",\"default\":0},{\"name\":\"num_services\",\"type\":\"int\",\"default\":0},{\"name\":\"num_spans\",\"type\":\"int\",\"default\":0}]}",
-      "stream.kafka.decoder.class.name": "org.apache.pinot.core.realtime.stream.SimpleAvroMessageDecoder",
+      "stream.kafka.decoder.class.name": "org.hypertrace.pinot.plugins.GenericAvroMessageDecoder",
       "stream.kafka.hlc.zk.connect.string": "zookeeper:2181",
       "realtime.segment.flush.threshold.size": "500000",
       "stream.kafka.zk.broker.url": "zookeeper:2181",
