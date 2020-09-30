@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 public class GenericAvroMessageDecoder implements StreamMessageDecoder<byte[]> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GenericAvroMessageDecoder.class);
-  GenericAvroSerde genericAvroSerde;
-  String topicName;
+  private GenericAvroSerde genericAvroSerde;
+  private String topicName;
   private RecordExtractor<Record> _avroRecordExtractor;
 
 

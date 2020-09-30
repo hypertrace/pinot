@@ -34,7 +34,7 @@ appender.console.type=Console
 appender.console.name=STDOUT
 appender.console.layout.type=PatternLayout
 appender.console.layout.pattern=%d{ABSOLUTE} %-5p [%t] %C{2} (%F:%L) - %m%n
-rootLogger.level=info
+rootLogger.level=warn
 rootLogger.appenderRefs=stdout
 rootLogger.appenderRef.stdout.ref=STDOUT
 # Hush reflections similarly to https://github.com/apache/incubator-pinot/pull/5001
