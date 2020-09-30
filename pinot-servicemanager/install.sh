@@ -15,6 +15,10 @@ do
   rm -rf temp.zip classes/META-INF/license
 done
 
+# TODO: try maven-dependency-plugin:unpack instead of wget
+#       https://maven.apache.org/plugins/maven-dependency-plugin/examples/unpacking-artifacts.html
+#       https://github.com/hypertrace/pinot/issues/16
+
 # copy hypertrace plugins
 for JAR in plugins/*
 do
@@ -22,9 +26,6 @@ do
 done
 
 rm -rf plugins
-# TODO: try maven-dependency-plugin:unpack instead of wget
-#       https://maven.apache.org/plugins/maven-dependency-plugin/examples/unpacking-artifacts.html
-#       https://github.com/hypertrace/pinot/issues/16
 
 mkdir etc
 

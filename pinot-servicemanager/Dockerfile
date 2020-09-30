@@ -7,7 +7,8 @@ FROM cimg/openjdk:14.0.2 AS install
 ARG JITPACK_USER=apache
 # Override to use a different expression, such as 'master-SNAPSHOT'
 #   Note: 0.5.0 does not have parallel start (PR 5917): 21a372b2f58f9c6e27fe9710d6952ed519342061
-ARG JITPACK_TAG=23797914c6fea24e34f3ebfca9a73e0fff72c2b7
+#   Note: See "Warning on versions" in README before upgrading version
+ARG JITPACK_TAG=1c4fc13169ff3ed8cab3a2ddcdd15270e07d74fc
 
 USER root
 WORKDIR /install
