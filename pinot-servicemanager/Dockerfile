@@ -12,7 +12,7 @@ ARG JITPACK_TAG=23797914c6fea24e34f3ebfca9a73e0fff72c2b7
 USER root
 WORKDIR /install
 
-# Copy customer hypertrace plugins
+# Copy hypertrace plugins
 COPY build/plugins plugins/
 
 COPY schemas/* schemas/

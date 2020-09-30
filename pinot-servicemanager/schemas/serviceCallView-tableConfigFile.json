@@ -17,7 +17,7 @@
   "tableIndexConfig": {
     "streamConfigs": {
       "streamType": "kafka",
-      "stream.kafka.consumer.type": "simple",
+      "stream.kafka.consumer.type": "LowLevel",
       "stream.kafka.decoder.class.name": "org.hypertrace.pinot.plugins.GenericAvroMessageDecoder",
       "stream.kafka.hlc.zk.connect.string": "zookeeper:2181",
       "realtime.segment.flush.threshold.size": "500000",
