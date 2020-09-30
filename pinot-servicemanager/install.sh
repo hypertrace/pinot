@@ -15,6 +15,14 @@ do
   rm -rf temp.zip classes/META-INF/license
 done
 
+# copy hypertrace plugins
+# Download scripts and config for Kafka and ZooKeeper, but not for Connect
+wget -qO temp.zip https://dl.bintray.com/hypertrace/maven/org/hypertrace/core/kafkastreams/framework/kafka-streams-serdes/0.1.11/kafka-streams-serdes-0.1.11.jar
+# Pinot starts faster when classes are extracted
+unzip -qo temp.zip -d classes
+# remove license because sometimes a file and other times a directory
+rm -rf temp.zip classes/META-INF/license
+
 # TODO: try maven-dependency-plugin:unpack instead of wget
 #       https://maven.apache.org/plugins/maven-dependency-plugin/examples/unpacking-artifacts.html
 #       https://github.com/hypertrace/pinot/issues/16
@@ -27,7 +35,7 @@ appender.console.type=Console
 appender.console.name=STDOUT
 appender.console.layout.type=PatternLayout
 appender.console.layout.pattern=%d{ABSOLUTE} %-5p [%t] %C{2} (%F:%L) - %m%n
-rootLogger.level=warn
+rootLogger.level=info
 rootLogger.appenderRefs=stdout
 rootLogger.appenderRef.stdout.ref=STDOUT
 # Hush reflections similarly to https://github.com/apache/incubator-pinot/pull/5001
