@@ -12,3 +12,4 @@ plugins {
 
 include(":pinot-servicemanager")
 include(":pinot-udf")
+include(":pinot-avro-serde")

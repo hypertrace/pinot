@@ -13,7 +13,7 @@ ARG JITPACK_TAG=1c4fc13169ff3ed8cab3a2ddcdd15270e07d74fc
 USER root
 WORKDIR /install
 
-# Add custom Hypertrace UDF plugin jars
+# Copy hypertrace plugins
 COPY build/plugins plugins/
 
 COPY schemas/* schemas/

@@ -9,10 +9,12 @@ hypertraceDocker {
     }
   }
 }
+
 val plugins by configurations.creating
 
 dependencies {
   plugins(project(":pinot-udf"))
+  plugins(project(":pinot-avro-serde"))
 }
 
 tasks.register<Sync>("copyPlugins") {
