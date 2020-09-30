@@ -16,13 +16,12 @@ do
 done
 
 # copy hypertrace plugins
-# Download scripts and config for Kafka and ZooKeeper, but not for Connect
-wget -qO temp.zip https://dl.bintray.com/hypertrace/maven/org/hypertrace/core/kafkastreams/framework/kafka-streams-serdes/0.1.11/kafka-streams-serdes-0.1.11.jar
-# Pinot starts faster when classes are extracted
-unzip -qo temp.zip -d classes
-# remove license because sometimes a file and other times a directory
-rm -rf temp.zip classes/META-INF/license
+for JAR in plugins/*
+do
+  unzip -qo $JAR -d classes
+done
 
+rm -rf plugins
 # TODO: try maven-dependency-plugin:unpack instead of wget
 #       https://maven.apache.org/plugins/maven-dependency-plugin/examples/unpacking-artifacts.html
 #       https://github.com/hypertrace/pinot/issues/16

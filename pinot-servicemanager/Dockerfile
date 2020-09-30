@@ -12,6 +12,9 @@ ARG JITPACK_TAG=23797914c6fea24e34f3ebfca9a73e0fff72c2b7
 USER root
 WORKDIR /install
 
+# Copy customer hypertrace plugins
+COPY build/libs plugins/
+
 COPY schemas/* schemas/
 
 COPY install.sh /tmp/
@@ -31,9 +34,6 @@ WORKDIR /opt/pinot
 # Ensure the process doesn't run as root
 RUN adduser -g '' -h ${PWD} -D ${USER}
 USER ${USER}
-
-# Copy generic avro serde
-COPY --chown=${USER} build/classes/java/main/ ./classes/
 
 # Copy binaries and config we installed earlier
 COPY --from=install --chown=${USER} /install .
