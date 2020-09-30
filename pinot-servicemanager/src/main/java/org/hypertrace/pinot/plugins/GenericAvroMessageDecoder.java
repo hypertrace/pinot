@@ -27,33 +27,26 @@ public class GenericAvroMessageDecoder implements StreamMessageDecoder<byte[]> {
   @Override
   public void init(Map<String, String> props, Set<String> fieldsToRead, String topicName)
       throws Exception {
-    try {
-      LOGGER.info(String.format("initializing GenericAvroMessageDecoder for topic:%s", topicName));
-      this.topicName = topicName;
+    LOGGER.info(
+        String.format("initializing generic avro message based serde for topic:%s", topicName));
 
-      genericAvroSerde = new GenericAvroSerde();
-      LOGGER.info("GenericAvroMessageDecoder reached 1");
-      genericAvroSerde.configure(props, false);
+    this.topicName = topicName;
+    genericAvroSerde = new GenericAvroSerde();
 
-      LOGGER.info("GenericAvroMessageDecoder reached 2");
-
-      String recordExtractorClass = null;
-      if (props != null) {
-        recordExtractorClass = props.get(RECORD_EXTRACTOR_CONFIG_KEY);
-      }
-      // Backward compatibility to support Avro by default
-      if (recordExtractorClass == null) {
-        recordExtractorClass = AvroRecordExtractor.class.getName();
-      }
-      LOGGER.info("GenericAvroMessageDecoder reached 3");
-      _avroRecordExtractor = PluginManager.get().createInstance(recordExtractorClass);
-      _avroRecordExtractor.init(fieldsToRead, null);
-      LOGGER.info(String
-          .format("Successfully initialized GenericAvroMessageDecoder for topic:%s", topicName));
-    } catch (Exception e) {
-      LOGGER.info("Failed in init GenericAvroMessageDecoder", e);
-      throw e;
+    String recordExtractorClass = null;
+    if (props != null) {
+      recordExtractorClass = props.get(RECORD_EXTRACTOR_CONFIG_KEY);
     }
+    // Backward compatibility to support Avro by default
+    if (recordExtractorClass == null) {
+      recordExtractorClass = AvroRecordExtractor.class.getName();
+    }
+    _avroRecordExtractor = PluginManager.get().createInstance(recordExtractorClass);
+    _avroRecordExtractor.init(fieldsToRead, null);
+
+    LOGGER.info(String
+        .format("Successfully initialized generic avro message based serde for topic:%s",
+            topicName));
   }
 
   /**
@@ -63,14 +56,9 @@ public class GenericAvroMessageDecoder implements StreamMessageDecoder<byte[]> {
    */
   @Override
   public GenericRow decode(byte[] payload, GenericRow destination) {
-    try {
-      GenericData.Record record = (GenericData.Record) genericAvroSerde.deserializer()
-          .deserialize(this.topicName, payload);
-      return _avroRecordExtractor.extract(record, destination);
-    } catch (Exception e) {
-      LOGGER.info("Failed in decode GenericAvroMessageDecoder", e);
-      throw new RuntimeException(e);
-    }
+    GenericData.Record record = (GenericData.Record) genericAvroSerde.deserializer()
+        .deserialize(this.topicName, payload);
+    return _avroRecordExtractor.extract(record, destination);
   }
 
   /**
@@ -80,11 +68,6 @@ public class GenericAvroMessageDecoder implements StreamMessageDecoder<byte[]> {
    */
   @Override
   public GenericRow decode(byte[] payload, int offset, int length, GenericRow destination) {
-    try {
-      return decode(Arrays.copyOfRange(payload, offset, offset + length), destination);
-    } catch (Exception e) {
-      LOGGER.info("Failed in decode1 GenericAvroMessageDecoder", e);
-      throw new RuntimeException(e);
-    }
+    return decode(Arrays.copyOfRange(payload, offset, offset + length), destination);
   }
 }
