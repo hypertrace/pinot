@@ -27,11 +27,11 @@ dependencies {
 }
 
 dependencies {
-  plugins("org.hypertrace.core.kafkastreams.framework:kafka-streams-serdes:0.1.11")
+  plugins(project(":${project.name}"))
 }
 
-tasks.register<Copy>("copyPlugins") {
-  from(plugins).include("kafka-streams-serdes*")
-  into("${buildDir}/libs")
+tasks.register<Sync>("copyPlugins") {
+  from(plugins).include("pinot-servicemanager*").include("kafka-streams-serdes*")
+  into("${buildDir}/plugins")
 }
 

@@ -13,7 +13,7 @@ USER root
 WORKDIR /install
 
 # Copy customer hypertrace plugins
-COPY build/libs plugins/
+COPY build/plugins plugins/
 
 COPY schemas/* schemas/
 
