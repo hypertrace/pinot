@@ -16,12 +16,11 @@
   },
   "tableIndexConfig": {
     "streamConfigs": {
-      "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.inputformat.avro.confluent.KafkaConfluentSchemaRegistryAvroMessageDecoder",
       "streamType": "kafka",
-      "stream.kafka.decoder.prop.schema.registry.rest.url": "http://schema-registry:8081",
+      "stream.kafka.consumer.type": "LowLevel",
+      "stream.kafka.decoder.class.name": "org.hypertrace.pinot.plugins.GenericAvroMessageDecoder",
       "stream.kafka.hlc.zk.connect.string": "zookeeper:2181",
       "realtime.segment.flush.threshold.size": "500000",
-      "stream.kafka.consumer.type": "LowLevel",
       "stream.kafka.zk.broker.url": "zookeeper:2181",
       "realtime.segment.flush.threshold.time": "3600000",
       "stream.kafka.broker.list": "kafka:9092",
