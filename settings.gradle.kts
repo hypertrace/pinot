@@ -1,3 +1,5 @@
+rootProject.name = "pinot"
+
 pluginManagement {
   repositories {
     mavenLocal()
