@@ -20,7 +20,7 @@ data:
         </Console>
       </Appenders>
       <Loggers>
-        <Root level="info" additivity="false">
+        <Root level={{ .Values.broker.logging.level | quote }} additivity="false">
           <!-- Display most logs on the console -->
           <AppenderRef ref="console"/>
         </Root>
