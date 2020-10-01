@@ -1,0 +1,30 @@
+{{- if .Values.broker.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pinot.broker.fullname" . }}-log-config
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.broker.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  pinot-broker-log4j2.xml: |-
+    <Configuration>
+      <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+          <PatternLayout>
+            <pattern>%d{yyyy/MM/dd HH:mm:ss.SSS} %p [%c{1}] [%t] %m%n</pattern>
+          </PatternLayout>
+        </Console>
+      </Appenders>
+      <Loggers>
+        <Root level={{ .Values.broker.logging.level | quote }} additivity="false">
+          <!-- Display most logs on the console -->
+          <AppenderRef ref="console"/>
+        </Root>
+        <AsyncLogger name="org.reflections" level="error" additivity="false"/>
+      </Loggers>
+    </Configuration>
+{{- end }}

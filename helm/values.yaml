@@ -138,6 +138,9 @@ controller:
     enabled: false
     namespace: monitoring
 
+  logging:
+    level: info
+
 broker:
   name: broker
   enabled: true
@@ -235,6 +238,9 @@ broker:
         requests:
           cpu: "0.25"
           memory: "256Mi"
+
+  logging:
+    level: info
 
 server:
   name: server
@@ -347,6 +353,8 @@ server:
     parameters:
       type: pd-standard
 
+  logging:
+    level: info
 
 servicemanager:
   name: servicemanager
