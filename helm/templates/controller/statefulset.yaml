@@ -77,6 +77,9 @@ spec:
               mountPath: /var/pinot/controller/config
             - name: pinot-controller-storage
               mountPath: "{{ .Values.controller.persistence.mountPath }}"
+            - name: log-config
+              mountPath: /opt/pinot/conf/pinot-controller-log4j2.xml
+              subPath: "pinot-controller-log4j2.xml"
             {{- if eq .Values.cluster.storage.scheme "gs" }}
             - name: gcs-iam-secret
               mountPath: "/account"
@@ -132,6 +135,9 @@ spec:
         - name: jmx-config
           configMap:
             name: {{ include "pinot.controller.fullname" . }}-jmx-config
+        - name: log-config
+          configMap:
+            name: {{ include "pinot.controller.fullname" . }}-log-config
         {{- if not .Values.controller.persistence.enabled }}
         - name: pinot-controller-storage
           emptyDir: {}
