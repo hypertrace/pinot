@@ -69,9 +69,8 @@ spec:
               mountPath: "/account"
             {{- end }}
           livenessProbe:
-            httpGet:
-              path: /health
-              port: {{ .Values.server.ports.admin }}
+            tcpSocket:
+              port: {{ .Values.server.ports.netty }}
             initialDelaySeconds: {{ .Values.server.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.server.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.server.livenessProbe.timeoutSeconds }}

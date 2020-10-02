@@ -85,8 +85,7 @@ spec:
               mountPath: "/account"
             {{- end }}
           livenessProbe:
-            httpGet:
-              path: /pinot-controller/admin
+            tcpSocket:
               port: {{ .Values.controller.port }}
             initialDelaySeconds: {{ .Values.controller.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.controller.livenessProbe.periodSeconds }}
