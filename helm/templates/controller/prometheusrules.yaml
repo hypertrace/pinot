@@ -18,7 +18,7 @@ spec:
     - alert: PinotErrorSegments
       annotations:
         summary: 'Pinot segments in Error state'
-        message: '{{ $value }} segments in table {{ $labels.table }} are in Error state'
+        message: '{{`{{ $value }}`}} segments in table {{`{{ $labels.table }}`}} are in Error state'
       expr: sum by(pod, table, tabletype) (pinot_controller_segmentsinerrorstate_value) > 0
       for: 10s
       labels:
