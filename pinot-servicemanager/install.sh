@@ -56,23 +56,22 @@ pinot.broker.routing.table.builder.class=random
 pinot.broker.timeoutMs=60000
 EOF
 
-# We set the following at startup:
-# * controller.data.dir
-# * controller.zk.str
+# We overwrite controller.zk.str with a valid host at startup
 cat > etc/pinot-controller.conf <<-'EOF'
 pinot.service.role=CONTROLLER
 pinot.set.instance.id.to.hostname=true
 # controller requires explicit port
 controller.port=9000
 controller.helix.cluster.name=hypertrace-views
+controller.data.dir=./data/controller
+controller.zk.str=localhost:2181
 EOF
 
-# We set the following at startup:
-# * pinot.server.instance.dataDir
-# * pinot.server.instance.segmentTarDir
 cat > etc/pinot-server.conf <<-'EOF'
 pinot.service.role=SERVER
 pinot.set.instance.id.to.hostname=true
+pinot.server.instance.dataDir=./data/server/index
+pinot.server.instance.segmentTarDir=./data/server/segment
 pinot.server.instance.realtime.alloc.offheap=true
 pinot.server.query.executor.timeout=60000
 EOF

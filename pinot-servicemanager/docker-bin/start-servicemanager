@@ -11,23 +11,10 @@ ZK_ADDRESS=${ZK_ADDRESS:-zookeeper:2181}
 
 # Apply one-time deferred configuration that relies on ENV variables
 #
+sed -i "s/\(controller.zk.str\)=.*/\1=${ZK_ADDRESS}/g" etc/pinot-controller.conf
 # TODO: Revert this when relative paths are allowed
 #         https://github.com/apache/incubator-pinot/issues/5975
-CONTROLLER_CONF=./etc/pinot-controller.conf
-CONTROLLER_DATA_DIR=controller.data.dir=$PWD/data/controller
-CONTROLLER_ZK_STR=controller.zk.str=${ZK_ADDRESS}
-for line in $CONTROLLER_DATA_DIR $CONTROLLER_ZK_STR
-do
-  grep -qF -- $line $CONTROLLER_CONF || echo $line >> $CONTROLLER_CONF
-done
-#
-SERVER_CONF=./etc/pinot-server.conf
-SERVER_DATA_DIR=pinot.server.instance.dataDir=$PWD/data/server/index
-SERVER_SEGMENT_TAR_DIR=pinot.server.instance.segmentTarDir=$PWD/data/server/segment
-for line in $SERVER_DATA_DIR $SERVER_SEGMENT_TAR_DIR
-do
-  grep -qF -- $line $SERVER_CONF || echo $line >> $SERVER_CONF
-done
+sed -i "s~\./~${PWD}/~g" etc/*.conf
 
 # Try to install schemas while service is coming up
 test -d schemas && install-schema &
@@ -47,4 +34,4 @@ exec java \
   org.apache.pinot.tools.admin.PinotAdministrator \
   StartServiceManager -clusterName hypertrace-views \
   -zkAddress $ZK_ADDRESS -port 7098 \
-  -bootstrapConfigPaths etc/pinot-controller.conf etc/pinot-broker.conf etc/pinot-server.conf
+  -bootstrapConfigPaths $(ls etc/*.conf)
