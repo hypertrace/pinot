@@ -16,9 +16,6 @@ sed -i "s/\(controller.zk.str\)=.*/\1=${ZK_ADDRESS}/g" etc/pinot-controller.conf
 #         https://github.com/apache/incubator-pinot/issues/5975
 sed -i "s~\./~${PWD}/~g" etc/*.conf
 
-# Try to install schemas while service is coming up
-test -d schemas && install-schema &
-
 echo Starting Pinot Service Manager
 # TODO: link to pinot issue why we need internal access
 # NOTE: '-classpath classes' because it is faster to start up with a flat classpath

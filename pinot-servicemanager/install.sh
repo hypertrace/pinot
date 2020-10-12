@@ -76,4 +76,14 @@ pinot.server.instance.realtime.alloc.offheap=true
 pinot.server.query.executor.timeout=60000
 EOF
 
+for table in $(ls schemas|cut -f1 -d-|sort|uniq); do
+
+cat > etc/pinot-$table.conf <<-EOF
+pinot.service.role=ADD_TABLE
+pinot.addTable.schemaFile=./schemas/${table}-schemaFile.json
+pinot.addTable.tableConfigFile=./schemas/${table}-tableConfigFile.json
+EOF
+
+done
+
 echo "*** Image build complete"

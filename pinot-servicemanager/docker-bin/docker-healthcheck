@@ -10,15 +10,7 @@ IP="$(hostname -i || echo '127.0.0.1')"
 HEALTH_OUT=$(wget -qO- http://${IP}:7098/health 2>&1)
 HEALTH_RC=$?
 if [ "$HEALTH_RC" == "0" ]; then
-  # install-schema deletes the schemas directory on completion
-  test -d schemas
-  SCHEMA_RC=$?
-  if [ "$SCHEMA_RC" == "1" ]; then
-    exit 0
-  fi
-
-  echo Pinot schema installation is not complete
-  exit 1
+  exit 0
 fi
 
 echo Pinot health check failed with output: ${HEALTH_OUT}
