@@ -109,6 +109,7 @@ spec:
         {{- end }}
       restartPolicy: Always
       serviceAccountName: {{ include "pinot.server.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.server.terminationGracePeriodSeconds }}
       volumes:
         - name: config
           configMap:

@@ -93,7 +93,7 @@ controller:
     create: true
     name: ""
 
-  terminationGracePeriodSeconds: 30
+  terminationGracePeriodSeconds: 60
 
   servicemonitor:
     enabled: false
@@ -312,7 +312,7 @@ server:
     create: true
     name: ""
 
-  terminationGracePeriodSeconds: 30
+  terminationGracePeriodSeconds: 60
 
   servicemonitor:
     enabled: false
