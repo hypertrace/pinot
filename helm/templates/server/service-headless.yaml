@@ -9,8 +9,11 @@ metadata:
     component: {{ .Values.server.name }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
   clusterIP: None
+  publishNotReadyAddresses: true
   ports:
     - name: request
       port: {{ .Values.server.ports.netty }}
