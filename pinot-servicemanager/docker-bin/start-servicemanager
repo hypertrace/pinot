@@ -8,10 +8,12 @@ set -eu
 # Default variables so that the script doesn't bomb out on absence
 JAVA_OPTS=${JAVA_OPTS:-"-Xms256M -Xmx512M -XX:+ExitOnOutOfMemoryError"}
 ZK_ADDRESS=${ZK_ADDRESS:-zookeeper:2181}
+LOG_LEVEL=${LOG_LEVEL:-info}
 
 # Apply one-time deferred configuration that relies on ENV variables
 #
 sed -i "s/\(controller.zk.str\)=.*/\1=${ZK_ADDRESS}/g" etc/pinot-controller.conf
+sed -i "s/\(rootLogger.level\)=.*/\1=${LOG_LEVEL}/g" etc/log4j2.properties
 # TODO: Revert this when relative paths are allowed
 #         https://github.com/apache/incubator-pinot/issues/5975
 sed -i "s~\./~${PWD}/~g" etc/*.conf
