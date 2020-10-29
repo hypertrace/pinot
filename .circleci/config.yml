@@ -6,9 +6,15 @@ executors:
       # This image isn't used to build Java project, rather to invoke Docker with Gradle.
       # The version of Docker on cimg/openjdk tends to be slightly behind cimg/base.
       - image: cimg/openjdk:14.0.2
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
   helm:
     docker:
       - image: hypertrace/helm-gcs-packager:0.3.0
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
 
 commands:
   gradle:
@@ -46,6 +52,9 @@ commands:
               sudo systemctl daemon-reload
               sudo systemctl restart docker.service
             EOF
+      - run:
+          name: Dockerhub login
+          command: echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
   save_populated_cache:
     description: "Save the gradle binary to the cache so it doesn't have to redownload"
     steps:
@@ -135,10 +144,16 @@ workflows:
   version: 2
   build-and-publish:
     jobs:
-      - build
-      - validate-charts
+      - build:
+          context:
+            - dockerhub-read
+      - validate-charts:
+          context:
+            - dockerhub-read
       - merge-publish:
-          context: hypertrace-publishing
+          context:
+            - hypertrace-publishing
+            - dockerhub-read
           requires:
             - build
             - validate-charts
@@ -147,14 +162,18 @@ workflows:
               only:
                 - main
       - release-publish:
-          context: hypertrace-publishing
+          context:
+            - hypertrace-publishing
+            - dockerhub-read
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^release-.*/
       - release-charts:
-          context: hypertrace-publishing
+          context:
+            - hypertrace-publishing
+            - dockerhub-read
           requires:
             - release-publish
           filters:
