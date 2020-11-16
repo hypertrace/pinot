@@ -35,7 +35,7 @@ public class HypertraceScalarFunctions {
 
   @ScalarFunction(name = CONDITIONAL_FUNCTION_NAME)
   public static String conditional(String condition, String s1, String s2) {
-    Boolean conditionBooleanVal = Boolean.getBoolean(condition);
+    Boolean conditionBooleanVal = NULL_STRING.equals(condition) ? null : Boolean.parseBoolean(condition);
     return replaceNullWithNullString(Conditional.getValue(conditionBooleanVal, s1, s2));
   }
 
