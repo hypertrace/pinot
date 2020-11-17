@@ -33,7 +33,7 @@ public class HypertraceScalarFunctionsTest {
     assertEquals("foo", HypertraceScalarFunctions.conditional("TRuE", "foo", "bar"));
     assertEquals("bar", HypertraceScalarFunctions.conditional("FALSE", "foo", "bar"));
     assertEquals("null", HypertraceScalarFunctions.conditional("null", "foo", "bar"));
-    assertEquals("bar", HypertraceScalarFunctions.conditional(null, "foo", "bar"));
+    assertEquals("null", HypertraceScalarFunctions.conditional(null, "foo", "bar"));
     assertEquals("null", HypertraceScalarFunctions.conditional("false", "foo", null));
   }
 }

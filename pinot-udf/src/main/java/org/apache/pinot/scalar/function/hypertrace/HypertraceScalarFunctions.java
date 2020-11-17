@@ -35,7 +35,10 @@ public class HypertraceScalarFunctions {
 
   @ScalarFunction(name = CONDITIONAL_FUNCTION_NAME)
   public static String conditional(String condition, String s1, String s2) {
-    Boolean conditionBooleanVal = NULL_STRING.equals(condition) ? null : Boolean.parseBoolean(condition);
+    // Pinot should never pass in a null condition but in case it does, make sure that it behaves
+    // the same as passing in "null" condition.
+    Boolean conditionBooleanVal = NULL_STRING.equals(replaceNullWithNullString(condition)) ?
+        null : Boolean.parseBoolean(condition);
     return replaceNullWithNullString(Conditional.getValue(conditionBooleanVal, s1, s2));
   }
 
