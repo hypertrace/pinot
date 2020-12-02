@@ -2,7 +2,7 @@ package org.apache.pinot.scalar.function.hypertrace;
 
 import static java.util.Objects.isNull;
 
-import org.apache.pinot.common.function.annotations.ScalarFunction;
+import org.apache.pinot.spi.annotations.ScalarFunction;
 import org.hypertrace.core.attribute.service.projection.functions.Conditional;
 import org.hypertrace.core.attribute.service.projection.functions.DefaultValue;
 import org.hypertrace.core.attribute.service.projection.functions.Equals;

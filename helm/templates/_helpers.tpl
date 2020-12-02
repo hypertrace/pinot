@@ -73,6 +73,13 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" (include "pinot.fullname" .) .Values.broker.name }}
 {{- end -}}
 
+{{/*
+Create a default fully qualified pinot minion name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "pinot.minion.fullname" -}}
+{{- printf "%s-%s" (include "pinot.fullname" .) .Values.minion.name }}
+{{- end -}}
 
 {{/*
 Create a default fully qualified pinot server name.
@@ -97,6 +104,13 @@ The name of the pinot broker headless service.
 {{- end -}}
 
 {{/*
+The name of the pinot minion headless service.
+*/}}
+{{- define "pinot.minion.headless" -}}
+{{- printf "%s-headless" (include "pinot.minion.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 The name of the pinot server headless service.
 */}}
 {{- define "pinot.server.headless" -}}
@@ -117,6 +131,12 @@ The name of the pinot broker external service.
 {{- printf "%s-external" (include "pinot.broker.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+The name of the pinot minion external service.
+*/}}
+{{- define "pinot.minion.external" -}}
+{{- printf "%s-external" (include "pinot.minion.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 
 {{/*
 Create the name of the service account to use
@@ -137,6 +157,17 @@ Create the name of the service account to use
 {{ default (include "pinot.broker.fullname" .) .Values.broker.serviceAccount.name }}
 {{- else -}}
 {{ default "default" .Values.broker.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "pinot.minion.serviceAccountName" -}}
+{{- if .Values.minion.serviceAccount.create -}}
+{{ default (include "pinot.minion.fullname" .) .Values.minion.serviceAccount.name }}
+{{- else -}}
+{{ default "default" .Values.minion.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 
@@ -185,7 +216,7 @@ Docker image to use for service manager
 {{- end -}}
 
 {{/*
-Docker image to use for controller, broker and server
+Docker image to use for controller, broker, minion and server
 */}}
 {{- define "pinot.image" -}}
   {{- if and .Values.image.tagOverride  -}}
