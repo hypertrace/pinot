@@ -462,10 +462,6 @@ servicemanager:
   enabled: false
   port: 9090
   replicaCount: 1
-  image:
-    repository: apachepinot/pinot
-    tag: 0.5.0-SNAPSHOT-01cdc55f5-20200617
-    sha256: 332c6d7052a2e2f045513647b4bea2119a881718e5e4bbb34100af4761af5137
 
   persistence:
     enabled: true

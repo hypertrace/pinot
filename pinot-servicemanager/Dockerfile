@@ -5,10 +5,7 @@ FROM cimg/openjdk:14.0.2 AS install
 
 # Override to build an image from a fork. Ex. kotharironak
 ARG JITPACK_USER=apache
-# Override to use a different expression, such as 'master-SNAPSHOT'
-#   Note: 0.5.0 does not have parallel start (PR 5917): 21a372b2f58f9c6e27fe9710d6952ed519342061
-#   Note: See "Warning on versions" in README before upgrading version
-ARG JITPACK_TAG=1c4fc13169ff3ed8cab3a2ddcdd15270e07d74fc
+ARG JITPACK_TAG=bb646baceafcd9b849a1ecdec7a11203c7027e21
 
 USER root
 WORKDIR /install

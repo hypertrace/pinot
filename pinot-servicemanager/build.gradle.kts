@@ -14,6 +14,7 @@ val plugins by configurations.creating
 
 dependencies {
   plugins(project(":pinot-udf"))
+  plugins(project(":pinot-minion-tasks"))
   plugins(project(":pinot-avro-serde"))
 }
 
