@@ -1,4 +1,4 @@
-{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PrometheusRules" }}
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PrometheusRule" }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
