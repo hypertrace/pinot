@@ -255,9 +255,6 @@ minion:
   log4j2ConfFile: /opt/pinot/conf/pinot-minion-log4j2.xml
   pluginsDir: /opt/pinot/plugins
 
-  routingTable:
-    builderClass: random
-
   service:
     annotations: {}
     clusterIP: ""
