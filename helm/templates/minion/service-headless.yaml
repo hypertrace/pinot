@@ -1,0 +1,20 @@
+{{- if .Values.minion.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pinot.minion.fullname" . }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.minion.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  clusterIP: None
+  ports:
+    - port: {{ .Values.minion.service.port }}
+  selector:
+    app: {{ include "pinot.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.minion.name }}
+{{- end }}

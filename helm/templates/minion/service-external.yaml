@@ -1,0 +1,21 @@
+{{- if and .Values.minion.enabled .Values.minion.external.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pinot.minion.external" . }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.minion.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.minion.external.type }}
+  ports:
+    - name: external-minion
+      port: {{ .Values.minion.external.port }}
+  selector:
+    app: {{ include "pinot.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.minion.name }}
+{{- end }}

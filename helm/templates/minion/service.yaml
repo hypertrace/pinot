@@ -1,0 +1,25 @@
+{{- if .Values.minion.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pinot.minion.fullname" . }}-svc
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.minion.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: request
+      port: {{ .Values.minion.service.port }}
+    {{- if .Values.minion.prometheus.jmx.enabled }}
+    - name: prometheus-jmx
+      port: {{ .Values.minion.prometheus.jmx.port }}
+    {{- end }}
+  selector:
+    app: {{ include "pinot.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.minion.name }}
+{{- end }}

@@ -242,6 +242,104 @@ broker:
   logging:
     level: info
 
+minion:
+  name: minion
+  enabled: true
+  port: 9514
+  replicaCount: 1
+
+  timeoutMs: 60000
+
+  jvmOpts: "-Xms128M -Xmx320M"
+
+  log4j2ConfFile: /opt/pinot/conf/pinot-minion-log4j2.xml
+  pluginsDir: /opt/pinot/plugins
+
+  service:
+    annotations: {}
+    clusterIP: ""
+    externalIPs: []
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    type: ClusterIP
+    port: 9514
+    nodePort: ""
+
+  external:
+    enabled: false
+    type: LoadBalancer
+    port: 9514
+
+  resources:
+    requests:
+      cpu: "0.1"
+      memory: 400Mi
+
+  podLabels: {}
+
+  podAnnotations: {}
+
+  updateStrategy:
+    type: RollingUpdate
+
+  livenessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+
+  readinessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+
+  nodeSelector: {}
+
+  affinity: {}
+
+  tolerations: []
+
+  securityContext: {}
+
+  serviceAccount:
+    create: true
+    name: ""
+
+  terminationGracePeriodSeconds: 30
+
+  servicemonitor:
+    enabled: false
+    interval: 15s
+    secure: false
+    tlsConfig: {}
+
+  podDisruptionBudget:
+    enabled: false
+    maxUnavailable: 1
+    minAvailable: ""
+
+  jmx:
+    enabled: false
+    port: 7022
+    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7022 -Dcom.sun.management.jmxremote.rmi.port=7022 -Djava.rmi.server.hostname=127.0.0.1"
+
+  prometheus:
+    jmx:
+      enabled: false
+      port: 7071
+      image:
+        repository: solsson/kafka-prometheus-jmx-exporter@sha256
+        tag: 6f82e2b0464f50da8104acd7363fb9b995001ddff77d248379f8788e78946143
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: "0.25"
+          memory: "256Mi"
+
+  logging:
+    level: info
+
 server:
   name: server
   enabled: true
@@ -361,10 +459,6 @@ servicemanager:
   enabled: false
   port: 9090
   replicaCount: 1
-  image:
-    repository: apachepinot/pinot
-    tag: 0.5.0-SNAPSHOT-01cdc55f5-20200617
-    sha256: 332c6d7052a2e2f045513647b4bea2119a881718e5e4bbb34100af4761af5137
 
   persistence:
     enabled: true

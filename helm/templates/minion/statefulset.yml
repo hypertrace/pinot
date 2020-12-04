@@ -1,0 +1,137 @@
+{{- if .Values.minion.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "pinot.minion.fullname" . }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.minion.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "pinot.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.minion.name }}
+  serviceName: {{ include "pinot.minion.fullname" . }}
+  replicas: {{ .Values.minion.replicaCount }}
+  updateStrategy:
+    type: {{ .Values.minion.updateStrategy.type }}
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: {{ include "pinot.name" . }}
+        release: {{ .Release.Name }}
+        component: {{ .Values.minion.name }}
+      {{- with .Values.minion.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      annotations:
+        {{- toYaml .Values.minion.podAnnotations | nindent 8 }}
+    spec:
+      containers:
+        - name: pinot-minion
+          image: {{ include "pinot.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: [
+            "StartMinion",
+            "-clusterName", "{{ .Values.cluster.name }}",
+            "-zkAddress", {{ include "zookeeper.path" . | quote }},
+            "-configFileName", "/var/pinot/minion/config/pinot-minion.conf"
+          ]
+          env:
+            - name: JAVA_OPTS
+              value: "{{ .Values.minion.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.minion.log4j2ConfFile }} -Dplugins.dir={{ .Values.minion.pluginsDir }} {{ if .Values.minion.jmx.enabled }}{{ .Values.minion.jmx.opts }}{{ end }}"
+          ports:
+            - name: request
+              containerPort: {{ .Values.minion.port }}
+              protocol: TCP
+            {{- if .Values.minion.jmx.enabled }}
+            - name: jmx
+              containerPort: {{ .Values.minion.jmx.port }}
+              protocol: TCP
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /var/pinot/minion/config
+            - name: log-config
+              mountPath: /opt/pinot/conf/pinot-minion-log4j2.xml
+              subPath: "pinot-minion-log4j2.xml"
+#          livenessProbe:
+#            httpGet:
+#              path: /health
+#              port: {{ .Values.minion.port }}
+#            initialDelaySeconds: {{ .Values.minion.livenessProbe.initialDelaySeconds }}
+#            periodSeconds: {{ .Values.minion.livenessProbe.periodSeconds }}
+#            timeoutSeconds: {{ .Values.minion.livenessProbe.timeoutSeconds }}
+#            failureThreshold: {{ .Values.minion.livenessProbe.failureThreshold }}
+#          readinessProbe:
+#            httpGet:
+#              path: /health
+#              port: {{ .Values.minion.port }}
+#            initialDelaySeconds: {{ .Values.minion.readinessProbe.initialDelaySeconds }}
+#            periodSeconds: {{ .Values.minion.readinessProbe.periodSeconds }}
+#            timeoutSeconds: {{ .Values.minion.readinessProbe.timeoutSeconds }}
+#            failureThreshold: {{ .Values.minion.readinessProbe.failureThreshold }}
+          resources:
+            {{- toYaml .Values.minion.resources | nindent 12 }}
+        {{- if .Values.minion.prometheus.jmx.enabled }}
+        - name: prometheus-jmx-exporter
+          image: "{{ .Values.minion.prometheus.jmx.image.repository }}:{{ .Values.minion.prometheus.jmx.image.tag }}"
+          imagePullPolicy: "{{ .Values.minion.prometheus.jmx.image.pullPolicy }}"
+          command:
+            - java
+            - -XX:+UnlockExperimentalVMOptions
+            - -XX:+UseCGroupMemoryLimitForHeap
+            - -XX:MaxRAMFraction=1
+            - -XshowSettings:vm
+            - -jar
+            - jmx_prometheus_httpserver.jar
+            - {{ .Values.minion.prometheus.jmx.port | quote }}
+            - /etc/jmx-config/prometheus-pinot-minion.yml
+          ports:
+            - name: prometheus-jmx
+              containerPort: {{ .Values.minion.prometheus.jmx.port }}
+          resources:
+            {{- toYaml .Values.minion.prometheus.jmx.resources | nindent 12 }}
+          volumeMounts:
+            - name: jmx-config
+              mountPath: /etc/jmx-config
+        {{- end }}
+      restartPolicy: Always
+      serviceAccountName: {{ include "pinot.minion.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.minion.terminationGracePeriodSeconds }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "pinot.minion.fullname" . }}-config
+        - name: jmx-config
+          configMap:
+            name: {{ include "pinot.minion.fullname" . }}-jmx-config
+        - name: log-config
+          configMap:
+            name: {{ include "pinot.minion.fullname" . }}-log-config
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      {{- with .Values.minion.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.minion.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.minion.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.minion.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

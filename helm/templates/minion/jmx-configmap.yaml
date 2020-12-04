@@ -1,0 +1,18 @@
+{{- if .Values.minion.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pinot.minion.fullname" . }}-jmx-config
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.minion.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  prometheus-pinot-minion.yml: |-
+    jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:{{ .Values.minion.jmx.port }}/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+{{- end }}
