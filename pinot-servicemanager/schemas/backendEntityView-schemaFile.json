@@ -109,6 +109,11 @@
     {
       "name": "caller_api_id",
       "dataType": "STRING"
+    },
+    {
+      "name": "space_ids",
+      "dataType": "STRING",
+      "singleValueField": false
     }
   ],
   "timeFieldSpec": {

@@ -38,6 +38,11 @@
       "name": "num_spans",
       "dataType": "INT",
       "defaultNullValue": 0
+    },
+    {
+      "name": "space_ids",
+      "dataType": "STRING",
+      "singleValueField": false
     }
   ],
   "timeFieldSpec": {
