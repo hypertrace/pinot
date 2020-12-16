@@ -121,6 +121,11 @@
       "name": "exception_count",
       "dataType": "INT",
       "defaultNullValue": 0
+    },
+    {
+      "name": "space_ids",
+      "dataType": "STRING",
+      "singleValueField": false
     }
   ],
   "timeFieldSpec": {

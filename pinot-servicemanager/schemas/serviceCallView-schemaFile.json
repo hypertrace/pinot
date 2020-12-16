@@ -82,6 +82,16 @@
     {
       "name": "callee_backend_name",
       "dataType": "STRING"
+    },
+    {
+      "name": "caller_space_ids",
+      "dataType": "STRING",
+      "singleValueField": false
+    },
+    {
+      "name": "callee_space_ids",
+      "dataType": "STRING",
+      "singleValueField": false
     }
   ],
   "metricFieldSpecs": [
