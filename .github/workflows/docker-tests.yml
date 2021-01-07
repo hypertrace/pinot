@@ -24,7 +24,6 @@ jobs:
           ref: ${{github.event.pull_request.head.ref}}
           repository: ${{github.event.pull_request.head.repo.full_name}}
           fetch-depth: 0
-          submodules: recursive
 
       - name: create checksum file
         uses: hypertrace/github-actions/checksum@main
@@ -42,7 +41,7 @@ jobs:
       - name: Build with Gradle
         uses: hypertrace/github-actions/gradle@main
         with: 
-          args: build dockerBuildImages
+          args: dockerBuildImages
           
       - name: Verify pinot-servicemanager image
         working-directory: ./.github/workflows/servicemanager
