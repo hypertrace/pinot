@@ -37,6 +37,10 @@ controller:
     temp:
       dir: /var/pinot/controller/data/temp
 
+  deleted:
+    segments:
+      retentionInDays: 2
+
   jvmOpts: "-Xms128M -Xmx320M"
 
   log4j2ConfFile: /opt/pinot/conf/pinot-controller-log4j2.xml
