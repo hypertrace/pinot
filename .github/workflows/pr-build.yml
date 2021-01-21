@@ -11,13 +11,14 @@ jobs:
   release-notes:
     runs-on: ubuntu-20.04
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2.3.4
-        with: 
+      - uses: actions/checkout@v2.3.4
+        with:
           fetch-depth: 0
-      - run: npx gren release --data-source=commits --override
+      - uses: lakto/gren-action@v2.0.0
         env:
-          GREN_GITHUB_TOKEN: ${{ secrets.GREN_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          options: '--data-source=commits --override'
   build:
     runs-on: ubuntu-20.04
     steps:
