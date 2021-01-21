@@ -38,6 +38,8 @@ module.exports = {
             icon = "🙈"
           } else if(placeholders.heading == 'Config'){
             icon = "⚙️"
+          } else if(placeholders.heading == 'CI'){
+            icon = "⚡"
           }
           return '\n#### ' + icon + ' ' + placeholders.heading + '\n';
         }
