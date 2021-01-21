@@ -52,5 +52,3 @@ jobs:
         with:
           fetch-depth: 0
       - uses: hypertrace/github-actions/release-notes@release-notes-action
-        with:
-          gren-github-token: ${{ secrets.GITHUB_TOKEN }}
