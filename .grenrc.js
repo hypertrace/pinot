@@ -2,7 +2,7 @@ module.exports = {
     "dataSource": "prs",
     "prefix": "",
     "onlyMilestones": false,
-    "ignoreIssuesWith": ["no-release"],
+    "ignoreIssuesWith": ["no-release", "wontfix", "question"],
     "ignoreTagsWith": ["-rc", "-alpha", "-beta", "test", "current"],
     "ignoreLabels": ["closed", "automation", "enhancement", "bug", "fix",
       "internal", "feature", "feat", "docs", "chore", "refactor", "ci",
@@ -15,7 +15,6 @@ module.exports = {
         "Config": ["config", "helm"],
         "CI": ["ci"]
     },
-    "changelogFilename": "CHANGELOG.md",
     "template": {
         commit: ({ message, url, author, name }) => `- [${message}](${url}) - ${author ? `@${author}` : name}`,
         issue: "- {{labels}} {{name}} [{{text}}]({{url}})",
@@ -33,7 +32,7 @@ module.exports = {
           } else if(placeholders.heading == 'Documentation'){
             icon = "📚"
           } else if(placeholders.heading == 'Minor Fixes'){
-            icon = "🙈"
+            icon = "❗"
           } else if(placeholders.heading == 'Config'){
             icon = "⚙️"
           } else if(placeholders.heading == 'CI'){
