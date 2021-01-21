@@ -8,6 +8,16 @@ on:
       - main
 
 jobs:
+  release-notes:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2.3.4
+        with: hypertrace/github-actions/release-notes@release-notes-action
+          fetch-depth: 0
+      - uses: 
+        with:
+          gren-github-token: ${{ secrets.GREN_GITHUB_TOKEN }}
   build:
     runs-on: ubuntu-20.04
     steps:
