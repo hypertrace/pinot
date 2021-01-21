@@ -2,13 +2,8 @@ module.exports = {
     "dataSource": "prs",
     "prefix": "",
     "onlyMilestones": false,
-    "ignoreCommitsWith": ["chore", "refactor", "style"],
-    "ignoreIssuesWith": ["no-release"],
+    "ignoreIssuesWith": ["no-release", "wontfix", "question"],
     "ignoreTagsWith": ["-rc", "-alpha", "-beta", "test", "current"],
-    "ignoreLabels": ["closed", "automation", "enhancement", "bug", "fix",
-      "internal", "feature", "feat", "docs", "chore", "refactor", "ci",
-      "perf", "test", "tests", "style", "groovy", "linux", "master", "mac", "windows",
-      "team:automation"],
     "groupBy": {
         "Enhancements": ["enhancement", "internal", "feature", "feat"],
         "Bug Fixes": ["bug", "fix"],
@@ -35,7 +30,7 @@ module.exports = {
           } else if(placeholders.heading == 'Documentation'){
             icon = "📚"
           } else if(placeholders.heading == 'Minor Fixes'){
-            icon = "🙈"
+            icon = "❗"
           } else if(placeholders.heading == 'Config'){
             icon = "⚙️"
           } else if(placeholders.heading == 'CI'){
