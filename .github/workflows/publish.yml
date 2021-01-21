@@ -80,6 +80,6 @@ jobs:
           fetch-depth: 0
       - uses: lakto/gren-changelog-action@v0.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           options: '--generate --override -c .grenrc.js --changelog-filename=RELEASE_NOTES.md'
