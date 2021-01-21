@@ -52,3 +52,5 @@ jobs:
         with:
           fetch-depth: 0
       - uses: hypertrace/github-actions/release-notes@release-notes-action
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
