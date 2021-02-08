@@ -90,4 +90,106 @@ data:
         name: "pinot_broker_exceptions_$1_$2"
       - pattern: "\"org.apache.pinot.common.metrics\"<type=\"BrokerMetrics\", name=\"pinot.broker.routingTableUpdateTime\"><>(\\w+)"
         name: "pinot_broker_routingTableUpdateTime_$1"
+      - pattern: "java.lang<name=CodeHeap 'non-nmethods', type=MemoryPool><>(\\w+)"
+        name: "java_lang_codeheap_non_nmethods_$1"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=CodeHeap 'non-nmethods', type=MemoryPool><(\\w+)>(\\w+)"
+        name: "java_lang_codeheap_non_nmethods_$1_$2"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=CodeHeap 'non-profiled nmethods', type=MemoryPool><>(\\w+)"
+        name: "java_lang_codeheap_non_profiled_nmethods_$1"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=CodeHeap 'non-profiled nmethods', type=MemoryPool><(\\w+)>(\\w+)"
+        name: "java_lang_codeheap_non_profiled_nmethods_$1_$2"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=CodeHeap 'profiled nmethods', type=MemoryPool><>(\\w+)"
+        name: "java_lang_codeheap_profiled_nmethods_$1"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=CodeHeap 'profiled nmethods', type=MemoryPool><(\\w+)>(\\w+)"
+        name: "java_lang_codeheap_profiled_nmethods_$1_$2"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=Compressed Class Space, type=MemoryPool><>(\\w+)"
+        name: "java_lang_compressed_class_space_$1"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=Compressed Class Space, type=MemoryPool><(\\w+)>(\\w+)"
+        name: "java_lang_compressed_class_space_$1_$2"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=G1 Eden Space, type=MemoryPool><>(\\w+)"
+        name: "java_lang_g1_eden_space_$1"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=G1 Eden Space, type=MemoryPool><(\\w+)>(\\w+)"
+        name: "java_lang_g1_eden_space_$1_$2"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=G1 Old Gen, type=MemoryPool><>(\\w+)"
+        name: "java_lang_g1_old_gen_$1"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=G1 Old Gen, type=MemoryPool><(\\w+)>(\\w+)"
+        name: "java_lang_g1_old_gen_$1_$2"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=G1 Survivor Space, type=MemoryPool><>(\\w+)"
+        name: "java_lang_g1_survivor_space_$1"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=G1 Survivor Space, type=MemoryPool><(\\w+)>(\\w+)"
+        name: "java_lang_g1_survivor_space_$1_$2"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=Metaspace, type=MemoryPool><>(\\w+)"
+        name: "java_lang_metaspace_$1"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=Metaspace, type=MemoryPool><(\\w+)>(\\w+)"
+        name: "java_lang_metaspace_$1_$2"
+        labels:
+          type: "MemoryPool"
+      - pattern: "java.lang<name=G1 Old Generation, type=GarbageCollector><>(\\w+)"
+        name: "java_lang_g1_old_generation_$1"
+        labels:
+          type: "GarbageCollector"
+      - pattern: "java.lang<name=G1 Young Generation, type=GarbageCollector, key=CodeHeap 'profiled nmethods'><LastGcInfo, memoryUsageAfterGc>(\\w+)"
+        name: "java_lang_g1_young_generation_lastgcinfo_memoryusageaftergc_$1"
+        labels:
+          type: "GarbageCollector"
+          key: "CodeHeap 'profiled nmethods'"
+      - pattern: "java.lang<name=G1 Young Generation, type=GarbageCollector, key=CodeHeap 'profiled nmethods'><LastGcInfo, memoryUsageBeforeGc>(\\w+)"
+        name: "java_lang_g1_young_generation_lastgcinfo_memoryusagebeforegc_$1"
+        labels:
+          type: "GarbageCollector"
+          key: "CodeHeap 'profiled nmethods'"
+      - pattern: "java.lang<name=G1 Young Generation, type=GarbageCollector><>(\\w+)"
+        name: "java_lang_g1_young_generation_$1"
+        labels:
+          type: "GarbageCollector"
+      - pattern: "java.lang<name=G1 Young Generation, type=GarbageCollector><(\\w+)>(\\w+)"
+        name: "java_lang_g1_young_generation_$1_$2"
+        labels:
+          type: "GarbageCollector"
+      - pattern: "java.lang<type=ClassLoading><>(\\w+)"
+        name: "java_lang_classloading_$1"
+      - pattern: "java.lang<type=Memory><(\\w+)>(\\w+)"
+        name: "java_lang_memory_$1_$2"
+      - pattern: "java.lang<type=OperatingSystem><>(\\w+)"
+        name: "java_lang_operatingsystem_$1"
+      - pattern: "java.lang<type=Threading><>(\\w+)"
+        name: "java_lang_threading_$1"
+      - pattern: "java.nio<name=direct, type=BufferPool><>(\\w+)"
+        name: "java_nio_direct_$1"
+        labels:
+          type: "BufferPool"
+      - pattern: "java.nio<name=mapped, type=BufferPool><>(\\w+)"
+        name: "java_nio_mapped_$1"
+        labels:
+          type: "BufferPool"
 {{- end }}
