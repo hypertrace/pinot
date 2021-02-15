@@ -126,6 +126,11 @@
       "name": "space_ids",
       "dataType": "STRING",
       "singleValueField": false
+    },
+    {
+      "name": "total_span_count",
+      "dataType": "INT",
+      "defaultNullValue": 0
     }
   ],
   "timeFieldSpec": {
