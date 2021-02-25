@@ -126,6 +126,11 @@
       "name": "space_ids",
       "dataType": "STRING",
       "singleValueField": false
+    },
+    {
+      "name": "api_exit_calls",
+      "dataType": "INT",
+      "defaultNullValue": 0
     }
   ],
   "timeFieldSpec": {
