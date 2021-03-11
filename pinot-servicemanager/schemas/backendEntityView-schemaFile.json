@@ -114,6 +114,10 @@
       "name": "space_ids",
       "dataType": "STRING",
       "singleValueField": false
+    },
+    {
+      "name": "backend_operation",
+      "dataType": "STRING"
     }
   ],
   "timeFieldSpec": {
