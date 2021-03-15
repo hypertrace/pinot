@@ -133,16 +133,16 @@
       "defaultNullValue": 0
     },
     {
-      "name": "api_exit_services__KEYS",
+      "name": "api_callee_name_count__KEYS",
       "dataType": "STRING",
       "singleValueField": false,
       "defaultNullValue": ""
     },
     {
-      "name": "api_exit_services__VALUES",
-      "dataType": "STRING",
+      "name": "api_callee_name_count__VALUES",
+      "dataType": "INT",
       "singleValueField": false,
-      "defaultNullValue": ""
+      "defaultNullValue": 0
     }
   ],
   "timeFieldSpec": {
