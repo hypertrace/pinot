@@ -140,9 +140,9 @@
     },
     {
       "name": "api_callee_name_count__VALUES",
-      "dataType": "INT",
+      "dataType": "STRING",
       "singleValueField": false,
-      "defaultNullValue": 0
+      "defaultNullValue": ""
     }
   ],
   "timeFieldSpec": {
