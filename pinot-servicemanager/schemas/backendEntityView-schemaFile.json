@@ -118,6 +118,10 @@
     {
       "name": "backend_operation",
       "dataType": "STRING"
+    }, 
+    {
+      "name": "backend_destination",
+      "dataType": "STRING"
     }
   ],
   "timeFieldSpec": {
