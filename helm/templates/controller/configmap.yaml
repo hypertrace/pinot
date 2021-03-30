@@ -30,4 +30,12 @@ data:
     pinot.controller.segment.fetcher.protocols=file,http,gs
     pinot.controller.segment.fetcher.gs.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
     {{- end }}
+    {{- if eq .Values.cluster.storage.scheme "s3" }}
+    pinot.controller.storage.factory.class.s3=org.apache.pinot.plugin.filesystem.S3PinotFS
+    pinot.controller.storage.factory.s3.region={{ .Values.cluster.storage.s3.region }}
+    controller.local.temp.dir={{ .Values.controller.local.temp.dir }}
+    pinot.controller.segment.fetcher.protocols=file,http,s3
+    pinot.controller.segment.fetcher.s3.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
+    pinot.controller.storage.factory.s3.disableAcl=false
+    {{- end }}
 {{- end }}
