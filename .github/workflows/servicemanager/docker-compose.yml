@@ -11,7 +11,7 @@ services:
           - zookeeper
   # use fixed service and container name 'sut; so our test script can copy/pasta
   sut:
-    image: hypertrace/pinot-servicemanager:test
+    image: hypertrace/pinot-servicemanager:main
     container_name: sut
     depends_on:
       kafka-zookeeper:

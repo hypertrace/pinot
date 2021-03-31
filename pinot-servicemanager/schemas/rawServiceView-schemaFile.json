@@ -67,6 +67,11 @@
     {
       "name": "api_discovery_state",
       "dataType": "STRING"
+    },
+    {
+      "name": "space_ids",
+      "dataType": "STRING",
+      "singleValueField": false
     }
   ],
   "timeFieldSpec": {

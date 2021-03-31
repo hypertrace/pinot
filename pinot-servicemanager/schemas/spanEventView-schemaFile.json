@@ -121,6 +121,28 @@
       "name": "exception_count",
       "dataType": "INT",
       "defaultNullValue": 0
+    },
+    {
+      "name": "space_ids",
+      "dataType": "STRING",
+      "singleValueField": false
+    },
+    {
+      "name": "api_exit_calls",
+      "dataType": "INT",
+      "defaultNullValue": 0
+    },
+    {
+      "name": "api_callee_name_count__KEYS",
+      "dataType": "STRING",
+      "singleValueField": false,
+      "defaultNullValue": ""
+    },
+    {
+      "name": "api_callee_name_count__VALUES",
+      "dataType": "STRING",
+      "singleValueField": false,
+      "defaultNullValue": ""
     }
   ],
   "timeFieldSpec": {

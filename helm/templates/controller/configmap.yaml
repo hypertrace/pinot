@@ -20,6 +20,7 @@ data:
     controller.zk.str={{ include "zookeeper.path" . }}
     pinot.set.instance.id.to.hostname=true
     controller.data.dir={{ .Values.controller.data.dir }}
+    controller.deleted.segments.retentionInDays={{ .Values.controller.deleted.segments.retentionInDays }}
     {{- if eq .Values.cluster.storage.scheme "gs" }}
     controller.enable.split.commit=true
     controller.local.temp.dir={{ .Values.controller.local.temp.dir }}

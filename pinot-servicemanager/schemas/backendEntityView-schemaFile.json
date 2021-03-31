@@ -109,6 +109,19 @@
     {
       "name": "caller_api_id",
       "dataType": "STRING"
+    },
+    {
+      "name": "space_ids",
+      "dataType": "STRING",
+      "singleValueField": false
+    },
+    {
+      "name": "backend_operation",
+      "dataType": "STRING"
+    }, 
+    {
+      "name": "backend_destination",
+      "dataType": "STRING"
     }
   ],
   "timeFieldSpec": {

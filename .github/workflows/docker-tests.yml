@@ -5,47 +5,44 @@ on:
       - main
     paths-ignore:
       - '**/*.md'
-  pull_request:
+  pull_request_target:
+    branches:
+      - main
+  # workflow_dispatch will let us manually trigger the workflow from GitHub actions dashboard.
+  # See https://docs.github.com/en/free-pro-team@latest/actions/managing-workflow-runs/manually-running-a-workflow 
+  workflow_dispatch:
 
 jobs:
   build-on-linux:
-    strategy:
-      matrix:
-        docker-version: [19.03]
-    runs-on: ubuntu-latest
+      # Ubuntu-20.04 runner comes with docker 19.03 and OpenJDK 11 and we are using that here. 
+    runs-on: ubuntu-20.04
     name: Build and run Docker images
     steps:
-      - name: Update Packages
-        run: sudo apt-get update -yqq --fix-missing
-      - name: Install Docker
-        uses: docker-practice/actions-setup-docker@master
-        with:
-          docker_version: ${{ matrix.docker-version }}
-          docker_buildx: false
-      - name: Cache docker
-        uses: actions/cache@v1
-        with:
-          path: ~/.docker
-          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
-          restore-keys: ${{ runner.os }}-docker
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: 10
-      - name: Install JDK
-        uses: actions/setup-java@v1
-        with:
-          java-version: 14
-      - name: Cache Gradle
-        uses: actions/cache@v1
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+          fetch-depth: 0
+
+      - name: create checksum file
+        uses: hypertrace/github-actions/checksum@main
+
+      - name: Cache packages
+        id: cache-packages
+        uses: actions/cache@v2
         with:
           path: ~/.gradle
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/build.gradle.kts') }}
-          restore-keys: ${{ runner.os }}-gradle
-      - name: Invoke Docker build with Gradle
-        uses: eskatos/gradle-command-action@v1
-        with:
-          arguments: dockerBuildImages
+          key: gradle-packages-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/checksum.txt') }}
+          restore-keys: |
+            gradle-packages-${{ runner.os }}-${{ github.job }}
+            gradle-packages-${{ runner.os }}
+            
+      - name: Build with Gradle
+        uses: hypertrace/github-actions/gradle@main
+        with: 
+          args: dockerBuildImages
+          
       - name: Verify pinot-servicemanager image
         working-directory: ./.github/workflows/servicemanager
         # Below tests a docker-compose.yml service named 'sut' with a valid HEALTHCHECK instruction:
