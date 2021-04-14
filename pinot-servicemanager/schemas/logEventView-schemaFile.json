@@ -1,0 +1,28 @@
+{
+  "schemaName": "logEventView",
+  "dimensionFieldSpecs": [
+    {
+      "name": "tenant_id",
+      "dataType": "STRING"
+    },
+    {
+      "name": "trace_id",
+      "dataType": "BYTES"
+    },
+    {
+      "name": "span_id",
+      "dataType": "BYTES"
+    },
+    {
+      "name": "attributes",
+      "dataType": "STRING"
+    }
+  ],
+  "timeFieldSpec": {
+    "incomingGranularitySpec": {
+      "name": "timestamp_nanos",
+      "dataType": "LONG",
+      "timeType": "NANOSECONDS"
+    }
+  }
+}
