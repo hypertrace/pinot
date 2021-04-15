@@ -1,6 +1,6 @@
 FROM alpine:latest AS builder
 
-ENV PINOT_VERSION=0.6.0
+ENV PINOT_VERSION=0.7.1
 
 RUN wget -qO- https://downloads.apache.org/incubator/pinot/apache-pinot-incubating-$PINOT_VERSION/apache-pinot-incubating-$PINOT_VERSION-bin.tar.gz | tar -xzf- && \
     mv apache-pinot-incubating-$PINOT_VERSION-bin /pinot && \
