@@ -32,7 +32,7 @@ jobs:
       - name: Build with Gradle
         uses: hypertrace/github-actions/gradle@main
         with: 
-          args: build dockerBuildImages
+          args: build dockerBuildImages --info --stacktrace
 
   validate-helm-charts:
     runs-on: ubuntu-20.04
