@@ -36,4 +36,20 @@ public class HypertraceScalarFunctionsTest {
     assertEquals("null", HypertraceScalarFunctions.conditional(null, "foo", "bar"));
     assertEquals("null", HypertraceScalarFunctions.conditional("false", "foo", null));
   }
+
+  @Test
+  public void testConcatOrNull() {
+    assertEquals("foobar", HypertraceScalarFunctions.concatOrNull("foo", "bar"));
+    assertEquals("null", HypertraceScalarFunctions.concatOrNull("null", "bar"));
+    assertEquals("null", HypertraceScalarFunctions.concatOrNull("bar", "null"));
+    assertEquals("null", HypertraceScalarFunctions.concatOrNull("null", "null"));
+  }
+
+  @Test
+  public void testConcatSkipNull() {
+    assertEquals("foobar", HypertraceScalarFunctions.concatSkipNull("foo", "bar"));
+    assertEquals("bar", HypertraceScalarFunctions.concatSkipNull("null", "bar"));
+    assertEquals("bar", HypertraceScalarFunctions.concatSkipNull("bar", "null"));
+    assertEquals("null", HypertraceScalarFunctions.concatSkipNull("null", "null"));
+  }
 }
