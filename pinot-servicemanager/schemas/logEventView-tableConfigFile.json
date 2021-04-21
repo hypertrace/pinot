@@ -1,0 +1,35 @@
+{
+  "tableName": "logEventView_REALTIME",
+  "tableType": "REALTIME",
+  "segmentsConfig": {
+    "schemaName": "logEventView",
+    "timeColumnName": "timestamp_nanos",
+    "timeType": "NANOSECONDS",
+    "replicasPerPartition":"1",
+    "retentionTimeValue": "5",
+    "retentionTimeUnit": "DAYS",
+    "segmentAssignmentStrategy": "BalanceNumSegmentAssignmentStrategy"
+  },
+  "tenants": {
+    "broker": "DefaultTenant",
+    "server": "DefaultTenant"
+  },
+  "tableIndexConfig": {
+    "streamConfigs": {
+      "streamType": "kafka",
+      "stream.kafka.consumer.type": "LowLevel",
+      "stream.kafka.decoder.class.name": "org.hypertrace.pinot.plugins.GenericAvroMessageDecoder",
+      "stream.kafka.hlc.zk.connect.string": "zookeeper:2181",
+      "realtime.segment.flush.threshold.size": "500000",
+      "stream.kafka.zk.broker.url": "zookeeper:2181",
+      "realtime.segment.flush.threshold.time": "3600000",
+      "stream.kafka.broker.list": "kafka:9092",
+      "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka20.KafkaConsumerFactory",
+      "stream.kafka.consumer.prop.auto.offset.reset": "largest",
+      "stream.kafka.topic.name": "log-event-view"
+    },
+    "loadMode": "MMAP"
+  },
+  "metadata": {
+  }
+}

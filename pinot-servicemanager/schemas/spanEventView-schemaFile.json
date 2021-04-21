@@ -133,6 +133,11 @@
       "defaultNullValue": 0
     },
     {
+      "name": "api_trace_error_span_count",
+      "dataType": "INT",
+      "defaultNullValue": 0
+    },
+    {
       "name": "api_callee_name_count__KEYS",
       "dataType": "STRING",
       "singleValueField": false,
