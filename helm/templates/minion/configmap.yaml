@@ -12,4 +12,19 @@ metadata:
 data:
   pinot-minion.conf: |-
     pinot.minion.port={{ .Values.minion.port }}
+    {{- if eq .Values.cluster.storage.scheme "gs" }}
+    instance.enable.split.commit=true
+    storage.factory.class.gs=org.apache.pinot.plugin.filesystem.GcsPinotFS
+    storage.factory.gs.projectId={{ .Values.cluster.storage.gs.projectId }}
+    storage.factory.gs.gcpKey={{ .Values.cluster.storage.gs.gcpKey }}
+    segment.fetcher.protocols=file,http,gs
+    segment.fetcher.gs.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
+    {{- end }}
+    {{- if eq .Values.cluster.storage.scheme "s3" }}
+    storage.factory.class.s3=org.apache.pinot.plugin.filesystem.S3PinotFS
+    storage.factory.s3.region={{ .Values.cluster.storage.s3.region }}
+    segment.fetcher.protocols=file,http,s3
+    segment.fetcher.s3.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
+    storage.factory.s3.disableAcl=false
+    {{- end }}
 {{- end }}

@@ -60,6 +60,10 @@ spec:
             - name: log-config
               mountPath: /opt/pinot/conf/pinot-minion-log4j2.xml
               subPath: "pinot-minion-log4j2.xml"
+            {{- if eq .Values.cluster.storage.scheme "gs" }}
+            - name: gcs-iam-secret
+              mountPath: "/account"
+            {{- end }}
 #          livenessProbe:
 #            httpGet:
 #              path: /health
@@ -114,6 +118,11 @@ spec:
         - name: log-config
           configMap:
             name: {{ include "pinot.minion.fullname" . }}-log-config
+        {{- if eq .Values.cluster.storage.scheme "gs" }}
+        - name: gcs-iam-secret
+          secret:
+            secretName: {{ .Values.cluster.storage.gs.secretName }}
+        {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml .Values.imagePullSecrets | nindent 8 }}
