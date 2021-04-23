@@ -16,6 +16,10 @@
     {
       "name": "attributes",
       "dataType": "STRING"
+    },
+    {
+      "name": "summary",
+      "dataType": "STRING"
     }
   ],
   "timeFieldSpec": {
