@@ -28,6 +28,7 @@
       "stream.kafka.consumer.prop.auto.offset.reset": "largest",
       "stream.kafka.topic.name": "log-event-view"
     },
+    "noDictionaryColumns": ["attributes"],
     "loadMode": "MMAP"
   },
   "metadata": {
