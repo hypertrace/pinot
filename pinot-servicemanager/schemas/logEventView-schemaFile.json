@@ -15,7 +15,8 @@
     },
     {
       "name": "attributes",
-      "dataType": "STRING"
+      "dataType": "STRING",
+      "maxLength": 5120
     },
     {
       "name": "summary",
