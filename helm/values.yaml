@@ -41,6 +41,10 @@ controller:
     segments:
       retentionInDays: 2
 
+  taskScheduler:
+    enabled: false
+    frequencyInSeconds: 3600
+
   jvmOpts: "-Xms128M -Xmx320M"
 
   log4j2ConfFile: /opt/pinot/conf/pinot-controller-log4j2.xml
