@@ -241,7 +241,7 @@
       "targets": [
         {
           "expr": "sum(pinot_controller_numberofreplicas_value) by (pod, table, tabletype) >= 0",
-          "legendFormat": "{{table}}_{{tableyype}}",
+          "legendFormat": "{{table}}_{{tabletype}}",
           "refId": "A"
         }
       ],
