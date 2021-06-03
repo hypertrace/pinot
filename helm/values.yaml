@@ -100,6 +100,7 @@ controller:
   serviceAccount:
     create: true
     name: ""
+    annotations: {}
 
   terminationGracePeriodSeconds: 60
 
@@ -215,6 +216,7 @@ broker:
   serviceAccount:
     create: true
     name: ""
+    annotations: {}
 
   terminationGracePeriodSeconds: 30
 
@@ -313,6 +315,7 @@ minion:
   serviceAccount:
     create: true
     name: ""
+    annotations: {}
 
   terminationGracePeriodSeconds: 30
 
@@ -417,6 +420,7 @@ server:
   serviceAccount:
     create: true
     name: ""
+    annotations: {}
 
   terminationGracePeriodSeconds: 60
 
