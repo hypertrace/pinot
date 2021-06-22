@@ -260,6 +260,13 @@ minion:
 
   jvmOpts: "-Xms128M -Xmx320M"
 
+  persistence:
+    enabled: false
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    mountPath: /var/pinot/minion/data
+    storageClass: "standard"
+
   log4j2ConfFile: /opt/pinot/conf/pinot-minion-log4j2.xml
   pluginsDir: /opt/pinot/plugins
 

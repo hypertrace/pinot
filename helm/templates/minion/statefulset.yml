@@ -64,6 +64,10 @@ spec:
             - name: gcs-iam-secret
               mountPath: "/account"
             {{- end }}
+            {{- if .Values.minion.persistence.enabled }}
+            - name: pinot-minion-storage
+              mountPath: "{{ .Values.minion.persistence.mountPath }}"
+            {{- end }}
 #          livenessProbe:
 #            httpGet:
 #              path: /health
@@ -143,4 +147,22 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+  {{- if .Values.minion.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: pinot-minion-storage
+      spec:
+        accessModes:
+          - {{ .Values.minion.persistence.accessMode | quote }}
+        {{- if .Values.minion.persistence.storageClass }}
+        {{- if (eq "-" .Values.minion.persistence.storageClass) }}
+        storageClassName: ""
+        {{- else }}
+        storageClassName: {{ .Values.minion.persistence.storageClass }}
+        {{- end }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.minion.persistence.size | quote}}
+  {{- end }}
 {{- end }}
