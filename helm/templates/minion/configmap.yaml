@@ -13,6 +13,9 @@ data:
   pinot-minion.conf: |-
     pinot.minion.port={{ .Values.minion.port }}
     pinot.set.instance.id.to.hostname=true
+    {{- if .Values.minion.persistence.enabled }}
+    dataDir={{ .Values.minion.persistence.mountPath }}
+    {{- end }}
     {{- if eq .Values.cluster.storage.scheme "gs" }}
     instance.enable.split.commit=true
     storage.factory.class.gs=org.apache.pinot.plugin.filesystem.GcsPinotFS
