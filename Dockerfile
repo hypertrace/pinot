@@ -2,14 +2,14 @@ FROM alpine:latest AS builder
 
 ARG PINOT_VERSION=0.7.1
 ARG JITPACK_REPO=hypertrace/incubator-pinot
-ARG JITPACK_TAG=hypertrace-0.7.1-6
+ARG JITPACK_TAG=hypertrace-0.7.1-7
 
 ENV PINOT_HOME=/opt/pinot
 
 RUN apk add --update curl
 
 # Create directory structure
-RUN curl -L https://downloads.apache.org/incubator/pinot/apache-pinot-incubating-$PINOT_VERSION/apache-pinot-incubating-$PINOT_VERSION-bin.tar.gz | tar -xzf- && \
+RUN curl -L https://downloads.apache.org/pinot/apache-pinot-incubating-$PINOT_VERSION/apache-pinot-incubating-$PINOT_VERSION-bin.tar.gz | tar -xzf- && \
     mv apache-pinot-incubating-$PINOT_VERSION-bin $PINOT_HOME && \
     rm -rf $PINOT_HOME/examples && \
     rm -rf $PINOT_HOME/lib/* && \
