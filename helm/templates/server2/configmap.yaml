@@ -28,7 +28,7 @@ data:
     pinot.query.scheduler.query_runner_threads={{ int .Values.server2.pqrThreadPoolSize }}
     {{- end }}
     {{- end }}
-    {{- if .Values.server.mountTmpFS }}
+    {{- if .Values.server2.mountTmpFS }}
     pinot.server.consumerDir=/var/tmpfs
     {{- end }}
     {{- if eq .Values.cluster.storage.scheme "gs" }}

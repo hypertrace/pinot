@@ -17,6 +17,7 @@ data:
     controller.vip.host={{ include "pinot.controller.fullname" . }}
     controller.vip.port={{ .Values.controller.service.port }}
     {{- end }}
+    controller.retention.frequencyInSeconds={{ .Values.controller.retention.frequencyInSeconds }}
     controller.task.scheduler.enabled={{ .Values.controller.taskScheduler.enabled }}
     controller.task.frequencyInSeconds={{ .Values.controller.taskScheduler.frequencyInSeconds }}
     controller.zk.str={{ include "zookeeper.path" . }}
