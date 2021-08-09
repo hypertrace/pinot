@@ -29,7 +29,7 @@ data:
     {{- end }}
     {{- end }}
     {{- if .Values.server.mountTmpFS }}
-    pinot.server.consumerDir=/var/tmpfs
+    pinot.server.instance.consumerDir=/var/tmpfs
     {{- end }}
     {{- if eq .Values.cluster.storage.scheme "gs" }}
     {{- if .Values.cluster.splitCommitEnabled }}
