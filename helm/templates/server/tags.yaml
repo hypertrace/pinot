@@ -1,0 +1,56 @@
+{{- if and .Values.server.enabled .Values.server.tags }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "pinot.server.fullname" . }}-tags
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.server.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    helm.sh/hook-weight: "100"
+    helm.sh/hook: "post-install,post-upgrade"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  activeDeadlineSeconds: 600
+  backoffLimit: 100
+  ttlSecondsAfterFinished: 900
+  template:
+    metadata:
+      name: {{ include "pinot.server.fullname" . }}-tags
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "pinot.server.serviceAccountName" . }}
+      containers:
+        - name: {{ include "pinot.server.fullname" . }}-tags
+          image: curlimages/curl:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              finish() {
+                code=$?
+                curl -s -XPOST http://127.0.0.1:15020/quitquitquit
+                exit $code
+              }
+              trap finish EXIT
+              until curl -s --head localhost:15000; do echo "$(date) waiting for sidecar"; sleep 3; done
+              until [ "$(curl -s --head --connect-timeout 3 -o /dev/null -w '%{http_code}\n' 'http://{{ include "pinot.controller.fullname" . }}-svc:{{ int .Values.controller.service.port }}/')" == "200" ]; do
+                echo "$(date) waiting for {{ include "pinot.controller.fullname" . }} service"
+                sleep 3
+              done
+              sleep 5
+
+              i=0
+              while [ $i -lt {{ int .Values.server.replicaCount }} ]; do
+                HTTP_CODE=$(curl -s -o /tmp/out -w '%{http_code}\n' -X PUT -H 'Content-Type: application/json' -H 'Accept: application/json' "http://{{ include "pinot.controller.fullname" . }}-svc:{{ int .Values.controller.service.port }}/instances/Server_{{ include "pinot.server.fullname" . }}-${i}.{{ include "pinot.server.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local_{{ int .Values.server.ports.netty }}/updateTags?tags={{ join "," .Values.server.tags }}")
+                cat /tmp/out; rm /tmp/out; echo
+                echo $HTTP_CODE
+                if [ $HTTP_CODE -lt 200 -o $HTTP_CODE -gt 299 ]; then
+                  exit 1
+                fi
+                i=$(expr $i + 1)
+              done
+{{- end }}

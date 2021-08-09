@@ -1,12 +1,12 @@
-{{- if .Values.server.enabled }}
+{{- if .Values.server2.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "pinot.server.fullname" . }}
+  name: {{ include "pinot.server2.fullname" . }}
   labels:
     app: {{ include "pinot.name" . }}
     chart: {{ include "pinot.chart" . }}
-    component: {{ .Values.server.name }}
+    component: {{ .Values.server2.name }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
@@ -14,22 +14,22 @@ spec:
     matchLabels:
       app: {{ include "pinot.name" . }}
       release: {{ .Release.Name }}
-      component: {{ .Values.server.name }}
-  serviceName: {{ include "pinot.server.fullname" . }}
-  replicas: {{ .Values.server.replicaCount }}
+      component: {{ .Values.server2.name }}
+  serviceName: {{ include "pinot.server2.fullname" . }}
+  replicas: {{ .Values.server2.replicaCount }}
   updateStrategy:
-    type: {{ .Values.server.updateStrategy.type }}
+    type: {{ .Values.server2.updateStrategy.type }}
   podManagementPolicy: Parallel
   template:
     metadata:
       labels:
         app: {{ include "pinot.name" . }}
         release: {{ .Release.Name }}
-        component: {{ .Values.server.name }}
-      {{- with .Values.server.podLabels }}
+        component: {{ .Values.server2.name }}
+      {{- with .Values.server2.podLabels }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      annotations: {{ toYaml .Values.server.podAnnotations | nindent 8 }}
+      annotations: {{ toYaml .Values.server2.podAnnotations | nindent 8 }}
     spec:
       containers:
         - name: pinot-server
@@ -43,24 +43,24 @@ spec:
           ]
           env:
             - name: JAVA_OPTS
-              value: "{{ .Values.server.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.server.log4j2ConfFile }} -Dplugins.dir={{ .Values.server.pluginsDir }}  {{ if .Values.server.jmx.enabled }}{{ .Values.server.jmx.opts }}{{ end }}"
+              value: "{{ .Values.server2.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.server2.log4j2ConfFile }} -Dplugins.dir={{ .Values.server2.pluginsDir }}  {{ if .Values.server2.jmx.enabled }}{{ .Values.server2.jmx.opts }}{{ end }}"
           ports:
             - name: request
-              containerPort: {{ .Values.server.ports.netty }}
+              containerPort: {{ .Values.server2.ports.netty }}
               protocol: TCP
             - name: admin
-              containerPort: {{ .Values.server.ports.admin }}
+              containerPort: {{ .Values.server2.ports.admin }}
               protocol: TCP
-            {{- if .Values.server.jmx.enabled }}
+            {{- if .Values.server2.jmx.enabled }}
             - name: jmx
-              containerPort: {{ .Values.server.jmx.port }}
+              containerPort: {{ .Values.server2.jmx.port }}
               protocol: TCP
             {{- end }}
           volumeMounts:
             - name: config
               mountPath: /var/pinot/server/config
             - name: pinot-server-storage
-              mountPath: "{{ .Values.server.persistence.mountPath }}"
+              mountPath: "{{ .Values.server2.persistence.mountPath }}"
             - name: log-config
               mountPath: /opt/pinot/conf/pinot-server-log4j2.xml
               subPath: "pinot-server-log4j2.xml"
@@ -68,30 +68,30 @@ spec:
             - name: gcs-iam-secret
               mountPath: "/account"
             {{- end }}
-            {{- if .Values.server.mountTmpFS }}
+            {{- if .Values.server2.mountTmpFS }}
             - name: pinot-tmpfs
               mountPath: "/var/tmpfs"
             {{- end }}
           livenessProbe:
             tcpSocket:
-              port: {{ .Values.server.ports.netty }}
-            initialDelaySeconds: {{ .Values.server.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.server.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.server.livenessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.server.livenessProbe.failureThreshold }}
+              port: {{ .Values.server2.ports.netty }}
+            initialDelaySeconds: {{ .Values.server2.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.server2.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.server2.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.server2.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
               path: /health
-              port: {{ .Values.server.ports.admin }}
-            initialDelaySeconds: {{ .Values.server.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.server.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.server.readinessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.server.readinessProbe.failureThreshold }}
-          resources: {{ toYaml .Values.server.resources | nindent 12 }}
-        {{- if .Values.server.prometheus.jmx.enabled }}
+              port: {{ .Values.server2.ports.admin }}
+            initialDelaySeconds: {{ .Values.server2.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.server2.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.server2.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.server2.readinessProbe.failureThreshold }}
+          resources: {{ toYaml .Values.server2.resources | nindent 12 }}
+        {{- if .Values.server2.prometheus.jmx.enabled }}
         - name: prometheus-jmx-exporter
-          image: "{{ .Values.server.prometheus.jmx.image.repository }}:{{ .Values.server.prometheus.jmx.image.tag }}"
-          imagePullPolicy: "{{ .Values.server.prometheus.jmx.image.pullPolicy }}"
+          image: "{{ .Values.server2.prometheus.jmx.image.repository }}:{{ .Values.server2.prometheus.jmx.image.tag }}"
+          imagePullPolicy: "{{ .Values.server2.prometheus.jmx.image.pullPolicy }}"
           command:
             - java
             - -XX:+UnlockExperimentalVMOptions
@@ -100,80 +100,80 @@ spec:
             - -XshowSettings:vm
             - -jar
             - jmx_prometheus_httpserver.jar
-            - {{ .Values.server.prometheus.jmx.port | quote }}
+            - {{ .Values.server2.prometheus.jmx.port | quote }}
             - /etc/jmx-config/prometheus-pinot-server.yml
           ports:
             - name: prometheus-jmx
-              containerPort: {{ .Values.server.prometheus.jmx.port }}
+              containerPort: {{ .Values.server2.prometheus.jmx.port }}
           resources:
-            {{- toYaml .Values.server.prometheus.jmx.resources | nindent 12 }}
+            {{- toYaml .Values.server2.prometheus.jmx.resources | nindent 12 }}
           volumeMounts:
             - name: jmx-config
               mountPath: /etc/jmx-config
         {{- end }}
       restartPolicy: Always
-      serviceAccountName: {{ include "pinot.server.serviceAccountName" . }}
-      terminationGracePeriodSeconds: {{ .Values.server.terminationGracePeriodSeconds }}
+      serviceAccountName: {{ include "pinot.server2.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.server2.terminationGracePeriodSeconds }}
       volumes:
         - name: config
           configMap:
-            name: {{ include "pinot.server.fullname" . }}-config
+            name: {{ include "pinot.server2.fullname" . }}-config
         - name: jmx-config
           configMap:
-            name: {{ include "pinot.server.fullname" . }}-jmx-config
+            name: {{ include "pinot.server2.fullname" . }}-jmx-config
         - name: log-config
           configMap:
-            name: {{ include "pinot.server.fullname" . }}-log-config
-        {{- if not .Values.server.persistence.enabled }}
+            name: {{ include "pinot.server2.fullname" . }}-log-config
+        {{- if not .Values.server2.persistence.enabled }}
         - name: pinot-server-storage
           emptyDir: {}
-        {{- end }}
-        {{- if .Values.server.mountTmpFS }}
-        - name: pinot-tmpfs
-          emptyDir:
-            medium: Memory
         {{- end }}
         {{- if eq .Values.cluster.storage.scheme "gs" }}
         - name: gcs-iam-secret
           secret:
             secretName: {{ .Values.cluster.storage.gs.secretName }}
         {{- end }}
+        {{- if .Values.server2.mountTmpFS }}
+        - name: pinot-tmpfs
+          emptyDir:
+            medium: Memory
+        {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.nodeSelector }}
+      {{- with .Values.server2.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.affinity }}
+      {{- with .Values.server2.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.tolerations }}
+      {{- with .Values.server2.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.securityContext }}
+      {{- with .Values.server2.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-  {{- if .Values.server.persistence.enabled }}
+  {{- if .Values.server2.persistence.enabled }}
   volumeClaimTemplates:
     - metadata:
         name: pinot-server-storage
       spec:
         accessModes:
-          - {{ .Values.server.persistence.accessMode | quote }}
-        {{- if .Values.server.persistence.storageClass }}
-        {{- if (eq "-" .Values.server.persistence.storageClass) }}
+          - {{ .Values.server2.persistence.accessMode | quote }}
+        {{- if .Values.server2.persistence.storageClass }}
+        {{- if (eq "-" .Values.server2.persistence.storageClass) }}
         storageClassName: ""
         {{- else }}
-        storageClassName: {{ .Values.server.persistence.storageClass }}
+        storageClassName: {{ .Values.server2.persistence.storageClass }}
         {{- end }}
         {{- end }}
         resources:
           requests:
-            storage: {{ .Values.server.persistence.size }}
+            storage: {{ .Values.server2.persistence.size }}
   {{- end }}
 {{- end }}

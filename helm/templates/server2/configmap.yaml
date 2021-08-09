@@ -1,31 +1,31 @@
-{{- if .Values.server.enabled }}
+{{- if .Values.server2.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "pinot.server.fullname" . }}-config
+  name: {{ include "pinot.server2.fullname" . }}-config
   labels:
     app: {{ include "pinot.name" . }}
     chart: {{ include "pinot.chart" . }}
-    component: {{ .Values.server.name }}
+    component: {{ .Values.server2.name }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 data:
   pinot-server.conf: |-
-    pinot.server.netty.port={{ .Values.server.ports.netty }}
-    pinot.server.adminapi.port={{ .Values.server.ports.admin }}
-    pinot.server.instance.dataDir={{ .Values.server.dataDir }}
-    pinot.server.instance.segmentTarDir={{ .Values.server.segmentTarDir }}
+    pinot.server.netty.port={{ .Values.server2.ports.netty }}
+    pinot.server.adminapi.port={{ .Values.server2.ports.admin }}
+    pinot.server.instance.dataDir={{ .Values.server2.dataDir }}
+    pinot.server.instance.segmentTarDir={{ .Values.server2.segmentTarDir }}
     pinot.set.instance.id.to.hostname=true
     pinot.server.instance.realtime.alloc.offheap=true
     pinot.server.query.executor.timeout=60000
-    {{- if hasKey .Values.server "pqwThreadPoolSize" }}
-    {{- if .Values.server.pqwThreadPoolSize }}
-    pinot.query.scheduler.query_worker_threads={{ int .Values.server.pqwThreadPoolSize }}
+    {{- if hasKey .Values.server2 "pqwThreadPoolSize" }}
+    {{- if .Values.server2.pqwThreadPoolSize }}
+    pinot.query.scheduler.query_worker_threads={{ int .Values.server2.pqwThreadPoolSize }}
     {{- end }}
     {{- end }}
-    {{- if hasKey .Values.server "pqrThreadPoolSize" }}
-    {{- if .Values.server.pqrThreadPoolSize }}
-    pinot.query.scheduler.query_runner_threads={{ int .Values.server.pqrThreadPoolSize }}
+    {{- if hasKey .Values.server2 "pqrThreadPoolSize" }}
+    {{- if .Values.server2.pqrThreadPoolSize }}
+    pinot.query.scheduler.query_runner_threads={{ int .Values.server2.pqrThreadPoolSize }}
     {{- end }}
     {{- end }}
     {{- if eq .Values.cluster.storage.scheme "gs" }}

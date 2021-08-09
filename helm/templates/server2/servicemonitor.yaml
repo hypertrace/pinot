@@ -1,0 +1,41 @@
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) ( .Values.server2.enabled ) ( .Values.server2.prometheus.jmx.enabled ) ( .Values.server2.servicemonitor.enabled ) }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "pinot.server2.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.server2.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    monitoring: shared
+spec:
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - {{ include "pinot.name" . }}
+      - key: release
+        operator: In
+        values:
+          - {{ .Release.Name }}
+      - key: component
+        operator: In
+        values:
+          - {{ .Values.server2.name }}
+  endpoints:
+    - port: prometheus-jmx
+      interval: {{ .Values.server2.servicemonitor.interval }}
+      {{- if .Values.server2.servicemonitor.secure }}
+      scheme: https
+      tlsConfig:
+        {{- toYaml .Values.server2.servicemonitor.tlsConfig | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+{{- end }}

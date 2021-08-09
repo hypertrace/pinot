@@ -1,0 +1,24 @@
+{{- if and .Values.server2.enabled .Values.server2.podDisruptionBudget.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "pinot.server2.fullname" . }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.server2.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if .Values.server2.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.server2.podDisruptionBudget.minAvailable }}
+  {{- end  }}
+  {{- if .Values.server2.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.server2.podDisruptionBudget.maxUnavailable }}
+  {{- end  }}
+  selector:
+    matchLabels:
+      app: {{ include "pinot.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.server2.name }}
+{{- end }}

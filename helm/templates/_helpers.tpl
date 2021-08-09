@@ -225,3 +225,29 @@ Docker image to use for controller, broker, minion and server
     {{- printf "%s:%s" .Values.image.repository .Chart.Version }}
   {{- end -}}
 {{- end -}}
+
+{{/*
+Create a default fully qualified pinot server2 name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "pinot.server2.fullname" -}}
+{{- printf "%s-%s" (include "pinot.fullname" .) .Values.server2.name }}
+{{- end -}}
+
+{{/*
+The name of the pinot server2 headless service.
+*/}}
+{{- define "pinot.serve2r.headless" -}}
+{{- printf "%s-headless" (include "pinot.server2.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "pinot.server2.serviceAccountName" -}}
+{{- if .Values.server2.serviceAccount.create -}}
+{{ default (include "pinot.server2.fullname" .) .Values.server2.serviceAccount.name }}
+{{- else -}}
+{{ default "default" .Values.server2.serviceAccount.name }}
+{{- end -}}
+{{- end -}}

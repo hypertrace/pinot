@@ -1,0 +1,24 @@
+{{- if .Values.server2.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pinot.server2.fullname" . }}
+  labels:
+    app: {{ include "pinot.name" . }}
+    chart: {{ include "pinot.chart" . }}
+    component: {{ .Values.server2.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: request
+      port: {{ .Values.server2.ports.netty }}
+  selector:
+    app: {{ include "pinot.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.server2.name }}
+{{- end }}
