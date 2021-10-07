@@ -1,16 +1,27 @@
-{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) ( .Values.server.enabled ) ( .Values.server.prometheus.jmx.enabled ) ( .Values.server.servicemonitor.enabled ) }}
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) ( .Values.server.enabled ) }}
+{{- range $name,$tierConfig := omit .Values.server.tiers "default" }}
+{{- $tier := mergeOverwrite (omit $.Values.server "tiers") $.Values.server.tiers.default $tierConfig }}
+{{- if and ( $tier.prometheus.jmx.enabled ) ( $tier.servicemonitor.enabled ) }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "pinot.server.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  {{- if eq $name "tier1" }}
+  name: {{ include "pinot.server.fullname" $ }}
+  {{- else }}
+  name: {{ include "pinot.server.fullname" $ }}-{{ $name }}
+  {{- end }}
+  namespace: {{ $.Release.Namespace }}
   labels:
-    app: {{ include "pinot.name" . }}
-    chart: {{ include "pinot.chart" . }}
-    component: {{ .Values.server.name }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: {{ include "pinot.name" $ }}
+    chart: {{ include "pinot.chart" $ }}
+    {{- if eq $name "tier1" }}
+    component: {{ $.Values.server.name }}
+    {{- else }}
+    component: {{ $.Values.server.name }}-{{ $name }}
+    {{- end }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
     monitoring: shared
 spec:
   selector:
@@ -18,24 +29,30 @@ spec:
       - key: app
         operator: In
         values:
-          - {{ include "pinot.name" . }}
+          - {{ include "pinot.name" $ }}
       - key: release
         operator: In
         values:
-          - {{ .Release.Name }}
+          - {{ $.Release.Name }}
       - key: component
         operator: In
         values:
-          - {{ .Values.server.name }}
+          {{- if eq $name "tier1" }}
+          - {{ $.Values.server.name }}
+          {{- else }}
+          - {{ $.Values.server.name }}-{{ $name }}
+          {{- end }}
   endpoints:
     - port: prometheus-jmx
-      interval: {{ .Values.server.servicemonitor.interval }}
-      {{- if .Values.server.servicemonitor.secure }}
+      interval: {{ $tier.servicemonitor.interval }}
+      {{- if $tier.servicemonitor.secure }}
       scheme: https
       tlsConfig:
-        {{- toYaml .Values.server.servicemonitor.tlsConfig | nindent 8 }}
+        {{- toYaml $tier.servicemonitor.tlsConfig | nindent 8 }}
       {{- end }}
   namespaceSelector:
     matchNames:
-      - {{ .Release.Namespace }}
+      - {{ $.Release.Namespace }}
+{{- end }}
+{{- end }}
 {{- end }}

@@ -1,14 +1,25 @@
 {{- if .Values.server.enabled }}
+{{- range $name,$tierConfig := omit .Values.server.tiers "default" }}
+{{- $tier := mergeOverwrite (omit $.Values.server "tiers") $.Values.server.tiers.default $tierConfig }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pinot.server.fullname" . }}
+  {{- if eq $name "tier1" }}
+  name: {{ include "pinot.server.fullname" $ }}
+  {{- else }}
+  name: {{ include "pinot.server.fullname" $ }}-{{ $name }}
+  {{- end }}
   labels:
-    app: {{ include "pinot.name" . }}
-    chart: {{ include "pinot.chart" . }}
-    component: {{ .Values.server.name }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: {{ include "pinot.name" $ }}
+    chart: {{ include "pinot.chart" $ }}
+    {{- if eq $name "tier1" }}
+    component: {{ $.Values.server.name }}
+    {{- else }}
+    component: {{ $.Values.server.name }}-{{ $name }}
+    {{- end }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
@@ -16,9 +27,14 @@ spec:
   publishNotReadyAddresses: true
   ports:
     - name: request
-      port: {{ .Values.server.ports.netty }}
+      port: {{ $tier.ports.netty }}
   selector:
-    app: {{ include "pinot.name" . }}
-    release: {{ .Release.Name }}
-    component: {{ .Values.server.name }}
+    app: {{ include "pinot.name" $ }}
+    release: {{ $.Release.Name }}
+    {{- if eq $name "tier1" }}
+    component: {{ $.Values.server.name }}
+    {{- else }}
+    component: {{ $.Values.server.name }}-{{ $name }}
+    {{- end }}
+{{- end }}
 {{- end }}

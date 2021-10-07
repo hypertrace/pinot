@@ -1,39 +1,61 @@
 {{- if .Values.server.enabled }}
+{{- range $name,$tierConfig := omit .Values.server.tiers "default" }}
+{{- $tier := mergeOverwrite (omit $.Values.server "tiers") $.Values.server.tiers.default $tierConfig }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "pinot.server.fullname" . }}-config
+  {{- if eq $name "tier1" }}
+  name: {{ include "pinot.server.fullname" $ }}-config
+  {{- else }}
+  name: {{ include "pinot.server.fullname" $ }}-{{ $name }}-config
+  {{- end }}
   labels:
-    app: {{ include "pinot.name" . }}
-    chart: {{ include "pinot.chart" . }}
-    component: {{ .Values.server.name }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: {{ include "pinot.name" $ }}
+    chart: {{ include "pinot.chart" $ }}
+    {{- if eq $name "tier1" }}
+    component: {{ $.Values.server.name }}
+    {{- else }}
+    component: {{ $.Values.server.name }}-{{ $name }}
+    {{- end }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
 data:
   pinot-server.conf: |-
-    pinot.server.netty.port={{ .Values.server.ports.netty }}
-    pinot.server.adminapi.port={{ .Values.server.ports.admin }}
-    pinot.server.instance.dataDir={{ .Values.server.dataDir }}
-    pinot.server.instance.segmentTarDir={{ .Values.server.segmentTarDir }}
+    pinot.server.netty.port={{ $tier.ports.netty }}
+    pinot.server.adminapi.port={{ $tier.ports.admin }}
+    pinot.server.instance.dataDir={{ $tier.dataDir }}
+    pinot.server.instance.segmentTarDir={{ $tier.segmentTarDir }}
     pinot.set.instance.id.to.hostname=true
     pinot.server.instance.realtime.alloc.offheap=true
     pinot.server.query.executor.timeout=60000
-    {{- if eq .Values.cluster.storage.scheme "gs" }}
-    {{- if .Values.cluster.splitCommitEnabled }}
+    {{- if hasKey $tier "queryWorkerThreadPoolSize" }}
+    {{- if $tier.queryWorkerThreadPoolSize }}
+    pinot.query.scheduler.query_worker_threads={{ int $tier.queryWorkerThreadPoolSize }}
+    {{- end }}
+    {{- end }}
+    {{- if hasKey $tier "queryRunnerThreadPoolSize" }}
+    {{- if $tier.queryRunnerThreadPoolSize }}
+    pinot.query.scheduler.query_runner_threads={{ int $tier.queryRunnerThreadPoolSize }}
+    {{- end }}
+    {{- end }}
+    {{- if eq $.Values.cluster.storage.scheme "gs" }}
+    {{- if $.Values.cluster.splitCommitEnabled }}
     pinot.server.instance.enable.split.commit=true
-    pinot.server.instance.segment.store.uri={{ .Values.controller.data.dir }}
+    pinot.server.instance.segment.store.uri={{ $.Values.controller.data.dir }}
     {{- end }}
     pinot.server.storage.factory.class.gs=org.apache.pinot.plugin.filesystem.GcsPinotFS
-    pinot.server.storage.factory.gs.projectId={{ .Values.cluster.storage.gs.projectId }}
-    pinot.server.storage.factory.gs.gcpKey={{ .Values.cluster.storage.gs.gcpKey }}
+    pinot.server.storage.factory.gs.projectId={{ $.Values.cluster.storage.gs.projectId }}
+    pinot.server.storage.factory.gs.gcpKey={{ $.Values.cluster.storage.gs.gcpKey }}
     pinot.server.segment.fetcher.protocols=file,http,gs
     pinot.server.segment.fetcher.gs.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
     {{- end }}
-    {{- if eq .Values.cluster.storage.scheme "s3" }}
+    {{- if eq $.Values.cluster.storage.scheme "s3" }}
     pinot.server.storage.factory.class.s3=org.apache.pinot.plugin.filesystem.S3PinotFS
-    pinot.server.storage.factory.s3.region={{ .Values.cluster.storage.s3.region }}
+    pinot.server.storage.factory.s3.region={{ $.Values.cluster.storage.s3.region }}
     pinot.server.segment.fetcher.protocols=file,http,s3
     pinot.server.segment.fetcher.s3.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
     pinot.controller.storage.factory.s3.disableAcl=false
     {{- end }}
+{{- end }}
 {{- end }}

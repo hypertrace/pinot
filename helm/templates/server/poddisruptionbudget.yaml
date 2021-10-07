@@ -1,24 +1,42 @@
-{{- if and .Values.server.enabled .Values.server.podDisruptionBudget.enabled }}
+{{- if .Values.server.enabled }}
+{{- range $name,$tierConfig := omit .Values.server.tiers "default" }}
+{{- $tier := mergeOverwrite (omit $.Values.server "tiers") $.Values.server.tiers.default $tierConfig }}
+{{- if $tier.podDisruptionBudget.enabled }}
+---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "pinot.server.fullname" . }}
+  {{- if eq $name "tier1" }}
+  name: {{ include "pinot.server.fullname" $ }}
+  {{- else }}
+  name: {{ include "pinot.server.fullname" $ }}-{{ $name }}
+  {{- end }}
   labels:
-    app: {{ include "pinot.name" . }}
-    chart: {{ include "pinot.chart" . }}
-    component: {{ .Values.server.name }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: {{ include "pinot.name" $ }}
+    chart: {{ include "pinot.chart" $ }}
+    {{- if eq $name "tier1" }}
+    component: {{ $.Values.server.name }}
+    {{- else }}
+    component: {{ $.Values.server.name }}-{{ $name }}
+    {{- end }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
 spec:
-  {{- if .Values.server.podDisruptionBudget.minAvailable }}
-  minAvailable: {{ .Values.server.podDisruptionBudget.minAvailable }}
+  {{- if $tier.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ $tier.podDisruptionBudget.minAvailable }}
   {{- end  }}
-  {{- if .Values.server.podDisruptionBudget.maxUnavailable }}
-  maxUnavailable: {{ .Values.server.podDisruptionBudget.maxUnavailable }}
+  {{- if $tier.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ $tier.podDisruptionBudget.maxUnavailable }}
   {{- end  }}
   selector:
     matchLabels:
-      app: {{ include "pinot.name" . }}
-      release: {{ .Release.Name }}
-      component: {{ .Values.server.name }}
+      app: {{ include "pinot.name" $ }}
+      release: {{ $.Release.Name }}
+      {{- if eq $name "tier1" }}
+      component: {{ $.Values.server.name }}
+      {{- else }}
+      component: {{ $.Values.server.name }}-{{ $name }}
+      {{- end }}
+{{- end }}
+{{- end }}
 {{- end }}

@@ -474,6 +474,10 @@ server:
   logging:
     level: info
 
+  tiers:
+    default: {}
+    tier1: {}
+
 servicemanager:
   name: servicemanager
   enabled: false

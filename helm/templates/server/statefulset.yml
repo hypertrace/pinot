@@ -1,93 +1,116 @@
 {{- if .Values.server.enabled }}
+{{- range $name,$tierConfig := omit .Values.server.tiers "default" }}
+{{- $tier := mergeOverwrite (omit $.Values.server "tiers") $.Values.server.tiers.default $tierConfig }}
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "pinot.server.fullname" . }}
+  {{- if eq $name "tier1" }}
+  name: {{ include "pinot.server.fullname" $ }}
+  {{- else }}
+  name: {{ include "pinot.server.fullname" $ }}-{{ $name }}
+  {{- end }}
   labels:
-    app: {{ include "pinot.name" . }}
-    chart: {{ include "pinot.chart" . }}
-    component: {{ .Values.server.name }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: {{ include "pinot.name" $ }}
+    chart: {{ include "pinot.chart" $ }}
+    {{- if eq $name "tier1" }}
+    component: {{ $.Values.server.name }}
+    {{- else }}
+    component: {{ $.Values.server.name }}-{{ $name }}
+    {{- end }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
 spec:
   selector:
     matchLabels:
-      app: {{ include "pinot.name" . }}
-      release: {{ .Release.Name }}
-      component: {{ .Values.server.name }}
-  serviceName: {{ include "pinot.server.fullname" . }}
-  replicas: {{ .Values.server.replicaCount }}
+      app: {{ include "pinot.name" $ }}
+      release: {{ $.Release.Name }}
+      {{- if eq $name "tier1" }}
+      component: {{ $.Values.server.name }}
+      {{- else }}
+      component: {{ $.Values.server.name }}-{{ $name }}
+      {{- end }}
+  {{- if eq $name "tier1" }}
+  serviceName: {{ include "pinot.server.fullname" $ }}
+  {{- else }}
+  serviceName: {{ include "pinot.server.fullname" $ }}-{{ $name }}
+  {{- end }}
+  replicas: {{ $tier.replicaCount }}
   updateStrategy:
-    type: {{ .Values.server.updateStrategy.type }}
+    type: {{ $tier.updateStrategy.type }}
   podManagementPolicy: Parallel
   template:
     metadata:
       labels:
-        app: {{ include "pinot.name" . }}
-        release: {{ .Release.Name }}
-        component: {{ .Values.server.name }}
-      {{- with .Values.server.podLabels }}
+        app: {{ include "pinot.name" $ }}
+        release: {{ $.Release.Name }}
+        {{- if eq $name "tier1" }}
+        component: {{ $.Values.server.name }}
+        {{- else }}
+        component: {{ $.Values.server.name }}-{{ $name }}
+        {{- end }}
+      {{- with $tier.podLabels }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      annotations: {{ toYaml .Values.server.podAnnotations | nindent 8 }}
+      annotations: {{ toYaml $tier.podAnnotations | nindent 8 }}
     spec:
       containers:
         - name: pinot-server
-          image: {{ include "pinot.image" . }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ include "pinot.image" $ }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
           args: [
             "StartServer",
-            "-clusterName", "{{ .Values.cluster.name }}",
-            "-zkAddress", {{ include "zookeeper.path" . | quote }},
+            "-clusterName", "{{ $.Values.cluster.name }}",
+            "-zkAddress", {{ include "zookeeper.path" $ | quote }},
             "-configFileName", "/var/pinot/server/config/pinot-server.conf"
           ]
           env:
             - name: JAVA_OPTS
-              value: "{{ .Values.server.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.server.log4j2ConfFile }} -Dplugins.dir={{ .Values.server.pluginsDir }}  {{ if .Values.server.jmx.enabled }}{{ .Values.server.jmx.opts }}{{ end }}"
+              value: "{{ $tier.jvmOpts }} -Dlog4j2.configurationFile={{ $tier.log4j2ConfFile }} -Dplugins.dir={{ $tier.pluginsDir }}  {{ if $tier.jmx.enabled }}{{ $tier.jmx.opts }}{{ end }}"
           ports:
             - name: request
-              containerPort: {{ .Values.server.ports.netty }}
+              containerPort: {{ $tier.ports.netty }}
               protocol: TCP
             - name: admin
-              containerPort: {{ .Values.server.ports.admin }}
+              containerPort: {{ $tier.ports.admin }}
               protocol: TCP
-            {{- if .Values.server.jmx.enabled }}
+            {{- if $tier.jmx.enabled }}
             - name: jmx
-              containerPort: {{ .Values.server.jmx.port }}
+              containerPort: {{ $tier.jmx.port }}
               protocol: TCP
             {{- end }}
           volumeMounts:
             - name: config
               mountPath: /var/pinot/server/config
             - name: pinot-server-storage
-              mountPath: "{{ .Values.server.persistence.mountPath }}"
+              mountPath: "{{ $tier.persistence.mountPath }}"
             - name: log-config
               mountPath: /opt/pinot/conf/pinot-server-log4j2.xml
               subPath: "pinot-server-log4j2.xml"
-            {{- if eq .Values.cluster.storage.scheme "gs" }}
+            {{- if eq $.Values.cluster.storage.scheme "gs" }}
             - name: gcs-iam-secret
               mountPath: "/account"
             {{- end }}
           livenessProbe:
             tcpSocket:
-              port: {{ .Values.server.ports.netty }}
-            initialDelaySeconds: {{ .Values.server.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.server.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.server.livenessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.server.livenessProbe.failureThreshold }}
+              port: {{ $tier.ports.netty }}
+            initialDelaySeconds: {{ $tier.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $tier.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ $tier.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ $tier.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
               path: /health
-              port: {{ .Values.server.ports.admin }}
-            initialDelaySeconds: {{ .Values.server.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.server.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.server.readinessProbe.timeoutSeconds }}
-            failureThreshold: {{ .Values.server.readinessProbe.failureThreshold }}
-          resources: {{ toYaml .Values.server.resources | nindent 12 }}
-        {{- if .Values.server.prometheus.jmx.enabled }}
+              port: {{ $tier.ports.admin }}
+            initialDelaySeconds: {{ $tier.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $tier.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ $tier.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ $tier.readinessProbe.failureThreshold }}
+          resources: {{ toYaml $tier.resources | nindent 12 }}
+        {{- if $tier.prometheus.jmx.enabled }}
         - name: prometheus-jmx-exporter
-          image: "{{ .Values.server.prometheus.jmx.image.repository }}:{{ .Values.server.prometheus.jmx.image.tag }}"
-          imagePullPolicy: "{{ .Values.server.prometheus.jmx.image.pullPolicy }}"
+          image: "{{ $tier.prometheus.jmx.image.repository }}:{{ $tier.prometheus.jmx.image.tag }}"
+          imagePullPolicy: "{{ $tier.prometheus.jmx.image.pullPolicy }}"
           command:
             - java
             - -XX:+UnlockExperimentalVMOptions
@@ -96,75 +119,80 @@ spec:
             - -XshowSettings:vm
             - -jar
             - jmx_prometheus_httpserver.jar
-            - {{ .Values.server.prometheus.jmx.port | quote }}
+            - {{ $tier.prometheus.jmx.port | quote }}
             - /etc/jmx-config/prometheus-pinot-server.yml
           ports:
             - name: prometheus-jmx
-              containerPort: {{ .Values.server.prometheus.jmx.port }}
+              containerPort: {{ $tier.prometheus.jmx.port }}
           resources:
-            {{- toYaml .Values.server.prometheus.jmx.resources | nindent 12 }}
+            {{- toYaml $tier.prometheus.jmx.resources | nindent 12 }}
           volumeMounts:
             - name: jmx-config
               mountPath: /etc/jmx-config
         {{- end }}
       restartPolicy: Always
-      serviceAccountName: {{ include "pinot.server.serviceAccountName" . }}
-      terminationGracePeriodSeconds: {{ .Values.server.terminationGracePeriodSeconds }}
+      serviceAccountName: {{ include "pinot.server.serviceAccountName" $ }}
+      terminationGracePeriodSeconds: {{ $tier.terminationGracePeriodSeconds }}
       volumes:
         - name: config
           configMap:
-            name: {{ include "pinot.server.fullname" . }}-config
+            {{- if eq $name "tier1" }}
+            name: {{ include "pinot.server.fullname" $ }}-config
+            {{- else }}
+            name: {{ include "pinot.server.fullname" $ }}-{{ $name }}-config
+            {{- end }}
         - name: jmx-config
           configMap:
-            name: {{ include "pinot.server.fullname" . }}-jmx-config
+            name: {{ include "pinot.server.fullname" $ }}-jmx-config
         - name: log-config
           configMap:
-            name: {{ include "pinot.server.fullname" . }}-log-config
-        {{- if not .Values.server.persistence.enabled }}
+            name: {{ include "pinot.server.fullname" $ }}-log-config
+        {{- if not $tier.persistence.enabled }}
         - name: pinot-server-storage
           emptyDir: {}
         {{- end }}
-        {{- if eq .Values.cluster.storage.scheme "gs" }}
+        {{- if eq $.Values.cluster.storage.scheme "gs" }}
         - name: gcs-iam-secret
           secret:
-            secretName: {{ .Values.cluster.storage.gs.secretName }}
+            secretName: {{ $.Values.cluster.storage.gs.secretName }}
         {{- end }}
-      {{- if .Values.imagePullSecrets }}
+      {{- if $.Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+        {{- toYaml $.Values.imagePullSecrets | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.nodeSelector }}
+      {{- with $tier.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.affinity }}
+      {{- with $tier.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.tolerations }}
+      {{- with $tier.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.securityContext }}
+      {{- with $tier.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-  {{- if .Values.server.persistence.enabled }}
+  {{- if $tier.persistence.enabled }}
   volumeClaimTemplates:
     - metadata:
         name: pinot-server-storage
       spec:
         accessModes:
-          - {{ .Values.server.persistence.accessMode | quote }}
-        {{- if .Values.server.persistence.storageClass }}
-        {{- if (eq "-" .Values.server.persistence.storageClass) }}
+          - {{ $tier.persistence.accessMode | quote }}
+        {{- if $tier.persistence.storageClass }}
+        {{- if (eq "-" $tier.persistence.storageClass) }}
         storageClassName: ""
         {{- else }}
-        storageClassName: {{ .Values.server.persistence.storageClass }}
+        storageClassName: {{ $tier.persistence.storageClass }}
         {{- end }}
         {{- end }}
         resources:
           requests:
-            storage: {{ .Values.server.persistence.size }}
+            storage: {{ $tier.persistence.size }}
   {{- end }}
+{{- end }}
 {{- end }}
