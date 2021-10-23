@@ -17,12 +17,13 @@ data:
     controller.vip.host={{ include "pinot.controller.fullname" . }}
     controller.vip.port={{ .Values.controller.service.port }}
     {{- end }}
+    controller.retention.frequencyInSeconds={{ int .Values.controller.retention.frequencyInSeconds }}
     controller.task.scheduler.enabled={{ .Values.controller.taskScheduler.enabled }}
-    controller.task.frequencyInSeconds={{ .Values.controller.taskScheduler.frequencyInSeconds }}
+    controller.task.frequencyInSeconds={{ int .Values.controller.taskScheduler.frequencyInSeconds }}
     controller.zk.str={{ include "zookeeper.path" . }}
     pinot.set.instance.id.to.hostname=true
     controller.data.dir={{ .Values.controller.data.dir }}
-    controller.deleted.segments.retentionInDays={{ .Values.controller.deleted.segments.retentionInDays }}
+    controller.deleted.segments.retentionInDays={{ int .Values.controller.deleted.segments.retentionInDays }}
     {{- if eq .Values.cluster.storage.scheme "gs" }}
     {{- if .Values.cluster.splitCommitEnabled }}
     controller.allow.hlc.tables=false

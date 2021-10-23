@@ -1,25 +1,41 @@
 {{- if .Values.server.enabled }}
+{{- range $name,$tierConfig := omit .Values.server.tiers "default" }}
+{{- $tier := mergeOverwrite (omit $.Values.server "tiers") $.Values.server.tiers.default $tierConfig }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pinot.server.fullname" . }}-svc
+  {{- if eq $name "tier1" }}
+  name: {{ include "pinot.server.fullname" $ }}-svc
+  {{- else }}
+  name: {{ include "pinot.server.fullname" $ }}-{{ $name }}-svc
+  {{- end }}
   labels:
-    app: {{ include "pinot.name" . }}
-    chart: {{ include "pinot.chart" . }}
-    component: {{ .Values.server.name }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: {{ include "pinot.name" $ }}
+    chart: {{ include "pinot.chart" $ }}
+    {{- if eq $name "tier1" }}
+    component: {{ $.Values.server.name }}
+    {{- else }}
+    component: {{ $.Values.server.name }}-{{ $name }}
+    {{- end }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
 spec:
   type: ClusterIP
   ports:
     - name: request
-      port: {{ .Values.server.ports.netty }}
-    {{- if .Values.server.prometheus.jmx.enabled }}
+      port: {{ $tier.ports.netty }}
+    {{- if $tier.prometheus.jmx.enabled }}
     - name: prometheus-jmx
-      port: {{ .Values.server.prometheus.jmx.port }}
+      port: {{ $tier.prometheus.jmx.port }}
     {{- end }}
   selector:
-    app: {{ include "pinot.name" . }}
-    release: {{ .Release.Name }}
-    component: {{ .Values.server.name }}
+    app: {{ include "pinot.name" $ }}
+    release: {{ $.Release.Name }}
+    {{- if eq $name "tier1" }}
+    component: {{ $tier.name }}
+    {{- else }}
+    component: {{ $tier.name }}-{{ $name }}
+    {{- end }}
+{{- end }}
 {{- end }}

@@ -21,6 +21,9 @@ controller:
   port: 9000
   replicaCount: 1
 
+  retention:
+    frequencyInSeconds: 21600
+
   vip:
     enabled: false
 
@@ -473,6 +476,10 @@ server:
 
   logging:
     level: info
+
+  tiers:
+    default: {}
+    tier1: {}
 
 servicemanager:
   name: servicemanager
