@@ -152,7 +152,7 @@
     {
       "name": "spans",
       "dataType": "INT",
-      "defaultNullValue": 0
+      "defaultNullValue": 1
     }
   ],
   "timeFieldSpec": {
