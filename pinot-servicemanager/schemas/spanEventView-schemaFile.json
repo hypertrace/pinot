@@ -150,7 +150,7 @@
       "defaultNullValue": ""
     },
     {
-      "name": "span_count",
+      "name": "spans",
       "dataType": "INT",
       "defaultNullValue": 0
     }
