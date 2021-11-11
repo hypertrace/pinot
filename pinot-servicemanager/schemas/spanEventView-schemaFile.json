@@ -148,6 +148,11 @@
       "dataType": "STRING",
       "singleValueField": false,
       "defaultNullValue": ""
+    },
+    {
+      "name": "span_count",
+      "dataType": "INT",
+      "defaultNullValue": 0
     }
   ],
   "timeFieldSpec": {
