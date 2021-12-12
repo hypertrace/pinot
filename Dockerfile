@@ -2,7 +2,7 @@ FROM alpine:latest AS builder
 
 ARG PINOT_VERSION=0.7.1
 ARG JITPACK_REPO=hypertrace/incubator-pinot
-ARG JITPACK_TAG=hypertrace-0.7.1-7
+ARG JITPACK_TAG=hypertrace-0.7.1-8
 
 ENV PINOT_HOME=/opt/pinot
 
