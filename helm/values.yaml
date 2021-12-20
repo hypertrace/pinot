@@ -481,6 +481,8 @@ server:
     default: {}
     tier1: {}
 
+  tagJobEnabled: false
+
 servicemanager:
   name: servicemanager
   enabled: false
