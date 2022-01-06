@@ -2,11 +2,14 @@ package org.apache.pinot.plugin.minion.tasks;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.pinot.controller.helix.core.minion.ClusterInfoAccessor;
+import org.apache.pinot.controller.helix.core.minion.generator.PinotTaskGenerator;
 import org.apache.pinot.core.minion.PinotTaskConfig;
+import org.apache.pinot.spi.annotations.minion.TaskGenerator;
 import org.apache.pinot.spi.config.table.TableConfig;
 
 @TaskGenerator
-public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenertaor{
+public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
   private ClusterInfoAccessor _clusterInfoAccessor;
 

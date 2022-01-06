@@ -1,8 +1,9 @@
 package org.apache.pinot.plugin.minion.tasks;
 
 import org.apache.pinot.core.minion.PinotTaskConfig;
+import org.apache.pinot.minion.executor.PinotTaskExecutor;
 
-public class CustomerBasedRetentionTaskExecutor implements PinotTaskExecutor{
+public class CustomerBasedRetentionTaskExecutor implements PinotTaskExecutor {
   protected boolean _cancelled = false;
 
   @Override
