@@ -16,14 +16,16 @@ import org.apache.pinot.controller.helix.core.minion.PinotHelixTaskResourceManag
 import org.apache.pinot.controller.helix.core.minion.PinotTaskManager;
 import org.apache.pinot.controller.helix.core.minion.generator.PinotTaskGenerator;
 import org.apache.pinot.core.minion.PinotTaskConfig;
+import org.apache.pinot.integration.tests.ClusterTest;
 import org.apache.pinot.minion.event.MinionEventObserver;
 import org.apache.pinot.minion.event.MinionEventObserverFactory;
 import org.apache.pinot.minion.executor.MinionTaskZkMetadataManager;
 import org.apache.pinot.spi.config.table.TableTaskConfig;
 import org.apache.pinot.spi.config.table.TableType;
 import org.apache.pinot.spi.utils.builder.TableConfigBuilder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.apache.pinot.util.TestUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class CustomerBasedRetentionMinionClusterIntegrationTest extends ClusterTest {
@@ -43,7 +45,7 @@ public class CustomerBasedRetentionMinionClusterIntegrationTest extends ClusterT
   private PinotHelixTaskResourceManager _helixTaskResourceManager;
   private PinotTaskManager _taskManager;
 
-  @BeforeClass
+  @Before
   public void setUp()
       throws Exception {
     startZk();
@@ -179,7 +181,7 @@ public class CustomerBasedRetentionMinionClusterIntegrationTest extends ClusterT
         .getValueOfTableGauge(TASK_TYPE + "." + TaskState.STOPPED, ControllerGauge.TASK_STATUS), 0);
   }
 
-  @AfterClass
+  @After
   public void tearDown()
       throws Exception {
     dropOfflineTable(TABLE_NAME_1);
