@@ -25,6 +25,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
   @Override
   public List<PinotTaskConfig> generateTasks(List<TableConfig> tableConfigs) {
+    //add here
     List<PinotTaskConfig> pinotTaskConfigs = new ArrayList<>();
     return pinotTaskConfigs;
   }
