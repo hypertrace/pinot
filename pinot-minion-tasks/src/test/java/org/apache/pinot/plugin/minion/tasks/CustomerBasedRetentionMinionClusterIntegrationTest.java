@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class CustomerBasedRetentionMinionClusterIntegrationTest extends ClusterTest {
-  private static final String TASK_TYPE = "TestTask";
+  private static final String TASK_TYPE = "customerBasedRetentionTask";
   private static final String TABLE_NAME_1 = "testTable1";
   private static final String TABLE_NAME_2 = "testTable2";
   private static final String TABLE_NAME_3 = "testTable3";
@@ -55,10 +55,12 @@ public class CustomerBasedRetentionMinionClusterIntegrationTest extends ClusterT
 
     // Add 3 offline tables, where 2 of them have TestTask enabled
     TableTaskConfig taskConfig = new TableTaskConfig(Collections.singletonMap(TASK_TYPE, Collections.emptyMap()));
+
     addTableConfig(
         new TableConfigBuilder(TableType.OFFLINE).setTableName(TABLE_NAME_1).setTaskConfig(taskConfig).build());
     addTableConfig(
         new TableConfigBuilder(TableType.OFFLINE).setTableName(TABLE_NAME_2).setTaskConfig(taskConfig).build());
+
     addTableConfig(new TableConfigBuilder(TableType.OFFLINE).setTableName(TABLE_NAME_3).build());
 
     _helixTaskResourceManager = _controllerStarter.getHelixTaskResourceManager();
@@ -69,9 +71,9 @@ public class CustomerBasedRetentionMinionClusterIntegrationTest extends ClusterT
     taskGenerator.init(_taskManager.getClusterInfoAccessor());
     _taskManager.registerTaskGenerator(taskGenerator);
 
-
     startMinion(Collections.singletonList(new CustomerBasedRetentionTaskExecutorFactory()),
-        Collections.singletonList(new TestEventObserverFactory()));  }
+        Collections.singletonList(new TestEventObserverFactory()));
+  }
 
   @Test
   public void testStopResumeDeleteTaskQueue() {
