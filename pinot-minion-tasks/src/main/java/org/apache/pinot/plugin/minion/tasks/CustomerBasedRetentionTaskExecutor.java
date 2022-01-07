@@ -1,6 +1,7 @@
 package org.apache.pinot.plugin.minion.tasks;
 
 import org.apache.pinot.core.minion.PinotTaskConfig;
+import org.apache.pinot.minion.exception.TaskCancelledException;
 import org.apache.pinot.minion.executor.PinotTaskExecutor;
 
 public class CustomerBasedRetentionTaskExecutor implements PinotTaskExecutor {
@@ -12,9 +13,12 @@ public class CustomerBasedRetentionTaskExecutor implements PinotTaskExecutor {
   }
 
   @Override
-  public String executeTask (
-      PinotTaskConfig pinotTaskConfig) {
-    //add here
-    return "";
+  public Boolean executeTask (PinotTaskConfig pinotTaskConfig) {
+    // Temporary method (add here)
+    do {
+      if (_cancelled) {
+        throw new TaskCancelledException("Task has been cancelled");
+      }
+    } while (true);
   }
 }
