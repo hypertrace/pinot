@@ -26,6 +26,7 @@ import org.apache.pinot.spi.utils.builder.TableConfigBuilder;
 import org.apache.pinot.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class CustomerBasedRetentionMinionClusterIntegrationTest extends ClusterTest {
@@ -75,6 +76,7 @@ public class CustomerBasedRetentionMinionClusterIntegrationTest extends ClusterT
         Collections.singletonList(new TestEventObserverFactory()));
   }
 
+  @Ignore
   @Test
   public void testStopResumeDeleteTaskQueue() {
     // Hold the task
