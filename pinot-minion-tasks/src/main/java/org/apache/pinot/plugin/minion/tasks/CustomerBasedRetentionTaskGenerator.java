@@ -119,9 +119,8 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata =
         getCustomerBasedRetentionTaskMetadata(offlineTableName);
 
+    // No ZNode exists. Cold-start.
     if(customerBasedRetentionTaskMetadata == null){
-      // No ZNode exists. Cold-start.
-      long watermarkMs;
 
       // Find the smallest time from all segments
       long minStartTimeMs = Long.MAX_VALUE;
@@ -132,12 +131,13 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
       // Round off according to the bucket. This ensures we align the offline segments to proper time boundaries
       // For example, if start time millis is 20200813T12:34:59, we want to create the first segment for window [20200813, 20200814)
-      watermarkMs = (minStartTimeMs / bucketMs) * bucketMs;
+      long watermarkMs = (minStartTimeMs / bucketMs) * bucketMs;
 
       // Create CustomerBasedRetentionTaskMetadata ZNode using watermark calculated above
       customerBasedRetentionTaskMetadata = new CustomerBasedRetentionTaskMetadata(offlineTableName, watermarkMs);
-      _clusterInfoAccessor.setCustomerBasedRetentionTaskMetadata(customerBasedRetentionTaskMetadata);
+      setCustomerBasedRetentionTaskMetadata(customerBasedRetentionTaskMetadata);
     }
+
     return customerBasedRetentionTaskMetadata.getWatermarkMs();
   }
 
