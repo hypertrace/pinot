@@ -59,7 +59,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
       LOGGER.info("Start generating task configs for table: {} for task: {}", offlineTableName, TASK_TYPE);
 
-      // Only schedule 1 task of this type, per table
+      // Only schedule 1 job of this type (this optimisation may be moved downstream later on)
       Map<String, TaskState> incompleteTasks =
           TaskGeneratorUtils.getIncompleteTasks(TASK_TYPE, offlineTableName, _clusterInfoAccessor);
       if (!incompleteTasks.isEmpty()) {
@@ -83,9 +83,6 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       long windowStartMs = getWatermarkMs(offlineTableName, bucketMs);
       long windowEndMs = windowStartMs + bucketMs;
 
-      // Get max number of tasks for this table
-      int tableMaxNumTasks = getTableMaxNumTasks(taskConfigs);
-
       // Get customer retention config
       Map<String ,String> customerRetentionConfigMap = getCustomerRetentionConfig();
       String customerRetentionConfigMapString = customerRetentionConfigMap.keySet().stream()
@@ -93,14 +90,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
           .collect(Collectors.joining(", ", "{", "}"));
 
       // Generate tasks
-      int tableNumTasks = 0;
       for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName)) {
-
-        // Generate up to tableMaxNumTasks tasks each time for each table
-        if (tableNumTasks == tableMaxNumTasks) {
-          break;
-        }
-
         // Only submit segments that have not been converted
         Map<String, String> customMap = offlineSegmentZKMetadata.getCustomMap();
         if (customMap == null || !customMap.containsKey(
@@ -115,7 +105,6 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
           configs.put(WINDOW_START_MS_KEY, String.valueOf(windowStartMs));
           configs.put(WINDOW_END_MS_KEY, String.valueOf(windowEndMs));
           pinotTaskConfigs.add(new PinotTaskConfig(TASK_TYPE, configs));
-          tableNumTasks++;
         }
       }
       LOGGER.info("Finished generating task configs for table: {} for task: {}", offlineTableName, TASK_TYPE);
@@ -132,20 +121,5 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     // add code here
     Map<String,String> customerRetentionConfig = new HashMap<>();
     return customerRetentionConfig;
-  }
-
-  private int getTableMaxNumTasks(Map<String,String> taskConfigs){
-    int tableMaxNumTasks;
-    String tableMaxNumTasksConfig = taskConfigs.get(MinionConstants.TABLE_MAX_NUM_TASKS_KEY);
-    if (tableMaxNumTasksConfig != null) {
-      try {
-        tableMaxNumTasks = Integer.parseInt(tableMaxNumTasksConfig);
-      } catch (Exception e) {
-        tableMaxNumTasks = TABLE_MAX_NUM_TASKS;
-      }
-    } else {
-      tableMaxNumTasks = TABLE_MAX_NUM_TASKS;
-    }
-    return tableMaxNumTasks;
   }
 }
