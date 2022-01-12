@@ -147,6 +147,14 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return customerRetentionConfig;
   }
 
+  private CustomerBasedRetentionTaskMetadata getCustomerBasedRetentionTaskMetadata(String offlineTableName){
+
+  }
+
+  private void setCustomerBasedRetentionTaskMetadata(CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata){
+
+  }
+
   public class CustomerBasedRetentionTaskMetadata {
     private static final String WATERMARK_KEY = "watermarkMs";
 
