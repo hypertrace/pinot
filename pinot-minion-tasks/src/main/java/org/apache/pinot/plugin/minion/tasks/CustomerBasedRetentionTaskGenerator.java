@@ -5,10 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.helix.task.TaskState;
-import org.apache.pinot.common.data.Segment;
 import org.apache.pinot.common.metadata.segment.OfflineSegmentZKMetadata;
 import org.apache.pinot.controller.helix.core.minion.ClusterInfoAccessor;
 import org.apache.pinot.controller.helix.core.minion.generator.PinotTaskGenerator;
@@ -33,6 +31,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   private static final String CUSTOMER_RETENTION_CONFIG = "customerRetentionConfig";
   public static final String WINDOW_START_MS_KEY = "windowStartMs";
   public static final String WINDOW_END_MS_KEY = "windowEndMs";
+  public static final int TABLE_MAX_NUM_TASKS = 1000; // vary accordingly
 
   private ClusterInfoAccessor _clusterInfoAccessor;
 
@@ -49,10 +48,6 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   @Override
   public List<PinotTaskConfig> generateTasks(List<TableConfig> tableConfigs) {
     List<PinotTaskConfig> pinotTaskConfigs = new ArrayList<>();
-
-    // Get the segments that are being converted so that we don't submit them again
-    Set<Segment> runningSegments =
-        TaskGeneratorUtils.getRunningSegments(MinionConstants.ConvertToRawIndexTask.TASK_TYPE, _clusterInfoAccessor);
 
     for (TableConfig tableConfig : tableConfigs) {
       String offlineTableName = tableConfig.getTableName();
@@ -106,19 +101,13 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
           break;
         }
 
-        // Skip segments that are already submitted
-        String segmentName = offlineSegmentZKMetadata.getSegmentName();
-        if (runningSegments.contains(new Segment(offlineTableName, segmentName))) {
-          continue;
-        }
-
         // Only submit segments that have not been converted
         Map<String, String> customMap = offlineSegmentZKMetadata.getCustomMap();
         if (customMap == null || !customMap.containsKey(
             MinionConstants.ConvertToRawIndexTask.COLUMNS_TO_CONVERT_KEY + MinionConstants.TASK_TIME_SUFFIX)) {
           Map<String, String> configs = new HashMap<>();
           configs.put(MinionConstants.TABLE_NAME_KEY, offlineTableName);
-          configs.put(MinionConstants.SEGMENT_NAME_KEY, segmentName);
+          configs.put(MinionConstants.SEGMENT_NAME_KEY, offlineSegmentZKMetadata.getSegmentName());
           configs.put(MinionConstants.DOWNLOAD_URL_KEY, offlineSegmentZKMetadata.getDownloadUrl());
           configs.put(MinionConstants.UPLOAD_URL_KEY, _clusterInfoAccessor.getVipUrl() + "/segments");
           configs.put(MinionConstants.ORIGINAL_SEGMENT_CRC_KEY, String.valueOf(offlineSegmentZKMetadata.getCrc()));
@@ -152,10 +141,10 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       try {
         tableMaxNumTasks = Integer.parseInt(tableMaxNumTasksConfig);
       } catch (Exception e) {
-        tableMaxNumTasks = Integer.MAX_VALUE;
+        tableMaxNumTasks = TABLE_MAX_NUM_TASKS;
       }
     } else {
-      tableMaxNumTasks = Integer.MAX_VALUE;
+      tableMaxNumTasks = TABLE_MAX_NUM_TASKS;
     }
     return tableMaxNumTasks;
   }
