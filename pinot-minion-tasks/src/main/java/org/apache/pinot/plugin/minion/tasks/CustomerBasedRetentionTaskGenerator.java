@@ -3,9 +3,12 @@ package org.apache.pinot.plugin.minion.tasks;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.helix.ZNRecord;
 import org.apache.helix.task.TaskState;
 import org.apache.pinot.common.metadata.segment.OfflineSegmentZKMetadata;
@@ -28,11 +31,9 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBasedRetentionTaskGenerator.class);
   private static final String TASK_TYPE = "customerBasedRetentionTask";
   public static final String BUCKET_TIME_PERIOD_KEY = "bucketTimePeriod";
-  private static final String DEFAULT_BUCKET_PERIOD = "1d";
   private static final String CUSTOMER_RETENTION_CONFIG = "customerRetentionConfig";
   public static final String WINDOW_START_MS_KEY = "windowStartMs";
   public static final String WINDOW_END_MS_KEY = "windowEndMs";
-  public static final int TABLE_MAX_NUM_TASKS = 1000; // vary accordingly
 
   private ClusterInfoAccessor _clusterInfoAccessor;
 
@@ -75,40 +76,55 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       Map<String, String> taskConfigs = tableTaskConfig.getConfigsForTaskType(TASK_TYPE);
       Preconditions.checkState(taskConfigs != null, "Task config shouldn't be null for table: {}", offlineTableName);
 
-      // Get the bucket size
-      String bucketTimePeriod =
-          taskConfigs.getOrDefault(BUCKET_TIME_PERIOD_KEY, DEFAULT_BUCKET_PERIOD);
-      long bucketMs = TimeUtils.convertPeriodToMillis(bucketTimePeriod);
-
-      // Get watermark from OfflineSegmentsMetadata ZNode. WindowStart = watermark. WindowEnd = windowStart + bucket.
-      long windowStartMs = getWatermarkMs(offlineTableName, bucketMs);
-      long windowEndMs = windowStartMs + bucketMs;
-
       // Get customer retention config
       Map<String ,String> customerRetentionConfigMap = getCustomerRetentionConfig();
       String customerRetentionConfigMapString = customerRetentionConfigMap.keySet().stream()
           .map(key -> key + "=" + customerRetentionConfigMap.get(key))
           .collect(Collectors.joining(", ", "{", "}"));
+      Set<String> distinctRetentionPeriods = getDistinctRetentionPeriods(customerRetentionConfigMap);
 
-      // Generate tasks
-      for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName)) {
-        // Only submit segments that have not been converted
-        Map<String, String> customMap = offlineSegmentZKMetadata.getCustomMap();
-        if (customMap == null || !customMap.containsKey(
-            MinionConstants.ConvertToRawIndexTask.COLUMNS_TO_CONVERT_KEY + MinionConstants.TASK_TIME_SUFFIX)) {
+      /**
+       * Generate one task per retention period.
+       * This is because we have to update watermarks based on retention period.
+       */
+      for (String retentionPeriod : distinctRetentionPeriods) {
+
+        // Get the bucket size
+        String bucketTimePeriod = taskConfigs.getOrDefault(BUCKET_TIME_PERIOD_KEY, retentionPeriod);
+        long bucketMs = TimeUtils.convertPeriodToMillis(bucketTimePeriod);
+
+        // Get watermark from OfflineSegmentsMetadata ZNode. WindowStart = watermark. WindowEnd = windowStart + bucket.
+        long windowStartMs = getWatermarkMs(offlineTableName, bucketMs);
+        long windowEndMs = windowStartMs + bucketMs;
+
+        List<String> segmentNames = new ArrayList<>();
+        List<String> downloadURLs = new ArrayList<>();
+
+        for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName)) {
+          // Only submit segments that have not been converted
+          Map<String, String> customMap = offlineSegmentZKMetadata.getCustomMap();
+          if (customMap == null || !customMap.containsKey(
+              MinionConstants.ConvertToRawIndexTask.COLUMNS_TO_CONVERT_KEY + MinionConstants.TASK_TIME_SUFFIX)) {
+            segmentNames.add(offlineSegmentZKMetadata.getSegmentName());
+            downloadURLs.add(offlineSegmentZKMetadata.getDownloadUrl());
+          }
+        }
+
+        if (!segmentNames.isEmpty()) {
           Map<String, String> configs = new HashMap<>();
           configs.put(MinionConstants.TABLE_NAME_KEY, offlineTableName);
-          configs.put(MinionConstants.SEGMENT_NAME_KEY, offlineSegmentZKMetadata.getSegmentName());
-          configs.put(MinionConstants.DOWNLOAD_URL_KEY, offlineSegmentZKMetadata.getDownloadUrl());
+          configs.put(MinionConstants.SEGMENT_NAME_KEY, StringUtils.join(segmentNames, ","));
+          configs.put(MinionConstants.DOWNLOAD_URL_KEY, StringUtils.join(downloadURLs, MinionConstants.URL_SEPARATOR));
           configs.put(MinionConstants.UPLOAD_URL_KEY, _clusterInfoAccessor.getVipUrl() + "/segments");
-          configs.put(MinionConstants.ORIGINAL_SEGMENT_CRC_KEY, String.valueOf(offlineSegmentZKMetadata.getCrc()));
+
           configs.put(CUSTOMER_RETENTION_CONFIG, customerRetentionConfigMapString);
           configs.put(WINDOW_START_MS_KEY, String.valueOf(windowStartMs));
           configs.put(WINDOW_END_MS_KEY, String.valueOf(windowEndMs));
           pinotTaskConfigs.add(new PinotTaskConfig(TASK_TYPE, configs));
+          LOGGER.info("Finished generating task configs for table: {} for task: {} for retention period: {}",
+              offlineTableName, TASK_TYPE, retentionPeriod);
         }
       }
-      LOGGER.info("Finished generating task configs for table: {} for task: {}", offlineTableName, TASK_TYPE);
     }
     return pinotTaskConfigs;
   }
@@ -142,19 +158,25 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   }
 
   private Map<String,String> getCustomerRetentionConfig(){
-    // add code here
+    //todo: add code here
     Map<String,String> customerRetentionConfig = new HashMap<>();
     return customerRetentionConfig;
   }
 
-  private CustomerBasedRetentionTaskMetadata getCustomerBasedRetentionTaskMetadata(String offlineTableName){
+  private Set<String> getDistinctRetentionPeriods(Map<String,String> customerRetentionConfigMap){
+    return new HashSet<>(customerRetentionConfigMap.values());
+  }
 
+  private CustomerBasedRetentionTaskMetadata getCustomerBasedRetentionTaskMetadata(String offlineTableName){
+    //todo: add code here
+    return new CustomerBasedRetentionTaskMetadata(offlineTableName, 0);
   }
 
   private void setCustomerBasedRetentionTaskMetadata(CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata){
-
+    //todo: add code here
   }
 
+  // Add functions on ad hoc basis in this class
   public class CustomerBasedRetentionTaskMetadata {
     private static final String WATERMARK_KEY = "watermarkMs";
 
