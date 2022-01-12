@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.helix.ZNRecord;
 import org.apache.helix.task.TaskState;
 import org.apache.pinot.common.metadata.segment.OfflineSegmentZKMetadata;
 import org.apache.pinot.controller.helix.core.minion.ClusterInfoAccessor;
@@ -113,13 +114,60 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   }
 
   private long getWatermarkMs(String offlineTableName, long bucketMs){
-    // add code here
-    return 0;
+    List<OfflineSegmentZKMetadata> offlineSegmentZKMetadataList =
+        _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName);
+    CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata =
+        getCustomerBasedRetentionTaskMetadata(offlineTableName);
+
+    if(customerBasedRetentionTaskMetadata == null){
+      // No ZNode exists. Cold-start.
+      long watermarkMs;
+
+      // Find the smallest time from all segments
+      long minStartTimeMs = Long.MAX_VALUE;
+      for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : offlineSegmentZKMetadataList) {
+        minStartTimeMs = Math.min(minStartTimeMs, offlineSegmentZKMetadata.getStartTimeMs());
+      }
+      Preconditions.checkState(minStartTimeMs != Long.MAX_VALUE);
+
+      // Round off according to the bucket. This ensures we align the offline segments to proper time boundaries
+      // For example, if start time millis is 20200813T12:34:59, we want to create the first segment for window [20200813, 20200814)
+      watermarkMs = (minStartTimeMs / bucketMs) * bucketMs;
+
+      // Create CustomerBasedRetentionTaskMetadata ZNode using watermark calculated above
+      customerBasedRetentionTaskMetadata = new CustomerBasedRetentionTaskMetadata(offlineTableName, watermarkMs);
+      _clusterInfoAccessor.setCustomerBasedRetentionTaskMetadata(customerBasedRetentionTaskMetadata);
+    }
+    return customerBasedRetentionTaskMetadata.getWatermarkMs();
   }
 
   private Map<String,String> getCustomerRetentionConfig(){
     // add code here
     Map<String,String> customerRetentionConfig = new HashMap<>();
     return customerRetentionConfig;
+  }
+
+  public class CustomerBasedRetentionTaskMetadata {
+    private static final String WATERMARK_KEY = "watermarkMs";
+
+    private final String _tableNameWithType;
+    private final long _watermarkMs;
+
+    public CustomerBasedRetentionTaskMetadata(String tableNameWithType, long watermarkMs) {
+      _tableNameWithType = tableNameWithType;
+      _watermarkMs = watermarkMs;
+    }
+
+    public CustomerBasedRetentionTaskMetadata fromZNRecord(ZNRecord znRecord) {
+      long watermark = znRecord.getLongField(WATERMARK_KEY, 0);
+      return new CustomerBasedRetentionTaskMetadata(znRecord.getId(), watermark);
+    }
+
+    /**
+     * Get the watermark in millis
+     */
+    public long getWatermarkMs() {
+      return _watermarkMs;
+    }
   }
 }
