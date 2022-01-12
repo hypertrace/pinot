@@ -34,6 +34,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   private static final String CUSTOMER_RETENTION_CONFIG = "customerRetentionConfig";
   public static final String WINDOW_START_MS_KEY = "windowStartMs";
   public static final String WINDOW_END_MS_KEY = "windowEndMs";
+  public static final String COLUMNS_TO_CONVERT_KEY = "columnsToConvert";
 
   private ClusterInfoAccessor _clusterInfoAccessor;
 
@@ -54,12 +55,13 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     for (TableConfig tableConfig : tableConfigs) {
       String offlineTableName = tableConfig.getTableName();
 
+      LOGGER.info("Start generating task configs for table: {} for task: {}", offlineTableName, TASK_TYPE);
+
+      // Only generate tasks for OFFLINE tables
       if (tableConfig.getTableType() != TableType.OFFLINE) {
         LOGGER.warn("Skip generating task: {} for non-OFFLINE table: {}", TASK_TYPE, offlineTableName);
         continue;
       }
-
-      LOGGER.info("Start generating task configs for table: {} for task: {}", offlineTableName, TASK_TYPE);
 
       // Only schedule 1 job of this type (this optimisation may be moved downstream later on)
       Map<String, TaskState> incompleteTasks =
@@ -72,9 +74,9 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       }
 
       TableTaskConfig tableTaskConfig = tableConfig.getTaskConfig();
-      Preconditions.checkState(tableTaskConfig != null);
+      Preconditions.checkNotNull(tableTaskConfig);
       Map<String, String> taskConfigs = tableTaskConfig.getConfigsForTaskType(TASK_TYPE);
-      Preconditions.checkState(taskConfigs != null, "Task config shouldn't be null for table: {}", offlineTableName);
+      Preconditions.checkNotNull(taskConfigs, "Task config shouldn't be null for Table: {}", offlineTableName);
 
       // Get customer retention config
       Map<String ,String> customerRetentionConfigMap = getCustomerRetentionConfig();
@@ -103,8 +105,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
         for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName)) {
           // Only submit segments that have not been converted
           Map<String, String> customMap = offlineSegmentZKMetadata.getCustomMap();
-          if (customMap == null || !customMap.containsKey(
-              MinionConstants.ConvertToRawIndexTask.COLUMNS_TO_CONVERT_KEY + MinionConstants.TASK_TIME_SUFFIX)) {
+          if (customMap == null || !customMap.containsKey(COLUMNS_TO_CONVERT_KEY + MinionConstants.TASK_TIME_SUFFIX)) {
             segmentNames.add(offlineSegmentZKMetadata.getSegmentName());
             downloadURLs.add(offlineSegmentZKMetadata.getDownloadUrl());
           }
@@ -112,19 +113,23 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
         if (!segmentNames.isEmpty()) {
           Map<String, String> configs = new HashMap<>();
+
           configs.put(MinionConstants.TABLE_NAME_KEY, offlineTableName);
           configs.put(MinionConstants.SEGMENT_NAME_KEY, StringUtils.join(segmentNames, ","));
           configs.put(MinionConstants.DOWNLOAD_URL_KEY, StringUtils.join(downloadURLs, MinionConstants.URL_SEPARATOR));
           configs.put(MinionConstants.UPLOAD_URL_KEY, _clusterInfoAccessor.getVipUrl() + "/segments");
 
+          // Customer Retention Config
           configs.put(CUSTOMER_RETENTION_CONFIG, customerRetentionConfigMapString);
+
+          // Execution window
           configs.put(WINDOW_START_MS_KEY, String.valueOf(windowStartMs));
           configs.put(WINDOW_END_MS_KEY, String.valueOf(windowEndMs));
+
           pinotTaskConfigs.add(new PinotTaskConfig(TASK_TYPE, configs));
-          LOGGER.info("Finished generating task configs for table: {} for task: {} for retention period: {}",
-              offlineTableName, TASK_TYPE, retentionPeriod);
         }
       }
+      LOGGER.info("Finished generating task configs for table: {} for task: {}", offlineTableName, TASK_TYPE);
     }
     return pinotTaskConfigs;
   }
