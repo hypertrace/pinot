@@ -2,14 +2,16 @@ package org.apache.pinot.plugin.minion.tasks;
 
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.helix.ZNRecord;
 import org.apache.helix.task.TaskState;
 import org.apache.pinot.common.metadata.segment.OfflineSegmentZKMetadata;
 import org.apache.pinot.controller.helix.core.minion.ClusterInfoAccessor;
@@ -30,11 +32,11 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBasedRetentionTaskGenerator.class);
   private static final String TASK_TYPE = "customerBasedRetentionTask";
-  public static final String BUCKET_TIME_PERIOD_KEY = "bucketTimePeriod";
   private static final String CUSTOMER_RETENTION_CONFIG = "customerRetentionConfig";
   public static final String WINDOW_START_MS_KEY = "windowStartMs";
   public static final String WINDOW_END_MS_KEY = "windowEndMs";
   public static final String COLUMNS_TO_CONVERT_KEY = "columnsToConvert";
+  public static final int MAX_SEGMENTS_PER_TASK = 32;
 
   private ClusterInfoAccessor _clusterInfoAccessor;
 
@@ -83,17 +85,13 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       String customerRetentionConfigMapString = customerRetentionConfigMap.keySet().stream()
           .map(key -> key + "=" + customerRetentionConfigMap.get(key))
           .collect(Collectors.joining(", ", "{", "}"));
-      Set<String> distinctRetentionPeriods = getDistinctRetentionPeriods(customerRetentionConfigMap);
+      SortedSet<String> sortedDistinctRetentionPeriods = getSortedDistinctRetentionPeriods(customerRetentionConfigMap);
 
-      /**
-       * Generate one task per retention period.
-       * This is because we have to update watermarks based on retention period.
-       */
-      for (String retentionPeriod : distinctRetentionPeriods) {
+      // Generate one task per retention period. This is because we have to update watermarks based on retention period.
+      for (String retentionPeriod : sortedDistinctRetentionPeriods) {
 
         // Get the bucket size
-        String bucketTimePeriod = taskConfigs.getOrDefault(BUCKET_TIME_PERIOD_KEY, retentionPeriod);
-        long bucketMs = TimeUtils.convertPeriodToMillis(bucketTimePeriod);
+        long bucketMs = TimeUtils.convertPeriodToMillis(retentionPeriod);
 
         // Get watermark from OfflineSegmentsMetadata ZNode. WindowStart = watermark. WindowEnd = windowStart + bucket.
         long windowStartMs = getWatermarkMs(offlineTableName, bucketMs);
@@ -102,12 +100,21 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
         List<String> segmentNames = new ArrayList<>();
         List<String> downloadURLs = new ArrayList<>();
 
-        for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName)) {
+        int numSegments = 0;
+        List<OfflineSegmentZKMetadata> sortedOfflineSegmentZKMetadataList = getSortedOfflineSegmentZKMetadataList(offlineTableName);
+        for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : sortedOfflineSegmentZKMetadataList) {
+
+          // Generate up to maxSegmentsPerTask per retention period
+          if(numSegments > MAX_SEGMENTS_PER_TASK){
+            break;
+          }
+
           // Only submit segments that have not been converted
           Map<String, String> customMap = offlineSegmentZKMetadata.getCustomMap();
           if (customMap == null || !customMap.containsKey(COLUMNS_TO_CONVERT_KEY + MinionConstants.TASK_TIME_SUFFIX)) {
             segmentNames.add(offlineSegmentZKMetadata.getSegmentName());
             downloadURLs.add(offlineSegmentZKMetadata.getDownloadUrl());
+            numSegments++;
           }
         }
 
@@ -134,6 +141,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return pinotTaskConfigs;
   }
 
+  // fixme: need next retention period
   private long getWatermarkMs(String offlineTableName, long bucketMs){
     List<OfflineSegmentZKMetadata> offlineSegmentZKMetadataList =
         _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName);
@@ -168,8 +176,17 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return customerRetentionConfig;
   }
 
-  private Set<String> getDistinctRetentionPeriods(Map<String,String> customerRetentionConfigMap){
-    return new HashSet<>(customerRetentionConfigMap.values());
+  private SortedSet<String> getSortedDistinctRetentionPeriods(Map<String,String> customerRetentionConfigMap){
+    Set<String> distinctRetentionPeriodsSet = new HashSet<>(customerRetentionConfigMap.values());
+    return new TreeSet<>(distinctRetentionPeriodsSet);
+  }
+
+  private List<OfflineSegmentZKMetadata> getSortedOfflineSegmentZKMetadataList(String offlineTableName){
+    Comparator<OfflineSegmentZKMetadata> compareByStartTime =
+        (OfflineSegmentZKMetadata o1, OfflineSegmentZKMetadata o2) -> (int) (o1.getStartTimeMs()-o2.getStartTimeMs());
+    List<OfflineSegmentZKMetadata> offlineSegmentZKMetadataList = _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName);
+    offlineSegmentZKMetadataList.sort(compareByStartTime);
+    return offlineSegmentZKMetadataList;
   }
 
   private CustomerBasedRetentionTaskMetadata getCustomerBasedRetentionTaskMetadata(String offlineTableName){
@@ -178,31 +195,6 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   }
 
   private void setCustomerBasedRetentionTaskMetadata(CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata){
-    //todo: add code here
-  }
-
-  // Add functions on ad hoc basis in this class
-  public class CustomerBasedRetentionTaskMetadata {
-    private static final String WATERMARK_KEY = "watermarkMs";
-
-    private final String _tableNameWithType;
-    private final long _watermarkMs;
-
-    public CustomerBasedRetentionTaskMetadata(String tableNameWithType, long watermarkMs) {
-      _tableNameWithType = tableNameWithType;
-      _watermarkMs = watermarkMs;
-    }
-
-    public CustomerBasedRetentionTaskMetadata fromZNRecord(ZNRecord znRecord) {
-      long watermark = znRecord.getLongField(WATERMARK_KEY, 0);
-      return new CustomerBasedRetentionTaskMetadata(znRecord.getId(), watermark);
-    }
-
-    /**
-     * Get the watermark in millis
-     */
-    public long getWatermarkMs() {
-      return _watermarkMs;
-    }
+    //todo: add code here and use reflection to get private fields
   }
 }
