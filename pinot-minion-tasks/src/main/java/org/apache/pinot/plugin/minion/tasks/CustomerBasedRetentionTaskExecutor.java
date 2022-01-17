@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
@@ -30,6 +31,9 @@ import org.apache.pinot.minion.executor.BaseTaskExecutor;
 import org.apache.pinot.minion.executor.MinionTaskZkMetadataManager;
 import org.apache.pinot.minion.executor.SegmentConversionResult;
 import org.apache.pinot.minion.executor.SegmentConversionUtils;
+import org.apache.pinot.spi.config.table.TableConfig;
+import org.apache.pinot.spi.data.DateTimeFieldSpec;
+import org.apache.pinot.spi.data.Schema;
 import org.apache.pinot.spi.utils.builder.TableNameBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +44,12 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private static final String TASK_TYPE = "customerBasedRetentionTask";
   public static final String TASK_TIME_SUFFIX = ".time";
   public static final String WINDOW_START_MS_KEY = "windowStartMs";
-
+  public static final String WINDOW_END_MS_KEY = "windowEndMs";
   private final MinionTaskZkMetadataManager _minionTaskZkMetadataManager;
 
   private HelixPropertyStore<ZNRecord> propertyStore;
   private int _expectedVersion = Integer.MIN_VALUE;
+  private long _nextWatermark;
 
   public CustomerBasedRetentionTaskExecutor(MinionTaskZkMetadataManager minionTaskZkMetadataManager) {
     _minionTaskZkMetadataManager = minionTaskZkMetadataManager;
@@ -147,6 +152,31 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
 
   private List<SegmentConversionResult> convert(PinotTaskConfig pinotTaskConfig, List<File> originalIndexDirs,
       File workingDir) throws Exception {
+    String taskType = pinotTaskConfig.getTaskType();
+    Map<String, String> configs = pinotTaskConfig.getConfigs();
+    LOGGER.info("Starting task: {} with configs: {}", taskType, configs);
+    long startMillis = System.currentTimeMillis();
+
+    String offlineTableName = configs.get(MinionConstants.TABLE_NAME_KEY);
+    TableConfig tableConfig = getTableConfig(offlineTableName);
+    String timeColumn = tableConfig.getValidationConfig().getTimeColumnName();
+    Schema schema = getSchema(offlineTableName);
+    Set<String> schemaColumns = schema.getPhysicalColumnNames();
+    DateTimeFieldSpec dateTimeFieldSpec = schema.getSpecForTimeColumn(timeColumn);
+    Preconditions
+        .checkState(dateTimeFieldSpec != null, "No valid spec found for time column: %s in schema for table: %s",
+            timeColumn, offlineTableName);
+
+    long windowStartMs = Long.parseLong(configs.get(WINDOW_START_MS_KEY));
+    long windowEndMs = Long.parseLong(configs.get(WINDOW_END_MS_KEY));
+    _nextWatermark = windowEndMs;
+
+    /*
+      TODO : Add code
+     */
+
+    long endMillis = System.currentTimeMillis();
+    LOGGER.info("Finished task: {} with configs: {}. Total time: {}ms", taskType, configs, (endMillis - startMillis));
     List<SegmentConversionResult> results = new ArrayList<>();
     return results;
   }
