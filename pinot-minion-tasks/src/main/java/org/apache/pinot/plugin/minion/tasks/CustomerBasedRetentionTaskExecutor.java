@@ -35,19 +35,6 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private static final String TASK_TYPE = "customerBasedRetentionTask";
   public static final String TASK_TIME_SUFFIX = ".time";
 
-  public void preProcess(PinotTaskConfig pinotTaskConfig) {
-
-  }
-
-  public void postProcess(PinotTaskConfig pinotTaskConfig) {
-
-  }
-
-  protected List<SegmentConversionResult> convert(PinotTaskConfig pinotTaskConfig, List<File> originalIndexDirs,
-      File workingDir) throws Exception {
-
-  }
-
   @Override
   public List<SegmentConversionResult> executeTask(PinotTaskConfig pinotTaskConfig)
       throws Exception {
@@ -141,6 +128,20 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
     } finally {
       FileUtils.deleteQuietly(tempDataDir);
     }
+  }
+
+  private List<SegmentConversionResult> convert(PinotTaskConfig pinotTaskConfig, List<File> originalIndexDirs,
+      File workingDir) throws Exception {
+    List<SegmentConversionResult> results = new ArrayList<>();
+    return results;
+  }
+
+  private void preProcess(PinotTaskConfig pinotTaskConfig) {
+
+  }
+
+  private void postProcess(PinotTaskConfig pinotTaskConfig) {
+
   }
 
   private List<Header> getHttpHeaderForSegment(String originalSegmentCrc) {
