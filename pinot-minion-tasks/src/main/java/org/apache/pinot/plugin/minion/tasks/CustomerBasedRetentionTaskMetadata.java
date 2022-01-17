@@ -14,7 +14,7 @@ public class CustomerBasedRetentionTaskMetadata {
     _watermarkMs = watermarkMs;
   }
 
-  public CustomerBasedRetentionTaskMetadata fromZNRecord(
+  public static CustomerBasedRetentionTaskMetadata fromZNRecord(
       ZNRecord znRecord) {
     long watermark = znRecord.getLongField(WATERMARK_KEY, 0);
     return new CustomerBasedRetentionTaskMetadata(znRecord.getId(), watermark);
