@@ -4,13 +4,18 @@ import com.google.common.base.Preconditions;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.pinot.common.metadata.segment.SegmentZKMetadataCustomMapModifier;
 import org.apache.pinot.common.utils.FileUploadDownloadClient;
 import org.apache.pinot.common.utils.TarGzCompressionUtils;
 import org.apache.pinot.common.utils.fetcher.SegmentFetcherFactory;
@@ -26,6 +31,9 @@ import org.slf4j.LoggerFactory;
 
 public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBasedRetentionTaskExecutor.class);
+  public static final String SEGMENT_CRC_SEPARATOR = ",";
+  private static final String TASK_TYPE = "customerBasedRetentionTask";
+  public static final String TASK_TIME_SUFFIX = ".time";
 
   public void preProcess(PinotTaskConfig pinotTaskConfig) {
 
@@ -52,6 +60,8 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
     String inputSegmentNames = configs.get(MinionConstants.SEGMENT_NAME_KEY);
     String downloadURLString = configs.get(MinionConstants.DOWNLOAD_URL_KEY);
     String[] downloadURLs = downloadURLString.split(MinionConstants.URL_SEPARATOR);
+    String originalSegmentCRCString = configs.get(MinionConstants.ORIGINAL_SEGMENT_CRC_KEY);
+    String[] originalSegmentCRCs = originalSegmentCRCString.split(SEGMENT_CRC_SEPARATOR);
     String uploadURL = configs.get(MinionConstants.UPLOAD_URL_KEY);
 
     LOGGER.info("Start executing {} on table: {}, input segments: {} with downloadURLs: {}, uploadURL: {}", taskType,
@@ -115,7 +125,7 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
             TableNameBuilder.extractRawTableName(tableNameWithType));
         List<NameValuePair> parameters = Arrays.asList(enableParallelPushProtectionParameter, tableNameParameter);
 
-        SegmentConversionUtils.uploadSegment(configs, null, parameters, tableNameWithType, resultSegmentName, uploadURL,
+        SegmentConversionUtils.uploadSegment(configs, getHttpHeaderForSegment(originalSegmentCRCs[i]), parameters, tableNameWithType, resultSegmentName, uploadURL,
             convertedTarredSegmentFile);
       }
 
@@ -131,5 +141,27 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
     } finally {
       FileUtils.deleteQuietly(tempDataDir);
     }
+  }
+
+  private List<Header> getHttpHeaderForSegment(String originalSegmentCrc) {
+
+    // Set original segment CRC into HTTP IF-MATCH header to check whether the original segment get refreshed, so that
+    // the newer segment won't get override
+    Header ifMatchHeader = new BasicHeader(HttpHeaders.IF_MATCH, originalSegmentCrc);
+
+    // Set segment ZK metadata custom map modifier into HTTP header to modify the segment ZK metadata
+    // NOTE: even segment is not changed, still need to upload the segment to update the segment ZK metadata so that
+    // segment will not be submitted again
+    SegmentZKMetadataCustomMapModifier segmentZKMetadataCustomMapModifier = getSegmentZKMetadataCustomMapModifier();
+    Header segmentZKMetadataCustomMapModifierHeader =
+        new BasicHeader(FileUploadDownloadClient.CustomHeaders.SEGMENT_ZK_METADATA_CUSTOM_MAP_MODIFIER,
+            segmentZKMetadataCustomMapModifier.toJsonString());
+
+    return Arrays.asList(ifMatchHeader, segmentZKMetadataCustomMapModifierHeader);
+  }
+
+  private SegmentZKMetadataCustomMapModifier getSegmentZKMetadataCustomMapModifier() {
+    return new SegmentZKMetadataCustomMapModifier(SegmentZKMetadataCustomMapModifier.ModifyMode.UPDATE, Collections
+        .singletonMap(TASK_TYPE + TASK_TIME_SUFFIX, String.valueOf(System.currentTimeMillis())));
   }
 }

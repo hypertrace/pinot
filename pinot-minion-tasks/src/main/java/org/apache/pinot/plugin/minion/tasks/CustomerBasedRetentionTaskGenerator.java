@@ -99,6 +99,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
         List<String> segmentNames = new ArrayList<>();
         List<String> downloadURLs = new ArrayList<>();
+        List<String> originalSegmentCRCs = new ArrayList<>();
 
         int numSegments = 0;
         List<OfflineSegmentZKMetadata> sortedOfflineSegmentZKMetadataList = getSortedOfflineSegmentZKMetadataList(offlineTableName);
@@ -114,6 +115,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
           if (customMap == null || !customMap.containsKey(COLUMNS_TO_CONVERT_KEY + MinionConstants.TASK_TIME_SUFFIX)) {
             segmentNames.add(offlineSegmentZKMetadata.getSegmentName());
             downloadURLs.add(offlineSegmentZKMetadata.getDownloadUrl());
+            originalSegmentCRCs.add(String.valueOf(offlineSegmentZKMetadata.getCrc()));
             numSegments++;
           }
         }
@@ -125,6 +127,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
           configs.put(MinionConstants.SEGMENT_NAME_KEY, StringUtils.join(segmentNames, ","));
           configs.put(MinionConstants.DOWNLOAD_URL_KEY, StringUtils.join(downloadURLs, MinionConstants.URL_SEPARATOR));
           configs.put(MinionConstants.UPLOAD_URL_KEY, _clusterInfoAccessor.getVipUrl() + "/segments");
+          configs.put(MinionConstants.ORIGINAL_SEGMENT_CRC_KEY, StringUtils.join(originalSegmentCRCs, ","));
 
           // Customer Retention Config
           configs.put(CUSTOMER_RETENTION_CONFIG, customerRetentionConfigMapString);
