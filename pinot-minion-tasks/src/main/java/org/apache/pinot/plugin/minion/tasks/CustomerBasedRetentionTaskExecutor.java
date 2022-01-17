@@ -1,6 +1,7 @@
 package org.apache.pinot.plugin.minion.tasks;
 
 import com.google.common.base.Preconditions;
+import java.lang.reflect.Field;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,12 +11,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.apache.helix.ZNRecord;
+import org.apache.helix.store.HelixPropertyStore;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.pinot.common.metadata.segment.SegmentZKMetadataCustomMapModifier;
+import org.apache.pinot.common.minion.MinionTaskMetadataUtils;
 import org.apache.pinot.common.utils.FileUploadDownloadClient;
 import org.apache.pinot.common.utils.TarGzCompressionUtils;
 import org.apache.pinot.common.utils.fetcher.SegmentFetcherFactory;
@@ -23,6 +27,7 @@ import org.apache.pinot.core.common.MinionConstants;
 import org.apache.pinot.core.minion.PinotTaskConfig;
 import org.apache.pinot.minion.exception.TaskCancelledException;
 import org.apache.pinot.minion.executor.BaseTaskExecutor;
+import org.apache.pinot.minion.executor.MinionTaskZkMetadataManager;
 import org.apache.pinot.minion.executor.SegmentConversionResult;
 import org.apache.pinot.minion.executor.SegmentConversionUtils;
 import org.apache.pinot.spi.utils.builder.TableNameBuilder;
@@ -34,6 +39,16 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   public static final String SEGMENT_CRC_SEPARATOR = ",";
   private static final String TASK_TYPE = "customerBasedRetentionTask";
   public static final String TASK_TIME_SUFFIX = ".time";
+  public static final String WINDOW_START_MS_KEY = "windowStartMs";
+
+  private final MinionTaskZkMetadataManager _minionTaskZkMetadataManager;
+
+  private HelixPropertyStore<ZNRecord> propertyStore;
+  private int _expectedVersion = Integer.MIN_VALUE;
+
+  public CustomerBasedRetentionTaskExecutor(MinionTaskZkMetadataManager minionTaskZkMetadataManager) {
+    _minionTaskZkMetadataManager = minionTaskZkMetadataManager;
+  }
 
   @Override
   public List<SegmentConversionResult> executeTask(PinotTaskConfig pinotTaskConfig)
@@ -136,8 +151,39 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
     return results;
   }
 
-  private void preProcess(PinotTaskConfig pinotTaskConfig) {
+  /**
+   * Fetches the CustomerBasedRetentionTask metadata ZNode for the offline table.
+   * Checks that the watermarkMs from the ZNode matches the windowStartMs in the task configs.
+   * If yes, caches the ZNode version to check during update.
+   */
+  private void preProcess(PinotTaskConfig pinotTaskConfig)
+      throws NoSuchFieldException, IllegalAccessException {
+    Map<String, String> configs = pinotTaskConfig.getConfigs();
+    String offlineTableName = configs.get(MinionConstants.TABLE_NAME_KEY);
+    setPropertyStore();
 
+    ZNRecord customerBasedRetentionTaskZNRecord = MinionTaskMetadataUtils
+        .fetchMinionTaskMetadataZNRecord(propertyStore, TASK_TYPE, offlineTableName);
+    Preconditions.checkState(customerBasedRetentionTaskZNRecord != null,
+        "CustomerBasedRetentionTaskMetadata ZNRecord for table: %s should not be null. Exiting task.",
+        offlineTableName);
+
+    CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata =
+        CustomerBasedRetentionTaskMetadata.fromZNRecord(customerBasedRetentionTaskZNRecord);
+    long windowStartMs = Long.parseLong(configs.get(WINDOW_START_MS_KEY));
+    Preconditions.checkState(customerBasedRetentionTaskMetadata.getWatermarkMs() == windowStartMs,
+        "watermarkMs in CustomerBasedRetentionTask metadata: %s does not match windowStartMs: %d in task configs for table: %s. "
+            + "ZNode may have been modified by another task", customerBasedRetentionTaskMetadata, windowStartMs,
+        offlineTableName);
+
+    _expectedVersion = customerBasedRetentionTaskZNRecord.getVersion();
+  }
+
+  private void setPropertyStore()
+      throws NoSuchFieldException, IllegalAccessException {
+    Field helixManagerField = MinionTaskZkMetadataManager.class.getDeclaredField("_helixManager");
+    helixManagerField.setAccessible(true);
+    propertyStore = (HelixPropertyStore<ZNRecord>) helixManagerField.get(_minionTaskZkMetadataManager);
   }
 
   private void postProcess(PinotTaskConfig pinotTaskConfig) {
