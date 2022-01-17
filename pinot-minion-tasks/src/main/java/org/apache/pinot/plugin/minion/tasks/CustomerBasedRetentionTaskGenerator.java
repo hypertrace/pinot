@@ -1,6 +1,9 @@
 package org.apache.pinot.plugin.minion.tasks;
 
+import static org.apache.pinot.common.minion.MinionTaskMetadataUtils.fetchMinionTaskMetadataZNRecord;
+
 import com.google.common.base.Preconditions;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,8 +14,13 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import org.I0Itec.zkclient.exception.ZkException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.helix.AccessOption;
+import org.apache.helix.ZNRecord;
+import org.apache.helix.store.HelixPropertyStore;
 import org.apache.helix.task.TaskState;
+import org.apache.pinot.common.metadata.ZKMetadataProvider;
 import org.apache.pinot.common.metadata.segment.OfflineSegmentZKMetadata;
 import org.apache.pinot.controller.helix.core.minion.ClusterInfoAccessor;
 import org.apache.pinot.controller.helix.core.minion.generator.PinotTaskGenerator;
@@ -39,6 +47,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   public static final int MAX_SEGMENTS_PER_TASK = 32;
 
   private ClusterInfoAccessor _clusterInfoAccessor;
+  private HelixPropertyStore<ZNRecord> propertyStore;
 
   @Override
   public void init(ClusterInfoAccessor clusterInfoAccessor) {
@@ -94,7 +103,12 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
         long bucketMs = TimeUtils.convertPeriodToMillis(retentionPeriod);
 
         // Get watermark from OfflineSegmentsMetadata ZNode. WindowStart = watermark. WindowEnd = windowStart + bucket.
-        long windowStartMs = getWatermarkMs(offlineTableName, bucketMs);
+        long windowStartMs = 0;
+        try {
+          windowStartMs = getWatermarkMs(offlineTableName, bucketMs);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+          e.printStackTrace();
+        }
         long windowEndMs = windowStartMs + bucketMs;
 
         List<String> segmentNames = new ArrayList<>();
@@ -106,7 +120,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
         for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : sortedOfflineSegmentZKMetadataList) {
 
           // Generate up to maxSegmentsPerTask per retention period
-          if(numSegments > MAX_SEGMENTS_PER_TASK){
+          if (numSegments > MAX_SEGMENTS_PER_TASK) {
             break;
           }
 
@@ -145,7 +159,9 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   }
 
   // fixme: need next retention period
-  private long getWatermarkMs(String offlineTableName, long bucketMs){
+  private long getWatermarkMs(String offlineTableName, long bucketMs)
+      throws NoSuchFieldException, IllegalAccessException {
+    setPropertyStore();
     List<OfflineSegmentZKMetadata> offlineSegmentZKMetadataList =
         _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName);
     CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata =
@@ -192,12 +208,24 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return offlineSegmentZKMetadataList;
   }
 
-  private CustomerBasedRetentionTaskMetadata getCustomerBasedRetentionTaskMetadata(String offlineTableName){
-    //todo: add code here
-    return new CustomerBasedRetentionTaskMetadata(offlineTableName, 0);
+  private void setPropertyStore()
+      throws NoSuchFieldException, IllegalAccessException {
+    Field pinotHelixResourceManagerField = ClusterInfoAccessor.class.getDeclaredField("_pinotHelixResourceManager");
+    pinotHelixResourceManagerField.setAccessible(true);
+    propertyStore = (HelixPropertyStore<ZNRecord>) pinotHelixResourceManagerField.get(_clusterInfoAccessor);
   }
 
-  private void setCustomerBasedRetentionTaskMetadata(CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata){
-    //todo: add code here and use reflection to get private fields
+  private CustomerBasedRetentionTaskMetadata getCustomerBasedRetentionTaskMetadata(String offlineTableName){
+    ZNRecord znRecord = fetchMinionTaskMetadataZNRecord(propertyStore, TASK_TYPE, offlineTableName);
+    return znRecord != null ? CustomerBasedRetentionTaskMetadata.fromZNRecord(znRecord) : null;
+  }
+
+  private void setCustomerBasedRetentionTaskMetadata(CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata) {
+    String path = ZKMetadataProvider.constructPropertyStorePathForMinionTaskMetadata(TASK_TYPE,
+        customerBasedRetentionTaskMetadata.getTableNameWithType());
+    if (!propertyStore.set(path, customerBasedRetentionTaskMetadata.toZNRecord(), -1, AccessOption.PERSISTENT)) {
+      throw new ZkException(
+          "Failed to persist minion CustomerBasedRetentionTask metadata: " + customerBasedRetentionTaskMetadata);
+    }
   }
 }
