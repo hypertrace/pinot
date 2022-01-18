@@ -1,5 +1,8 @@
 package org.apache.pinot.plugin.minion.tasks;
 
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
+
 import com.google.common.base.Preconditions;
 import java.lang.reflect.Field;
 import java.io.File;
@@ -39,9 +42,7 @@ import org.slf4j.LoggerFactory;
 public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBasedRetentionTaskExecutor.class);
   private static final String SEGMENT_CRC_SEPARATOR = ",";
-  private static final String TASK_TYPE = "customerBasedRetentionTask";
   private static final String TASK_TIME_SUFFIX = ".time";
-  private static final String WINDOW_START_MS_KEY = "windowStartMs";
   public static final String RECORD_PURGER_KEY = "recordPurger";
   public static final String RECORD_MODIFIER_KEY = "recordModifier";
   public static final String NUM_RECORDS_PURGED_KEY = "numRecordsPurged";

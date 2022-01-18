@@ -1,6 +1,9 @@
 package org.apache.pinot.plugin.minion.tasks;
 
 import static org.apache.pinot.common.minion.MinionTaskMetadataUtils.fetchMinionTaskMetadataZNRecord;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_END_MS_KEY;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
 
 import com.google.common.base.Preconditions;
 import java.lang.reflect.Field;
@@ -39,10 +42,7 @@ import org.slf4j.LoggerFactory;
 public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBasedRetentionTaskGenerator.class);
-  private static final String TASK_TYPE = "customerBasedRetentionTask";
   private static final String CUSTOMER_RETENTION_CONFIG = "customerRetentionConfig";
-  public static final String WINDOW_START_MS_KEY = "windowStartMs";
-  public static final String WINDOW_END_MS_KEY = "windowEndMs";
   public static final String COLUMNS_TO_CONVERT_KEY = "columnsToConvert";
   public static final int MAX_SEGMENTS_PER_TASK = 32;
 

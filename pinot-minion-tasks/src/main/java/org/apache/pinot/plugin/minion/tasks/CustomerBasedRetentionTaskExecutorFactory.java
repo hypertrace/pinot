@@ -16,7 +16,7 @@ public class CustomerBasedRetentionTaskExecutorFactory implements PinotTaskExecu
 
   @Override
   public String getTaskType() {
-    return "customerBasedRetentionTask";
+    return CustomerBasedRetentionConstants.TASK_TYPE;
   }
 
   @Override
