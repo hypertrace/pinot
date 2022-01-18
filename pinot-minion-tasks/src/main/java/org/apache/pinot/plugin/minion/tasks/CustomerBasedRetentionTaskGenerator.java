@@ -6,6 +6,7 @@ import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstan
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_END_MS_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionTaskUtils.setCustomerBasedRetentionTaskMetadata;
 
 import com.google.common.base.Preconditions;
 import java.lang.reflect.Field;
@@ -19,13 +20,10 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import org.I0Itec.zkclient.exception.ZkException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.helix.AccessOption;
 import org.apache.helix.ZNRecord;
 import org.apache.helix.store.HelixPropertyStore;
 import org.apache.helix.task.TaskState;
-import org.apache.pinot.common.metadata.ZKMetadataProvider;
 import org.apache.pinot.common.metadata.segment.OfflineSegmentZKMetadata;
 import org.apache.pinot.controller.helix.core.minion.ClusterInfoAccessor;
 import org.apache.pinot.controller.helix.core.minion.generator.PinotTaskGenerator;
@@ -188,7 +186,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
       // Create CustomerBasedRetentionTaskMetadata ZNode using watermark calculated above
       customerBasedRetentionTaskMetadata = new CustomerBasedRetentionTaskMetadata(offlineTableName, watermarkMs);
-      setCustomerBasedRetentionTaskMetadata(customerBasedRetentionTaskMetadata);
+      setCustomerBasedRetentionTaskMetadata(customerBasedRetentionTaskMetadata, propertyStore, -1);
     }
 
     return customerBasedRetentionTaskMetadata.getWatermarkMs();
@@ -228,14 +226,5 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   private CustomerBasedRetentionTaskMetadata getCustomerBasedRetentionTaskMetadata(String offlineTableName){
     ZNRecord znRecord = fetchMinionTaskMetadataZNRecord(propertyStore, TASK_TYPE, offlineTableName);
     return znRecord != null ? CustomerBasedRetentionTaskMetadata.fromZNRecord(znRecord) : null;
-  }
-
-  private void setCustomerBasedRetentionTaskMetadata(CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata) {
-    String path = ZKMetadataProvider.constructPropertyStorePathForMinionTaskMetadata(TASK_TYPE,
-        customerBasedRetentionTaskMetadata.getTableNameWithType());
-    if (!propertyStore.set(path, customerBasedRetentionTaskMetadata.toZNRecord(), -1, AccessOption.PERSISTENT)) {
-      throw new ZkException(
-          "Failed to persist minion CustomerBasedRetentionTask metadata: " + customerBasedRetentionTaskMetadata);
-    }
   }
 }

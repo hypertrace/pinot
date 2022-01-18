@@ -2,6 +2,7 @@ package org.apache.pinot.plugin.minion.tasks;
 
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionTaskUtils.setCustomerBasedRetentionTaskMetadata;
 
 import com.google.common.base.Preconditions;
 import java.lang.reflect.Field;
@@ -214,7 +215,10 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   }
 
   private void postProcess(PinotTaskConfig pinotTaskConfig) {
-
+    String offlineTableName = pinotTaskConfig.getConfigs().get(MinionConstants.TABLE_NAME_KEY);
+    CustomerBasedRetentionTaskMetadata newMinionMetadata =
+        new CustomerBasedRetentionTaskMetadata(offlineTableName, _nextWatermark);
+    setCustomerBasedRetentionTaskMetadata(newMinionMetadata, propertyStore, _expectedVersion);
   }
 
   private List<Header> getHttpHeaderForSegment(String originalSegmentCrc) {
