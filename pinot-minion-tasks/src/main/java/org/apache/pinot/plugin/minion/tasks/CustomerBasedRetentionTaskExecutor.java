@@ -3,9 +3,9 @@ package org.apache.pinot.plugin.minion.tasks;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionTaskUtils.setCustomerBasedRetentionTaskMetadata;
+import static org.apache.pinot.minion.MinionContext.getInstance;
 
 import com.google.common.base.Preconditions;
-import java.lang.reflect.Field;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +50,6 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   public static final String NUM_RECORDS_MODIFIED_KEY = "numRecordsModified";
   private final MinionTaskZkMetadataManager _minionTaskZkMetadataManager;
 
-  private HelixPropertyStore<ZNRecord> propertyStore;
   private int _expectedVersion = Integer.MIN_VALUE;
   private long _nextWatermark;
 
@@ -184,11 +183,10 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
    * Checks that the watermarkMs from the ZNode matches the windowStartMs in the task configs.
    * If yes, caches the ZNode version to check during update.
    */
-  private void preProcess(PinotTaskConfig pinotTaskConfig)
-      throws NoSuchFieldException, IllegalAccessException {
+  private void preProcess(PinotTaskConfig pinotTaskConfig) {
     Map<String, String> configs = pinotTaskConfig.getConfigs();
     String offlineTableName = configs.get(MinionConstants.TABLE_NAME_KEY);
-    setPropertyStore();
+    HelixPropertyStore<ZNRecord> propertyStore = getInstance().getHelixPropertyStore();
 
     ZNRecord customerBasedRetentionTaskZNRecord = MinionTaskMetadataUtils
         .fetchMinionTaskMetadataZNRecord(propertyStore, TASK_TYPE, offlineTableName);
@@ -207,17 +205,11 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
     _expectedVersion = customerBasedRetentionTaskZNRecord.getVersion();
   }
 
-  private void setPropertyStore()
-      throws NoSuchFieldException, IllegalAccessException {
-    Field helixManagerField = MinionTaskZkMetadataManager.class.getDeclaredField("_helixManager");
-    helixManagerField.setAccessible(true);
-    propertyStore = (HelixPropertyStore<ZNRecord>) helixManagerField.get(_minionTaskZkMetadataManager);
-  }
-
   private void postProcess(PinotTaskConfig pinotTaskConfig) {
     String offlineTableName = pinotTaskConfig.getConfigs().get(MinionConstants.TABLE_NAME_KEY);
     CustomerBasedRetentionTaskMetadata newMinionMetadata =
         new CustomerBasedRetentionTaskMetadata(offlineTableName, _nextWatermark);
+    HelixPropertyStore<ZNRecord> propertyStore = getInstance().getHelixPropertyStore();
     setCustomerBasedRetentionTaskMetadata(newMinionMetadata, propertyStore, _expectedVersion);
   }
 
