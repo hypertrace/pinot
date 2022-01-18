@@ -1,6 +1,8 @@
 package org.apache.pinot.plugin.minion.tasks;
 
 import static org.apache.pinot.common.minion.MinionTaskMetadataUtils.fetchMinionTaskMetadataZNRecord;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.CUSTOMER_ID_KEY;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.CUSTOMER_RETENTION_CONFIG;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_END_MS_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
@@ -42,7 +44,6 @@ import org.slf4j.LoggerFactory;
 public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBasedRetentionTaskGenerator.class);
-  private static final String CUSTOMER_RETENTION_CONFIG = "customerRetentionConfig";
   public static final String COLUMNS_TO_CONVERT_KEY = "columnsToConvert";
   public static final int MAX_SEGMENTS_PER_TASK = 32;
 
@@ -96,6 +97,9 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
           .collect(Collectors.joining(", ", "{", "}"));
       SortedSet<String> sortedDistinctRetentionPeriods = getSortedDistinctRetentionPeriods(customerRetentionConfigMap);
 
+      // Get customer ID
+      String customerId = getCustomerId();
+
       // Generate one task per retention period. This is because we have to update watermarks based on retention period.
       for (String retentionPeriod : sortedDistinctRetentionPeriods) {
 
@@ -143,8 +147,9 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
           configs.put(MinionConstants.UPLOAD_URL_KEY, _clusterInfoAccessor.getVipUrl() + "/segments");
           configs.put(MinionConstants.ORIGINAL_SEGMENT_CRC_KEY, StringUtils.join(originalSegmentCRCs, ","));
 
-          // Customer Retention Config
+          // Customer config
           configs.put(CUSTOMER_RETENTION_CONFIG, customerRetentionConfigMapString);
+          configs.put(CUSTOMER_ID_KEY, customerId);
 
           // Execution window
           configs.put(WINDOW_START_MS_KEY, String.valueOf(windowStartMs));
@@ -187,6 +192,11 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     }
 
     return customerBasedRetentionTaskMetadata.getWatermarkMs();
+  }
+
+  private String getCustomerId() {
+    //todo: add code here
+    return "";
   }
 
   private Map<String,String> getCustomerRetentionConfig(){
