@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
@@ -26,14 +25,13 @@ import org.apache.pinot.common.utils.TarGzCompressionUtils;
 import org.apache.pinot.common.utils.fetcher.SegmentFetcherFactory;
 import org.apache.pinot.core.common.MinionConstants;
 import org.apache.pinot.core.minion.PinotTaskConfig;
+import org.apache.pinot.core.minion.SegmentPurger;
 import org.apache.pinot.minion.exception.TaskCancelledException;
 import org.apache.pinot.minion.executor.BaseTaskExecutor;
 import org.apache.pinot.minion.executor.MinionTaskZkMetadataManager;
 import org.apache.pinot.minion.executor.SegmentConversionResult;
 import org.apache.pinot.minion.executor.SegmentConversionUtils;
 import org.apache.pinot.spi.config.table.TableConfig;
-import org.apache.pinot.spi.data.DateTimeFieldSpec;
-import org.apache.pinot.spi.data.Schema;
 import org.apache.pinot.spi.utils.builder.TableNameBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +42,10 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private static final String TASK_TYPE = "customerBasedRetentionTask";
   private static final String TASK_TIME_SUFFIX = ".time";
   private static final String WINDOW_START_MS_KEY = "windowStartMs";
-  private static final String WINDOW_END_MS_KEY = "windowEndMs";
+  public static final String RECORD_PURGER_KEY = "recordPurger";
+  public static final String RECORD_MODIFIER_KEY = "recordModifier";
+  public static final String NUM_RECORDS_PURGED_KEY = "numRecordsPurged";
+  public static final String NUM_RECORDS_MODIFIED_KEY = "numRecordsModified";
   private final MinionTaskZkMetadataManager _minionTaskZkMetadataManager;
 
   private HelixPropertyStore<ZNRecord> propertyStore;
@@ -79,7 +80,11 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
     String crypterName = getTableConfig(tableNameWithType).getValidationConfig().getCrypterClassName();
 
     try {
-      List<File> inputSegmentFiles = new ArrayList<>();
+
+      File workingDir = new File(tempDataDir, "workingDir");
+      Preconditions.checkState(workingDir.mkdir());
+      List<SegmentConversionResult> segmentConversionResults = new ArrayList<>();
+
       for (int i = 0; i < downloadURLs.length; i++) {
         // Download the segment file
         File tarredSegmentFile = new File(tempDataDir, "tarredSegmentFile_" + i);
@@ -89,13 +94,10 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
         // Un-tar the segment file
         File segmentDir = new File(tempDataDir, "segmentDir_" + i);
         File indexDir = TarGzCompressionUtils.untar(tarredSegmentFile, segmentDir).get(0);
-        inputSegmentFiles.add(indexDir);
-      }
 
-      // Convert the segments
-      File workingDir = new File(tempDataDir, "workingDir");
-      Preconditions.checkState(workingDir.mkdir());
-      List<SegmentConversionResult> segmentConversionResults = convert(pinotTaskConfig, inputSegmentFiles, workingDir);
+        // Convert the segments
+        segmentConversionResults.add(convert(pinotTaskConfig, indexDir, workingDir));
+      }
 
       // Create a directory for converted tarred segment files
       File convertedTarredSegmentDir = new File(tempDataDir, "convertedTarredSegmentDir");
@@ -150,39 +152,29 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
     }
   }
 
-  /*
-  FIXME: shift in separate class
-         check segment name
+  /**
+   * Converts the segment based on the given task config and returns the conversion result.
    */
-  private List<SegmentConversionResult> convert(PinotTaskConfig pinotTaskConfig, List<File> originalIndexDirs,
-      File workingDir) throws Exception {
-    String taskType = pinotTaskConfig.getTaskType();
-    Map<String, String> configs = pinotTaskConfig.getConfigs();
-    LOGGER.info("Starting task: {} with configs: {}", taskType, configs);
-    long startMillis = System.currentTimeMillis();
+  private SegmentConversionResult convert(PinotTaskConfig pinotTaskConfig, File indexDir, File workingDir)
+      throws Exception {
+    Map<String, String> taskConfigs = pinotTaskConfig.getConfigs();
+    String tableNameWithType = taskConfigs.get(MinionConstants.TABLE_NAME_KEY);
+    TableConfig tableConfig = getTableConfig(tableNameWithType);
 
-    String offlineTableName = configs.get(MinionConstants.TABLE_NAME_KEY);
-    TableConfig tableConfig = getTableConfig(offlineTableName);
-    String timeColumn = tableConfig.getValidationConfig().getTimeColumnName();
-    Schema schema = getSchema(offlineTableName);
-    Set<String> schemaColumns = schema.getPhysicalColumnNames();
-    DateTimeFieldSpec dateTimeFieldSpec = schema.getSpecForTimeColumn(timeColumn);
-    Preconditions
-        .checkState(dateTimeFieldSpec != null, "No valid spec found for time column: %s in schema for table: %s",
-            timeColumn, offlineTableName);
+    SegmentPurger.RecordPurger recordPurger = new CustomerBasedRetentionPurger(taskConfigs);
 
-    long windowStartMs = Long.parseLong(configs.get(WINDOW_START_MS_KEY));
-    long windowEndMs = Long.parseLong(configs.get(WINDOW_END_MS_KEY));
-    _nextWatermark = windowEndMs;
+    SegmentPurger segmentPurger = new SegmentPurger(indexDir, workingDir, tableConfig, recordPurger, null);
+    File purgedSegmentFile = segmentPurger.purgeSegment();
+    if (purgedSegmentFile == null) {
+      purgedSegmentFile = indexDir;
+    }
 
-    /*
-      TODO : Add code
-     */
-
-    long endMillis = System.currentTimeMillis();
-    LOGGER.info("Finished task: {} with configs: {}. Total time: {}ms", taskType, configs, (endMillis - startMillis));
-    List<SegmentConversionResult> results = new ArrayList<>();
-    return results;
+    return new SegmentConversionResult.Builder().setFile(purgedSegmentFile).setTableNameWithType(tableNameWithType)
+        .setSegmentName(taskConfigs.get(MinionConstants.SEGMENT_NAME_KEY))
+        .setCustomProperty(RECORD_PURGER_KEY, segmentPurger.getRecordPurger())
+        .setCustomProperty(RECORD_MODIFIER_KEY, segmentPurger.getRecordModifier())
+        .setCustomProperty(NUM_RECORDS_PURGED_KEY, segmentPurger.getNumRecordsPurged())
+        .setCustomProperty(NUM_RECORDS_MODIFIED_KEY, segmentPurger.getNumRecordsModified()).build();
   }
 
   /**
