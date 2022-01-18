@@ -24,7 +24,7 @@ import static org.apache.pinot.minion.tasks.MinionTaskConstants.CusmtomPurgeTask
 public class CustomPurgeTaskConfig {
   private long timeWindowStartMs = 0l;
   private long timeWindowEndMs = Long.MAX_VALUE;
-  private int maxSegmentsPerIteration = 16;
+  private int maxSegmentsPerTask = DEFAULT_MAX_SEGMENTS_PER_TASK;
   private List<String> segmentNames = Lists.newArrayList();
   private Map<String, String> fieldValueFilter = Maps.newHashMap();
 
@@ -38,8 +38,8 @@ public class CustomPurgeTaskConfig {
           taskConfig.timeWindowEndMs = Long.valueOf(configs.get(TIME_WINDOW_END_MS_KEY));
       }
 
-      if (configs.get(MAX_SEGMENTS_KEY) != null) {
-          taskConfig.maxSegmentsPerIteration = Integer.valueOf(configs.get(MAX_SEGMENTS_KEY));
+      if (configs.get(MAX_SEGMENTS_PER_TASK_KEY) != null) {
+          taskConfig.maxSegmentsPerTask = Integer.valueOf(configs.get(MAX_SEGMENTS_PER_TASK_KEY));
       }
 
       if (configs.get(SEGMENT_NAMES_KEY) != null) {
@@ -52,10 +52,30 @@ public class CustomPurgeTaskConfig {
 
     for (Map.Entry<String, String> config : configs.entrySet()) {
       if(config.getKey().startsWith(FIELD_VALUE_FILTER_PREFIX_KEY)) {
-        taskConfig.fieldValueFilter.put(config.getKey(), config.getValue());
+        taskConfig.fieldValueFilter.put(config.getKey().substring(FIELD_VALUE_FILTER_PREFIX_KEY.length()), config.getValue());
       }
     }
-
     return taskConfig;
   }
+
+  public long getTimeWindowStartMs() {
+    return timeWindowStartMs;
+  }
+
+  public long getTimeWindowEndMs() {
+    return timeWindowEndMs;
+  }
+
+  public int getMaxSegmentsPerTask() {
+    return maxSegmentsPerTask;
+  }
+
+  public List<String> getSegmentNames() {
+    return segmentNames;
+  }
+
+  public Map<String, String> getFieldValueFilter() {
+    return fieldValueFilter;
+  }
+
 }

@@ -45,8 +45,8 @@ public class CustomPurgeTaskExecutor extends BaseSingleSegmentConversionExecutor
     String tableNameWithType = taskConfigs.get(MinionConstants.TABLE_NAME_KEY);
 
     TableConfig tableConfig = getTableConfig(tableNameWithType);
-
-    SegmentPurger.RecordPurger recordPurger = new FieldValueMatchPurger(taskConfigs);
+    CustomPurgeTaskConfig customPurgeTaskConfig = CustomPurgeTaskConfig.fromMap(taskConfigs);
+    SegmentPurger.RecordPurger recordPurger = new FieldValueMatchPurger(customPurgeTaskConfig.getFieldValueFilter());
 
     SegmentPurger segmentPurger = new SegmentPurger(indexDir, workingDir, tableConfig, recordPurger, null);
     File purgedSegmentFile = segmentPurger.purgeSegment();
