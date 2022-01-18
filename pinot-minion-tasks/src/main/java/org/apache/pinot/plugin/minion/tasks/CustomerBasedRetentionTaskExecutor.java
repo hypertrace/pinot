@@ -40,11 +40,11 @@ import org.slf4j.LoggerFactory;
 
 public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBasedRetentionTaskExecutor.class);
-  public static final String SEGMENT_CRC_SEPARATOR = ",";
+  private static final String SEGMENT_CRC_SEPARATOR = ",";
   private static final String TASK_TYPE = "customerBasedRetentionTask";
-  public static final String TASK_TIME_SUFFIX = ".time";
-  public static final String WINDOW_START_MS_KEY = "windowStartMs";
-  public static final String WINDOW_END_MS_KEY = "windowEndMs";
+  private static final String TASK_TIME_SUFFIX = ".time";
+  private static final String WINDOW_START_MS_KEY = "windowStartMs";
+  private static final String WINDOW_END_MS_KEY = "windowEndMs";
   private final MinionTaskZkMetadataManager _minionTaskZkMetadataManager;
 
   private HelixPropertyStore<ZNRecord> propertyStore;
