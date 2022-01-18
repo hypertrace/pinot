@@ -150,6 +150,10 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
     }
   }
 
+  /*
+  FIXME: shift in separate class
+         check segment name
+   */
   private List<SegmentConversionResult> convert(PinotTaskConfig pinotTaskConfig, List<File> originalIndexDirs,
       File workingDir) throws Exception {
     String taskType = pinotTaskConfig.getTaskType();
