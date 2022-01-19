@@ -7,12 +7,9 @@ import org.apache.pinot.spi.annotations.minion.TaskExecutorFactory;
 
 @TaskExecutorFactory
 public class CustomerBasedRetentionTaskExecutorFactory implements PinotTaskExecutorFactory {
-  private MinionTaskZkMetadataManager _zkMetadataManager;
 
   @Override
-  public void init(MinionTaskZkMetadataManager zkMetadataManager) {
-    _zkMetadataManager = zkMetadataManager;
-  }
+  public void init(MinionTaskZkMetadataManager zkMetadataManager) {}
 
   @Override
   public String getTaskType() {
@@ -21,6 +18,6 @@ public class CustomerBasedRetentionTaskExecutorFactory implements PinotTaskExecu
 
   @Override
   public PinotTaskExecutor create() {
-    return new CustomerBasedRetentionTaskExecutor(_zkMetadataManager);
+    return new CustomerBasedRetentionTaskExecutor();
   }
 }

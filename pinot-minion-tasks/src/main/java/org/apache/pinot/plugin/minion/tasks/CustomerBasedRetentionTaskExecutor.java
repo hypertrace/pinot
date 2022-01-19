@@ -51,14 +51,9 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   public static final String RECORD_MODIFIER_KEY = "recordModifier";
   public static final String NUM_RECORDS_PURGED_KEY = "numRecordsPurged";
   public static final String NUM_RECORDS_MODIFIED_KEY = "numRecordsModified";
-  private final MinionTaskZkMetadataManager _minionTaskZkMetadataManager;
 
   private int _expectedVersion = Integer.MIN_VALUE;
   private Map<String ,String> _nextWatermarkMap;
-
-  public CustomerBasedRetentionTaskExecutor(MinionTaskZkMetadataManager minionTaskZkMetadataManager) {
-    _minionTaskZkMetadataManager = minionTaskZkMetadataManager;
-  }
 
   @Override
   public List<SegmentConversionResult> executeTask(PinotTaskConfig pinotTaskConfig)
