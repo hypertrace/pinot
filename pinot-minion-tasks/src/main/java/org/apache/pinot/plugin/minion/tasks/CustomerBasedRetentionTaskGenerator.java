@@ -101,17 +101,16 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       // Generate one task per retention period. This is because we have to update watermarks based on retention period.
       for (String retentionPeriod : sortedDistinctRetentionPeriods) {
 
-        // Get the bucket size
-        long bucketMs = TimeUtils.convertPeriodToMillis(retentionPeriod);
+        long retentionPeriodMs = TimeUtils.convertPeriodToMillis(retentionPeriod);
 
         // Get watermark from OfflineSegmentsMetadata ZNode. WindowStart = watermark. WindowEnd = windowStart + bucket.
         long windowStartMs = 0;
         try {
-          windowStartMs = getWatermarkMs(offlineTableName, bucketMs, sortedDistinctRetentionPeriods);
+          windowStartMs = getWatermarkMs(offlineTableName, retentionPeriodMs, sortedDistinctRetentionPeriods);
         } catch (NoSuchFieldException | IllegalAccessException e) {
           e.printStackTrace();
         }
-        long windowEndMs = windowStartMs + bucketMs;
+        long windowEndMs = windowStartMs + retentionPeriodMs; // next watermark
 
         List<String> segmentNames = new ArrayList<>();
         List<String> downloadURLs = new ArrayList<>();
