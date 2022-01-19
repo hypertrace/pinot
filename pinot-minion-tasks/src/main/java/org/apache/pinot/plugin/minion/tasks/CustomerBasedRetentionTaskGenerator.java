@@ -98,9 +98,8 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       for (int i=0;i<sortedDistinctRetentionPeriods.size();i++) {
 
         String retentionPeriod = sortedDistinctRetentionPeriods.get(i);
-        long retentionPeriodMs = TimeUtils.convertPeriodToMillis(retentionPeriod);
 
-        long windowStartMs = getWindowStartTime(offlineTableName, retentionPeriodMs, sortedDistinctRetentionPeriods);
+        long windowStartMs = getWindowStartTime(offlineTableName, retentionPeriod, sortedDistinctRetentionPeriods);
         long windowEndMs = getWindowEndTime(i, sortedDistinctRetentionPeriods, windowStartMs); // next watermark
 
         List<String> segmentNames = new ArrayList<>();
@@ -156,7 +155,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
    * If the ZNode is null, computes the watermark using the min start time of all
    * segments from segment metadata + the retention period.
    */
-  private long getWatermarkMs(String offlineTableName, long bucketMs, List<String> sortedDistinctRetentionPeriods)
+  private long getWatermarkMs(String offlineTableName, String watermarkKey, List<String> sortedDistinctRetentionPeriods)
       throws NoSuchFieldException, IllegalAccessException {
     setPropertyStore();
 
@@ -180,12 +179,14 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       Map<String,String> watermarkMap = new HashMap<>();
       for (String retentionPeriod : sortedDistinctRetentionPeriods) {
 
+        long retentionPeriodMs = TimeUtils.convertPeriodToMillis(retentionPeriod);
+
         // Task will start from the earliest time + retention period
-        minStartTimeMs += bucketMs;
+        minStartTimeMs += retentionPeriodMs;
 
         // Round off according to the bucket. This ensures we align the offline segments to proper time boundaries
         // For example, if start time millis is 20200813T12:34:59, we want to create the first segment for window [20200813, 20200814)
-        long watermarkMs = (minStartTimeMs / bucketMs) * bucketMs;
+        long watermarkMs = (minStartTimeMs / retentionPeriodMs) * retentionPeriodMs;
 
         watermarkMap.put(retentionPeriod, Long.toString(watermarkMs));
       }
@@ -195,7 +196,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       setCustomerBasedRetentionTaskMetadata(customerBasedRetentionTaskMetadata, propertyStore, -1);
     }
 
-    String waterMark = customerBasedRetentionTaskMetadata.getWatermarkMsMap().get(bucketMs);
+    String waterMark = customerBasedRetentionTaskMetadata.getWatermarkMsMap().get(watermarkKey);
     return Long.parseLong(waterMark);
   }
 
@@ -232,10 +233,10 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return znRecord != null ? CustomerBasedRetentionTaskMetadata.fromZNRecord(znRecord) : null;
   }
 
-  private long getWindowStartTime(String offlineTableName, long retentionPeriodMs, List<String>sortedDistinctRetentionPeriods) {
+  private long getWindowStartTime(String offlineTableName, String retentionPeriod, List<String>sortedDistinctRetentionPeriods) {
     long windowStartMs = 0;
     try {
-      windowStartMs = getWatermarkMs(offlineTableName, retentionPeriodMs, sortedDistinctRetentionPeriods);
+      windowStartMs = getWatermarkMs(offlineTableName, retentionPeriod, sortedDistinctRetentionPeriods);
     } catch (NoSuchFieldException | IllegalAccessException e) {
       e.printStackTrace();
     }
