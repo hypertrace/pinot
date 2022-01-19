@@ -185,7 +185,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       Preconditions.checkState(minStartTimeMs != Long.MAX_VALUE);
 
       // Compute the watermark map
-      Map<String,Long> watermarkMap = new HashMap<>();
+      Map<String,String> watermarkMap = new HashMap<>();
       for (String retentionPeriod : sortedDistinctRetentionPeriods) {
 
         // Task will start from the earliest time + retention period
@@ -195,7 +195,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
         // For example, if start time millis is 20200813T12:34:59, we want to create the first segment for window [20200813, 20200814)
         long watermarkMs = (minStartTimeMs / bucketMs) * bucketMs;
 
-        watermarkMap.put(retentionPeriod, watermarkMs);
+        watermarkMap.put(retentionPeriod, Long.toString(watermarkMs));
       }
 
       // Create CustomerBasedRetentionTaskMetadata ZNode using watermark calculated above
@@ -203,7 +203,8 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       setCustomerBasedRetentionTaskMetadata(customerBasedRetentionTaskMetadata, propertyStore, -1);
     }
 
-    return customerBasedRetentionTaskMetadata.getWatermarkMsMap().get(bucketMs);
+    String waterMark = customerBasedRetentionTaskMetadata.getWatermarkMsMap().get(bucketMs);
+    return Long.parseLong(waterMark);
   }
 
   private String getCustomerId() {

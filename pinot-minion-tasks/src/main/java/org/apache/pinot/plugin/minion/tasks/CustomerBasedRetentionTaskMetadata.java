@@ -1,6 +1,7 @@
 package org.apache.pinot.plugin.minion.tasks;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.Map;
 import org.apache.helix.ZNRecord;
 import org.apache.pinot.spi.utils.JsonUtils;
 
@@ -24,11 +25,11 @@ public class CustomerBasedRetentionTaskMetadata {
   private static final String WATERMARK_KEY = "watermarkMs";
 
   private final String _tableNameWithType;
-  private final long _watermarkMs;
+  private final Map<String, String> _watermarkMsMap;
 
-  public CustomerBasedRetentionTaskMetadata(String tableNameWithType, long watermarkMs) {
+  public CustomerBasedRetentionTaskMetadata(String tableNameWithType, Map<String ,String> watermarkMs) {
     _tableNameWithType = tableNameWithType;
-    _watermarkMs = watermarkMs;
+    _watermarkMsMap = watermarkMs;
   }
 
   public String getTableNameWithType() {
@@ -38,19 +39,18 @@ public class CustomerBasedRetentionTaskMetadata {
   /**
    * Get the watermark in millis
    */
-  public long getWatermarkMs() {
-    return _watermarkMs;
+  public Map<String, String> getWatermarkMsMap() {
+    return _watermarkMsMap;
   }
 
-  public static CustomerBasedRetentionTaskMetadata fromZNRecord(
-      ZNRecord znRecord) {
-    long watermark = znRecord.getLongField(WATERMARK_KEY, 0);
+  public static CustomerBasedRetentionTaskMetadata fromZNRecord (ZNRecord znRecord) {
+    Map<String,String> watermark = znRecord.getMapField(WATERMARK_KEY);
     return new CustomerBasedRetentionTaskMetadata(znRecord.getId(), watermark);
   }
 
   public ZNRecord toZNRecord() {
     ZNRecord znRecord = new ZNRecord(_tableNameWithType);
-    znRecord.setLongField(WATERMARK_KEY, _watermarkMs);
+    znRecord.setMapField(WATERMARK_KEY, _watermarkMsMap);
     return znRecord;
   }
 
