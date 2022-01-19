@@ -21,6 +21,7 @@ import org.apache.pinot.spi.config.table.TableTaskConfig;
 import org.apache.pinot.spi.config.table.TableType;
 import org.apache.pinot.spi.utils.builder.TableConfigBuilder;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public class CustomerBasedRetentionTaskGeneratorTest {
 
@@ -58,7 +59,7 @@ public class CustomerBasedRetentionTaskGeneratorTest {
   }
 
   @Test
-  public void testEmptyTableConfig() {
+  public void testGenerateTasksEmptyTableConfig() {
     ClusterInfoAccessor mockClusterInfoProvide = mock(ClusterInfoAccessor.class);
     CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGenerator = new CustomerBasedRetentionTaskGenerator();
     customerBasedRetentionTaskGenerator.init(mockClusterInfoProvide);
@@ -89,6 +90,27 @@ public class CustomerBasedRetentionTaskGeneratorTest {
     // if same task and table, IN_PROGRESS, then don't generate again
     taskStatesMap.put(taskName, TaskState.IN_PROGRESS);
     List<PinotTaskConfig> pinotTaskConfigs = customerBasedRetentionTaskGenerator.generateTasks(Lists.newArrayList(offlineTableConfig));
+    assertTrue(pinotTaskConfigs.isEmpty());
+  }
+
+  @Test
+  public void testGenerateTasksNoSegments() {
+    Map<String, Map<String, String>> taskConfigsMap = new HashMap<>();
+    taskConfigsMap.put(TASK_TYPE, new HashMap<>());
+    TableConfig offlineTableConfig = getOfflineTableConfig(taskConfigsMap);
+
+    // No segments in table
+    ClusterInfoAccessor mockClusterInfoProvide = mock(ClusterInfoAccessor.class);
+    when(mockClusterInfoProvide.getTaskStates(TASK_TYPE)).thenReturn(new HashMap<>());
+
+    CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGenerator = new CustomerBasedRetentionTaskGenerator();
+    customerBasedRetentionTaskGenerator.init(mockClusterInfoProvide);
+
+    // mock watermark
+    CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGeneratorSpy = Mockito.spy(customerBasedRetentionTaskGenerator);
+    Mockito.doReturn(0L).when(customerBasedRetentionTaskGeneratorSpy).getWindowStartTime(Mockito.any(),Mockito.any(),Mockito.any());
+
+    List<PinotTaskConfig> pinotTaskConfigs = customerBasedRetentionTaskGeneratorSpy.generateTasks(Lists.newArrayList(offlineTableConfig));
     assertTrue(pinotTaskConfigs.isEmpty());
   }
 

@@ -153,6 +153,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   private Map<String,String> getCustomerRetentionConfig(){
     //todo: add code here
     Map<String,String> customerRetentionConfig = new HashMap<>();
+    customerRetentionConfig.put("customer_1", "1_day");
     return customerRetentionConfig;
   }
 
@@ -171,7 +172,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return offlineSegmentZKMetadataList;
   }
 
-  private long getWindowStartTime(String offlineTableName, String retentionPeriod, List<String>sortedDistinctRetentionPeriods) {
+long getWindowStartTime(String offlineTableName, String retentionPeriod, List<String>sortedDistinctRetentionPeriods) {
     long windowStartMs = 0;
     try {
       windowStartMs = getWatermarkMs(offlineTableName, retentionPeriod, sortedDistinctRetentionPeriods);
