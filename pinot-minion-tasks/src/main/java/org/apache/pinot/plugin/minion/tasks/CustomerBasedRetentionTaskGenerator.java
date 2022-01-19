@@ -11,6 +11,7 @@ import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionTaskUti
 import com.google.common.base.Preconditions;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -93,21 +94,29 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       String customerRetentionConfigMapString = customerRetentionConfigMap.keySet().stream()
           .map(key -> key + "=" + customerRetentionConfigMap.get(key))
           .collect(Collectors.joining(", ", "{", "}"));
-      SortedSet<String> sortedDistinctRetentionPeriods = getSortedDistinctRetentionPeriods(customerRetentionConfigMap);
+      List<String> sortedDistinctRetentionPeriods = getSortedDistinctRetentionPeriods(customerRetentionConfigMap);
 
       // Generate one task per retention period. This is because we have to update watermarks based on retention period.
-      for (String retentionPeriod : sortedDistinctRetentionPeriods) {
+      for (int i=0;i<sortedDistinctRetentionPeriods.size();i++) {
 
+        String retentionPeriod = sortedDistinctRetentionPeriods.get(i);
         long retentionPeriodMs = TimeUtils.convertPeriodToMillis(retentionPeriod);
 
-        // Get watermark from OfflineSegmentsMetadata ZNode. WindowStart = watermark. WindowEnd = windowStart + bucket.
         long windowStartMs = 0;
         try {
           windowStartMs = getWatermarkMs(offlineTableName, retentionPeriodMs, sortedDistinctRetentionPeriods);
         } catch (NoSuchFieldException | IllegalAccessException e) {
           e.printStackTrace();
         }
-        long windowEndMs = windowStartMs + retentionPeriodMs; // next watermark
+
+        long windowEndMs = 0; // next watermark
+        if (i+1 >= sortedDistinctRetentionPeriods.size()){
+          windowEndMs = Long.MAX_VALUE;
+        }
+        else {
+          windowEndMs = TimeUtils.convertPeriodToMillis(
+              windowStartMs + sortedDistinctRetentionPeriods.get(i+1));
+        }
 
         List<String> segmentNames = new ArrayList<>();
         List<String> downloadURLs = new ArrayList<>();
@@ -162,7 +171,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
    * If the ZNode is null, computes the watermark using the min start time of all
    * segments from segment metadata + the retention period.
    */
-  private long getWatermarkMs(String offlineTableName, long bucketMs, SortedSet<String> sortedDistinctRetentionPeriods)
+  private long getWatermarkMs(String offlineTableName, long bucketMs, List<String> sortedDistinctRetentionPeriods)
       throws NoSuchFieldException, IllegalAccessException {
     setPropertyStore();
     List<OfflineSegmentZKMetadata> offlineSegmentZKMetadataList =
@@ -209,9 +218,11 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return customerRetentionConfig;
   }
 
-  private SortedSet<String> getSortedDistinctRetentionPeriods(Map<String,String> customerRetentionConfigMap){
-    Set<String> distinctRetentionPeriodsSet = new HashSet<>(customerRetentionConfigMap.values());
-    return new TreeSet<>(distinctRetentionPeriodsSet);
+  private List<String> getSortedDistinctRetentionPeriods(Map<String,String> customerRetentionConfigMap){
+    Set<String> retentionPeriods = new HashSet<>(customerRetentionConfigMap.values());
+    List<String> distinctRetentionPeriods = new ArrayList<>(retentionPeriods);
+    Collections.sort(distinctRetentionPeriods);
+    return distinctRetentionPeriods;
   }
 
   private List<OfflineSegmentZKMetadata> getSortedOfflineSegmentZKMetadataList(String offlineTableName){
