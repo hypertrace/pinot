@@ -150,6 +150,46 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return pinotTaskConfigs;
   }
 
+  private Map<String,String> getCustomerRetentionConfig(){
+    //todo: add code here
+    Map<String,String> customerRetentionConfig = new HashMap<>();
+    return customerRetentionConfig;
+  }
+
+  private List<String> getSortedDistinctRetentionPeriods(Map<String,String> customerRetentionConfigMap){
+    Set<String> retentionPeriods = new HashSet<>(customerRetentionConfigMap.values());
+    List<String> distinctRetentionPeriods = new ArrayList<>(retentionPeriods);
+    Collections.sort(distinctRetentionPeriods);
+    return distinctRetentionPeriods;
+  }
+
+  private List<OfflineSegmentZKMetadata> getSortedOfflineSegmentZKMetadataList(String offlineTableName){
+    Comparator<OfflineSegmentZKMetadata> compareByStartTime =
+        (OfflineSegmentZKMetadata o1, OfflineSegmentZKMetadata o2) -> (int) (o1.getStartTimeMs()-o2.getStartTimeMs());
+    List<OfflineSegmentZKMetadata> offlineSegmentZKMetadataList = _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName);
+    offlineSegmentZKMetadataList.sort(compareByStartTime);
+    return offlineSegmentZKMetadataList;
+  }
+
+  private long getWindowStartTime(String offlineTableName, String retentionPeriod, List<String>sortedDistinctRetentionPeriods) {
+    long windowStartMs = 0;
+    try {
+      windowStartMs = getWatermarkMs(offlineTableName, retentionPeriod, sortedDistinctRetentionPeriods);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      e.printStackTrace();
+    }
+    return windowStartMs;
+  }
+
+  private long getWindowEndTime(int i, List<String> sortedDistinctRetentionPeriods, long windowStartMs) {
+    if (i+1 >= sortedDistinctRetentionPeriods.size()){
+      return Long.MAX_VALUE;
+    }
+    else {
+      return TimeUtils.convertPeriodToMillis(windowStartMs + sortedDistinctRetentionPeriods.get(i+1));
+    }
+  }
+
   /**
    * Get the watermark from the CustomerBasedRetentionTaskMetadata ZNode.
    * If the ZNode is null, computes the watermark using the min start time of all
@@ -200,27 +240,6 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return Long.parseLong(waterMark);
   }
 
-  private Map<String,String> getCustomerRetentionConfig(){
-    //todo: add code here
-    Map<String,String> customerRetentionConfig = new HashMap<>();
-    return customerRetentionConfig;
-  }
-
-  private List<String> getSortedDistinctRetentionPeriods(Map<String,String> customerRetentionConfigMap){
-    Set<String> retentionPeriods = new HashSet<>(customerRetentionConfigMap.values());
-    List<String> distinctRetentionPeriods = new ArrayList<>(retentionPeriods);
-    Collections.sort(distinctRetentionPeriods);
-    return distinctRetentionPeriods;
-  }
-
-  private List<OfflineSegmentZKMetadata> getSortedOfflineSegmentZKMetadataList(String offlineTableName){
-    Comparator<OfflineSegmentZKMetadata> compareByStartTime =
-        (OfflineSegmentZKMetadata o1, OfflineSegmentZKMetadata o2) -> (int) (o1.getStartTimeMs()-o2.getStartTimeMs());
-    List<OfflineSegmentZKMetadata> offlineSegmentZKMetadataList = _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName);
-    offlineSegmentZKMetadataList.sort(compareByStartTime);
-    return offlineSegmentZKMetadataList;
-  }
-
   private void setPropertyStore()
       throws NoSuchFieldException, IllegalAccessException {
     Field pinotHelixResourceManagerField = ClusterInfoAccessor.class.getDeclaredField("_pinotHelixResourceManager");
@@ -231,24 +250,5 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   private CustomerBasedRetentionTaskMetadata getCustomerBasedRetentionTaskMetadata(String offlineTableName){
     ZNRecord znRecord = fetchMinionTaskMetadataZNRecord(propertyStore, TASK_TYPE, offlineTableName);
     return znRecord != null ? CustomerBasedRetentionTaskMetadata.fromZNRecord(znRecord) : null;
-  }
-
-  private long getWindowStartTime(String offlineTableName, String retentionPeriod, List<String>sortedDistinctRetentionPeriods) {
-    long windowStartMs = 0;
-    try {
-      windowStartMs = getWatermarkMs(offlineTableName, retentionPeriod, sortedDistinctRetentionPeriods);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      e.printStackTrace();
-    }
-    return windowStartMs;
-  }
-
-  private long getWindowEndTime(int i, List<String> sortedDistinctRetentionPeriods, long windowStartMs) {
-    if (i+1 >= sortedDistinctRetentionPeriods.size()){
-      return Long.MAX_VALUE;
-    }
-    else {
-      return TimeUtils.convertPeriodToMillis(windowStartMs + sortedDistinctRetentionPeriods.get(i+1));
-    }
   }
 }
