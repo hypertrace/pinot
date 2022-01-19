@@ -107,7 +107,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
         // Get watermark from OfflineSegmentsMetadata ZNode. WindowStart = watermark. WindowEnd = windowStart + bucket.
         long windowStartMs = 0;
         try {
-          windowStartMs = getWatermarkMs(offlineTableName, bucketMs);
+          windowStartMs = getWatermarkMs(offlineTableName, bucketMs, sortedDistinctRetentionPeriods);
         } catch (NoSuchFieldException | IllegalAccessException e) {
           e.printStackTrace();
         }
@@ -166,7 +166,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
    * If the ZNode is null, computes the watermark using the min start time of all
    * segments from segment metadata + the retention period.
    */
-  private long getWatermarkMs(String offlineTableName, long bucketMs)
+  private long getWatermarkMs(String offlineTableName, long bucketMs, SortedSet<String> sortedDistinctRetentionPeriods)
       throws NoSuchFieldException, IllegalAccessException {
     setPropertyStore();
     List<OfflineSegmentZKMetadata> offlineSegmentZKMetadataList =
@@ -184,19 +184,26 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
       }
       Preconditions.checkState(minStartTimeMs != Long.MAX_VALUE);
 
-      // Task will start from the earliest time + retention period
-      minStartTimeMs += bucketMs;
+      // Compute the watermark map
+      Map<String,Long> watermarkMap = new HashMap<>();
+      for (String retentionPeriod : sortedDistinctRetentionPeriods) {
 
-      // Round off according to the bucket. This ensures we align the offline segments to proper time boundaries
-      // For example, if start time millis is 20200813T12:34:59, we want to create the first segment for window [20200813, 20200814)
-      long watermarkMs = (minStartTimeMs / bucketMs) * bucketMs;
+        // Task will start from the earliest time + retention period
+        minStartTimeMs += bucketMs;
+
+        // Round off according to the bucket. This ensures we align the offline segments to proper time boundaries
+        // For example, if start time millis is 20200813T12:34:59, we want to create the first segment for window [20200813, 20200814)
+        long watermarkMs = (minStartTimeMs / bucketMs) * bucketMs;
+
+        watermarkMap.put(retentionPeriod, watermarkMs);
+      }
 
       // Create CustomerBasedRetentionTaskMetadata ZNode using watermark calculated above
-      customerBasedRetentionTaskMetadata = new CustomerBasedRetentionTaskMetadata(offlineTableName, watermarkMs);
+      customerBasedRetentionTaskMetadata = new CustomerBasedRetentionTaskMetadata(offlineTableName, watermarkMap);
       setCustomerBasedRetentionTaskMetadata(customerBasedRetentionTaskMetadata, propertyStore, -1);
     }
 
-    return customerBasedRetentionTaskMetadata.getWatermarkMs();
+    return customerBasedRetentionTaskMetadata.getWatermarkMsMap().get(bucketMs);
   }
 
   private String getCustomerId() {
