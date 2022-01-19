@@ -1,8 +1,8 @@
 package org.apache.pinot.plugin.minion.tasks;
 
 import static org.apache.pinot.common.minion.MinionTaskMetadataUtils.fetchMinionTaskMetadataZNRecord;
-import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.CUSTOMER_ID_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.CUSTOMER_RETENTION_CONFIG;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.RETENTION_PERIOD_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_END_MS_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
@@ -95,9 +95,6 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
           .collect(Collectors.joining(", ", "{", "}"));
       SortedSet<String> sortedDistinctRetentionPeriods = getSortedDistinctRetentionPeriods(customerRetentionConfigMap);
 
-      // Get customer ID
-      String customerId = getCustomerId();
-
       // Generate one task per retention period. This is because we have to update watermarks based on retention period.
       for (String retentionPeriod : sortedDistinctRetentionPeriods) {
 
@@ -146,7 +143,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
           // Customer config
           configs.put(CUSTOMER_RETENTION_CONFIG, customerRetentionConfigMapString);
-          configs.put(CUSTOMER_ID_KEY, customerId);
+          configs.put(RETENTION_PERIOD_KEY, retentionPeriod);
 
           // Execution window
           configs.put(WINDOW_START_MS_KEY, String.valueOf(windowStartMs));
@@ -204,11 +201,6 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
     String waterMark = customerBasedRetentionTaskMetadata.getWatermarkMsMap().get(bucketMs);
     return Long.parseLong(waterMark);
-  }
-
-  private String getCustomerId() {
-    //todo: add code here
-    return "";
   }
 
   private Map<String,String> getCustomerRetentionConfig(){
