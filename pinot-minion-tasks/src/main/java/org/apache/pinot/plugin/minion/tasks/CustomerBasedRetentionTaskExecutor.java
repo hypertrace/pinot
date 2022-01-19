@@ -1,6 +1,8 @@
 package org.apache.pinot.plugin.minion.tasks;
 
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.CUSTOMER_ID_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_END_MS_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionTaskUtils.setCustomerBasedRetentionTaskMetadata;
 import static org.apache.pinot.minion.MinionContext.getInstance;
@@ -10,6 +12,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -51,7 +54,7 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private final MinionTaskZkMetadataManager _minionTaskZkMetadataManager;
 
   private int _expectedVersion = Integer.MIN_VALUE;
-  private long _nextWatermark;
+  private Map<String ,String> _nextWatermarkMap;
 
   public CustomerBasedRetentionTaskExecutor(MinionTaskZkMetadataManager minionTaskZkMetadataManager) {
     _minionTaskZkMetadataManager = minionTaskZkMetadataManager;
@@ -99,6 +102,9 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
         // Convert the segments
         segmentConversionResults.add(convert(pinotTaskConfig, indexDir, workingDir));
       }
+
+      // Update the watermark map
+      updateWatermarkMap(pinotTaskConfig);
 
       // Create a directory for converted tarred segment files
       File convertedTarredSegmentDir = new File(tempDataDir, "convertedTarredSegmentDir");
@@ -186,6 +192,7 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private void preProcess(PinotTaskConfig pinotTaskConfig) {
     Map<String, String> configs = pinotTaskConfig.getConfigs();
     String offlineTableName = configs.get(MinionConstants.TABLE_NAME_KEY);
+    String customerId = configs.get(CUSTOMER_ID_KEY);
     HelixPropertyStore<ZNRecord> propertyStore = getInstance().getHelixPropertyStore();
 
     ZNRecord customerBasedRetentionTaskZNRecord = MinionTaskMetadataUtils
@@ -196,8 +203,10 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
 
     CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata =
         CustomerBasedRetentionTaskMetadata.fromZNRecord(customerBasedRetentionTaskZNRecord);
+
     long windowStartMs = Long.parseLong(configs.get(WINDOW_START_MS_KEY));
-    Preconditions.checkState(customerBasedRetentionTaskMetadata.getWatermarkMs() == windowStartMs,
+    String watermarkMS = customerBasedRetentionTaskMetadata.getWatermarkMsMap().get(customerId);
+    Preconditions.checkState( Long.parseLong(watermarkMS) == windowStartMs,
         "watermarkMs in CustomerBasedRetentionTask metadata: %s does not match windowStartMs: %d in task configs for table: %s. "
             + "ZNode may have been modified by another task", customerBasedRetentionTaskMetadata, windowStartMs,
         offlineTableName);
@@ -208,7 +217,7 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private void postProcess(PinotTaskConfig pinotTaskConfig) {
     String offlineTableName = pinotTaskConfig.getConfigs().get(MinionConstants.TABLE_NAME_KEY);
     CustomerBasedRetentionTaskMetadata newMinionMetadata =
-        new CustomerBasedRetentionTaskMetadata(offlineTableName, _nextWatermark);
+        new CustomerBasedRetentionTaskMetadata(offlineTableName, _nextWatermarkMap);
     HelixPropertyStore<ZNRecord> propertyStore = getInstance().getHelixPropertyStore();
     setCustomerBasedRetentionTaskMetadata(newMinionMetadata, propertyStore, _expectedVersion);
   }
@@ -233,5 +242,28 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   private SegmentZKMetadataCustomMapModifier getSegmentZKMetadataCustomMapModifier() {
     return new SegmentZKMetadataCustomMapModifier(SegmentZKMetadataCustomMapModifier.ModifyMode.UPDATE, Collections
         .singletonMap(TASK_TYPE + TASK_TIME_SUFFIX, String.valueOf(System.currentTimeMillis())));
+  }
+
+  /**
+   * Updates the watermark map for the current retention period.
+   */
+  private void updateWatermarkMap(PinotTaskConfig pinotTaskConfig) {
+    Map<String, String> configs = pinotTaskConfig.getConfigs();
+    String offlineTableName = pinotTaskConfig.getConfigs().get(MinionConstants.TABLE_NAME_KEY);
+    String customerId = configs.get(CUSTOMER_ID_KEY);
+    HelixPropertyStore<ZNRecord> propertyStore = getInstance().getHelixPropertyStore();
+
+    ZNRecord customerBasedRetentionTaskZNRecord = MinionTaskMetadataUtils
+        .fetchMinionTaskMetadataZNRecord(propertyStore, TASK_TYPE, offlineTableName);
+    CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata =
+        CustomerBasedRetentionTaskMetadata.fromZNRecord(customerBasedRetentionTaskZNRecord);
+
+    Map<String,String> currentWatermarkMap = customerBasedRetentionTaskMetadata.getWatermarkMsMap();
+    String retentionPeriod = currentWatermarkMap.get(customerId);
+    long windowEndMs = Long.parseLong(configs.get(WINDOW_END_MS_KEY));
+
+    _nextWatermarkMap = new HashMap<>();
+    _nextWatermarkMap.putAll(currentWatermarkMap);
+    _nextWatermarkMap.put(retentionPeriod, Long.toString(windowEndMs));
   }
 }
