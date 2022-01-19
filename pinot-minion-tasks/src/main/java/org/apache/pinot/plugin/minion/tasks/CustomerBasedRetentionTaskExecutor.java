@@ -220,22 +220,25 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
    * Updates the watermark map for the current retention period.
    */
   private void updateWatermarkMap(PinotTaskConfig pinotTaskConfig) {
-    String offlineTableName = pinotTaskConfig.getConfigs().get(MinionConstants.TABLE_NAME_KEY);
-    HelixPropertyStore<ZNRecord> propertyStore = getInstance().getHelixPropertyStore();
-
-    ZNRecord customerBasedRetentionTaskZNRecord = MinionTaskMetadataUtils
-        .fetchMinionTaskMetadataZNRecord(propertyStore, TASK_TYPE, offlineTableName);
-    CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata =
-        CustomerBasedRetentionTaskMetadata.fromZNRecord(customerBasedRetentionTaskZNRecord);
-    Map<String,String> currentWatermarkMap = customerBasedRetentionTaskMetadata.getWatermarkMsMap();
-
     Map<String, String> configs = pinotTaskConfig.getConfigs();
     long windowEndMs = Long.parseLong(configs.get(WINDOW_END_MS_KEY));
     String retentionPeriod = configs.get(RETENTION_PERIOD_KEY);
-
     _nextWatermarkMap = new HashMap<>();
-    _nextWatermarkMap.putAll(currentWatermarkMap);
+    _nextWatermarkMap.putAll(getCurrentWatermarkMap(pinotTaskConfig));
     _nextWatermarkMap.put(retentionPeriod, Long.toString(windowEndMs));
+  }
+
+  private Map<String ,String> getCurrentWatermarkMap(PinotTaskConfig pinotTaskConfig) {
+    String offlineTableName = pinotTaskConfig.getConfigs().get(MinionConstants.TABLE_NAME_KEY);
+    HelixPropertyStore<ZNRecord> propertyStore = getInstance().getHelixPropertyStore();
+    ZNRecord customerBasedRetentionTaskZNRecord = MinionTaskMetadataUtils
+        .fetchMinionTaskMetadataZNRecord(propertyStore, TASK_TYPE, offlineTableName);
+    Preconditions.checkState(customerBasedRetentionTaskZNRecord != null,
+        "CustomerBasedRetentionTaskMetadata ZNRecord for table: %s should not be null. Exiting task.",
+        offlineTableName);
+    CustomerBasedRetentionTaskMetadata customerBasedRetentionTaskMetadata =
+        CustomerBasedRetentionTaskMetadata.fromZNRecord(customerBasedRetentionTaskZNRecord);
+    return customerBasedRetentionTaskMetadata.getWatermarkMsMap();
   }
 
   private List<Header> getHttpHeaderForSegment(String originalSegmentCrc) {
