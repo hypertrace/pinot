@@ -239,7 +239,6 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
   }
 
   private List<Header> getHttpHeaderForSegment(String originalSegmentCrc) {
-
     // Set original segment CRC into HTTP IF-MATCH header to check whether the original segment get refreshed, so that
     // the newer segment won't get override
     Header ifMatchHeader = new BasicHeader(HttpHeaders.IF_MATCH, originalSegmentCrc);
@@ -247,16 +246,14 @@ public class CustomerBasedRetentionTaskExecutor extends BaseTaskExecutor {
     // Set segment ZK metadata custom map modifier into HTTP header to modify the segment ZK metadata
     // NOTE: even segment is not changed, still need to upload the segment to update the segment ZK metadata so that
     // segment will not be submitted again
-    SegmentZKMetadataCustomMapModifier segmentZKMetadataCustomMapModifier = getSegmentZKMetadataCustomMapModifier();
+    SegmentZKMetadataCustomMapModifier segmentZKMetadataCustomMapModifier =
+        new SegmentZKMetadataCustomMapModifier(SegmentZKMetadataCustomMapModifier.ModifyMode.UPDATE, Collections
+        .singletonMap(TASK_TYPE + TASK_TIME_SUFFIX, String.valueOf(System.currentTimeMillis())));
+
     Header segmentZKMetadataCustomMapModifierHeader =
         new BasicHeader(FileUploadDownloadClient.CustomHeaders.SEGMENT_ZK_METADATA_CUSTOM_MAP_MODIFIER,
             segmentZKMetadataCustomMapModifier.toJsonString());
 
     return Arrays.asList(ifMatchHeader, segmentZKMetadataCustomMapModifierHeader);
-  }
-
-  private SegmentZKMetadataCustomMapModifier getSegmentZKMetadataCustomMapModifier() {
-    return new SegmentZKMetadataCustomMapModifier(SegmentZKMetadataCustomMapModifier.ModifyMode.UPDATE, Collections
-        .singletonMap(TASK_TYPE + TASK_TIME_SUFFIX, String.valueOf(System.currentTimeMillis())));
   }
 }
