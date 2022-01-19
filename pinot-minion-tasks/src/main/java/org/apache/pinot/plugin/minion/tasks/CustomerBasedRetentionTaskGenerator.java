@@ -42,8 +42,8 @@ import org.slf4j.LoggerFactory;
 public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBasedRetentionTaskGenerator.class);
-  public static final String COLUMNS_TO_CONVERT_KEY = "columnsToConvert";
-  public static final int MAX_SEGMENTS_PER_TASK = 32;
+  private static final String COLUMNS_TO_CONVERT_KEY = "columnsToConvert";
+  private static final int MAX_SEGMENTS_PER_TASK = 32;
 
   private ClusterInfoAccessor _clusterInfoAccessor;
   private HelixPropertyStore<ZNRecord> propertyStore;
@@ -161,7 +161,10 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return pinotTaskConfigs;
   }
 
-  // fixme: need next retention period
+  /**
+   * Get the watermark from the CustomerBasedRetentionTaskMetadata ZNode.
+   * If the ZNode is null, computes the watermark using either the start time config or the start time from segment metadata
+   */
   private long getWatermarkMs(String offlineTableName, long bucketMs)
       throws NoSuchFieldException, IllegalAccessException {
     setPropertyStore();
