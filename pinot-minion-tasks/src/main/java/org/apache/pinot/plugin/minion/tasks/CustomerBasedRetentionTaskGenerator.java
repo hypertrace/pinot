@@ -9,6 +9,7 @@ import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstan
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionTaskUtils.setCustomerBasedRetentionTaskMetadata;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import org.apache.helix.ZNRecord;
 import org.apache.helix.store.HelixPropertyStore;
 import org.apache.helix.task.TaskState;
 import org.apache.pinot.common.metadata.segment.OfflineSegmentZKMetadata;
+import org.apache.pinot.common.metadata.segment.SegmentZKMetadata;
 import org.apache.pinot.controller.helix.core.minion.ClusterInfoAccessor;
 import org.apache.pinot.controller.helix.core.minion.generator.PinotTaskGenerator;
 import org.apache.pinot.controller.helix.core.minion.generator.TaskGeneratorUtils;
@@ -166,14 +168,13 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   }
 
   private List<OfflineSegmentZKMetadata> getSortedOfflineSegmentZKMetadataList(String offlineTableName){
-    Comparator<OfflineSegmentZKMetadata> compareByStartTime =
-        (OfflineSegmentZKMetadata o1, OfflineSegmentZKMetadata o2) -> (int) (o1.getStartTimeMs()-o2.getStartTimeMs());
     List<OfflineSegmentZKMetadata> offlineSegmentZKMetadataList = _clusterInfoAccessor.getOfflineSegmentsMetadata(offlineTableName);
-    offlineSegmentZKMetadataList.sort(compareByStartTime);
+    offlineSegmentZKMetadataList.sort(Comparator.comparingLong(SegmentZKMetadata::getStartTimeMs));
     return offlineSegmentZKMetadataList;
   }
 
-long getWindowStartTime(String offlineTableName, String retentionPeriod, List<String>sortedDistinctRetentionPeriods) {
+  @VisibleForTesting
+  long getWindowStartTime(String offlineTableName, String retentionPeriod, List<String>sortedDistinctRetentionPeriods) {
     long windowStartMs = 0;
     try {
       windowStartMs = getWatermarkMs(offlineTableName, retentionPeriod, sortedDistinctRetentionPeriods);

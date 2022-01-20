@@ -161,7 +161,7 @@ public class CustomerBasedRetentionTaskGeneratorTest {
     // Add segments
     OfflineSegmentZKMetadata seg1 = getOfflineSegmentZKMetadata("testTable__0__0__12345", "download1", new HashMap<>(), 1L,1L);
     OfflineSegmentZKMetadata seg2 = getOfflineSegmentZKMetadata("testTable__1__0__12345", "download2",new HashMap<>(), 2L,2L);
-    when(mockClusterInfoProvide.getOfflineSegmentsMetadata(OFFLINE_TABLE_NAME)).thenReturn(Lists.newArrayList(seg1, seg2));
+    when(mockClusterInfoProvide.getOfflineSegmentsMetadata(OFFLINE_TABLE_NAME)).thenReturn(Lists.newArrayList(seg2, seg1)); // to test sorting behaviour
 
     CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGenerator = new CustomerBasedRetentionTaskGenerator();
     customerBasedRetentionTaskGenerator.init(mockClusterInfoProvide);
@@ -184,6 +184,11 @@ public class CustomerBasedRetentionTaskGeneratorTest {
     assertEquals(configs.get(RETENTION_PERIOD_KEY),"1h");
     assertEquals(configs.get(WINDOW_START_MS_KEY),"0");
     assertEquals(configs.get(WINDOW_END_MS_KEY),"9223372036854775807");
+  }
+
+  @Test
+  public void testGenerateTasksWithUnconvertedSegmentsWithMultipleRetentionPeriods() {
+
   }
 
   private TableConfig getOfflineTableConfig(Map<String, Map<String, String>> taskConfigsMap) {
