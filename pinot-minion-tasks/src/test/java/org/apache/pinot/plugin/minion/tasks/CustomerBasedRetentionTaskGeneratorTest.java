@@ -1,6 +1,11 @@
 package org.apache.pinot.plugin.minion.tasks;
 
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.COLUMNS_TO_CONVERT_KEY;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.CUSTOMER_RETENTION_CONFIG;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.RETENTION_PERIOD_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_END_MS_KEY;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.WINDOW_START_MS_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -12,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.helix.task.TaskState;
+import org.apache.pinot.common.metadata.segment.OfflineSegmentZKMetadata;
 import org.apache.pinot.common.minion.RealtimeToOfflineSegmentsTaskMetadata;
 import org.apache.pinot.controller.helix.core.minion.ClusterInfoAccessor;
 import org.apache.pinot.core.common.MinionConstants;
@@ -99,9 +105,11 @@ public class CustomerBasedRetentionTaskGeneratorTest {
     taskConfigsMap.put(TASK_TYPE, new HashMap<>());
     TableConfig offlineTableConfig = getOfflineTableConfig(taskConfigsMap);
 
-    // No segments in table
     ClusterInfoAccessor mockClusterInfoProvide = mock(ClusterInfoAccessor.class);
     when(mockClusterInfoProvide.getTaskStates(TASK_TYPE)).thenReturn(new HashMap<>());
+
+    // No segments in table
+    when(mockClusterInfoProvide.getOfflineSegmentsMetadata(OFFLINE_TABLE_NAME)).thenReturn(Lists.newArrayList());
 
     CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGenerator = new CustomerBasedRetentionTaskGenerator();
     customerBasedRetentionTaskGenerator.init(mockClusterInfoProvide);
@@ -114,7 +122,81 @@ public class CustomerBasedRetentionTaskGeneratorTest {
     assertTrue(pinotTaskConfigs.isEmpty());
   }
 
+  @Test
+  public void testGenerateTasksWithConvertedSegments() {
+    Map<String, Map<String, String>> taskConfigsMap = new HashMap<>();
+    taskConfigsMap.put(TASK_TYPE, new HashMap<>());
+    TableConfig offlineTableConfig = getOfflineTableConfig(taskConfigsMap);
+
+    ClusterInfoAccessor mockClusterInfoProvide = mock(ClusterInfoAccessor.class);
+    when(mockClusterInfoProvide.getTaskStates(TASK_TYPE)).thenReturn(new HashMap<>());
+
+    // Add segments
+    Map<String, String> customMap = new HashMap<>();
+    customMap.put(COLUMNS_TO_CONVERT_KEY + MinionConstants.TASK_TIME_SUFFIX,"");
+    OfflineSegmentZKMetadata seg1 = getOfflineSegmentZKMetadata("testTable__0__0__12345", "download1", customMap, 1L,1L);
+    OfflineSegmentZKMetadata seg2 = getOfflineSegmentZKMetadata("testTable__1__0__12345", "download2", customMap, 2L,2L);
+    when(mockClusterInfoProvide.getOfflineSegmentsMetadata(OFFLINE_TABLE_NAME)).thenReturn(Lists.newArrayList(seg1, seg2));
+
+    CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGenerator = new CustomerBasedRetentionTaskGenerator();
+    customerBasedRetentionTaskGenerator.init(mockClusterInfoProvide);
+
+    // mock watermark
+    CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGeneratorSpy = Mockito.spy(customerBasedRetentionTaskGenerator);
+    Mockito.doReturn(0L).when(customerBasedRetentionTaskGeneratorSpy).getWindowStartTime(Mockito.any(),Mockito.any(),Mockito.any());
+
+    List<PinotTaskConfig> pinotTaskConfigs = customerBasedRetentionTaskGeneratorSpy.generateTasks(Lists.newArrayList(offlineTableConfig));
+    assertTrue(pinotTaskConfigs.isEmpty());
+  }
+
+  @Test
+  public void testGenerateTasksWithUnconvertedSegments() {
+    Map<String, Map<String, String>> taskConfigsMap = new HashMap<>();
+    taskConfigsMap.put(TASK_TYPE, new HashMap<>());
+    TableConfig offlineTableConfig = getOfflineTableConfig(taskConfigsMap);
+
+    ClusterInfoAccessor mockClusterInfoProvide = mock(ClusterInfoAccessor.class);
+    when(mockClusterInfoProvide.getTaskStates(TASK_TYPE)).thenReturn(new HashMap<>());
+
+    // Add segments
+    OfflineSegmentZKMetadata seg1 = getOfflineSegmentZKMetadata("testTable__0__0__12345", "download1", new HashMap<>(), 1L,1L);
+    OfflineSegmentZKMetadata seg2 = getOfflineSegmentZKMetadata("testTable__1__0__12345", "download2",new HashMap<>(), 2L,2L);
+    when(mockClusterInfoProvide.getOfflineSegmentsMetadata(OFFLINE_TABLE_NAME)).thenReturn(Lists.newArrayList(seg1, seg2));
+
+    CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGenerator = new CustomerBasedRetentionTaskGenerator();
+    customerBasedRetentionTaskGenerator.init(mockClusterInfoProvide);
+
+    // mock watermark
+    CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGeneratorSpy = Mockito.spy(customerBasedRetentionTaskGenerator);
+    Mockito.doReturn(0L).when(customerBasedRetentionTaskGeneratorSpy).getWindowStartTime(Mockito.any(),Mockito.any(),Mockito.any());
+
+    List<PinotTaskConfig> pinotTaskConfigs = customerBasedRetentionTaskGeneratorSpy.generateTasks(Lists.newArrayList(offlineTableConfig));
+    assertEquals(pinotTaskConfigs.size(), 1);
+    assertEquals(pinotTaskConfigs.get(0).getTaskType(), TASK_TYPE);
+
+    Map<String,String > configs = pinotTaskConfigs.get(0).getConfigs();
+    assertEquals(configs.size(), 9);
+    assertEquals(configs.get(MinionConstants.TABLE_NAME_KEY),OFFLINE_TABLE_NAME);
+    assertEquals(configs.get(MinionConstants.SEGMENT_NAME_KEY),"testTable__0__0__12345,testTable__1__0__12345");
+    assertEquals(configs.get(MinionConstants.DOWNLOAD_URL_KEY),"download1,download2");
+    assertEquals(configs.get(MinionConstants.ORIGINAL_SEGMENT_CRC_KEY),"1,2");
+    assertEquals(configs.get(CUSTOMER_RETENTION_CONFIG),"{customer_1=1h}");
+    assertEquals(configs.get(RETENTION_PERIOD_KEY),"1h");
+    assertEquals(configs.get(WINDOW_START_MS_KEY),"0");
+    assertEquals(configs.get(WINDOW_END_MS_KEY),"9223372036854775807");
+  }
+
   private TableConfig getOfflineTableConfig(Map<String, Map<String, String>> taskConfigsMap) {
     return new TableConfigBuilder(TableType.OFFLINE).setTableName(RAW_TABLE_NAME).setTaskConfig(new TableTaskConfig(taskConfigsMap)).build();
+  }
+
+  private OfflineSegmentZKMetadata getOfflineSegmentZKMetadata(String segmentName, String downloadUrl, Map<String,String> customMap, long crc, long startTime) {
+    OfflineSegmentZKMetadata offlineSegmentZKMetadata = new OfflineSegmentZKMetadata();
+    offlineSegmentZKMetadata.setSegmentName(segmentName);
+    offlineSegmentZKMetadata.setDownloadUrl(downloadUrl);
+    offlineSegmentZKMetadata.setCustomMap(customMap);
+    offlineSegmentZKMetadata.setCrc(crc);
+    offlineSegmentZKMetadata.setStartTime(startTime);
+    return offlineSegmentZKMetadata;
   }
 }

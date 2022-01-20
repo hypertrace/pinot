@@ -1,6 +1,7 @@
 package org.apache.pinot.plugin.minion.tasks;
 
 import static org.apache.pinot.common.minion.MinionTaskMetadataUtils.fetchMinionTaskMetadataZNRecord;
+import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.COLUMNS_TO_CONVERT_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.CUSTOMER_RETENTION_CONFIG;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.RETENTION_PERIOD_KEY;
 import static org.apache.pinot.plugin.minion.tasks.CustomerBasedRetentionConstants.TASK_TYPE;
@@ -41,7 +42,6 @@ import org.slf4j.LoggerFactory;
 public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBasedRetentionTaskGenerator.class);
-  private static final String COLUMNS_TO_CONVERT_KEY = "columnsToConvert";
   private static final int MAX_SEGMENTS_PER_TASK = 32;
 
   private ClusterInfoAccessor _clusterInfoAccessor;
@@ -111,6 +111,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
         for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : sortedOfflineSegmentZKMetadataList) {
 
           // Generate up to maxSegmentsPerTask per retention period
+          // TODO: Add unit test
           if (numSegments > MAX_SEGMENTS_PER_TASK) {
             break;
           }
@@ -153,7 +154,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
   private Map<String,String> getCustomerRetentionConfig(){
     //todo: add code here
     Map<String,String> customerRetentionConfig = new HashMap<>();
-    customerRetentionConfig.put("customer_1", "1_day");
+    customerRetentionConfig.put("customer_1", "1h");
     return customerRetentionConfig;
   }
 

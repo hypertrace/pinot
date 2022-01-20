@@ -7,4 +7,5 @@ public class CustomerBasedRetentionConstants {
   public static final String CUSTOMER_RETENTION_CONFIG = "customerRetentionConfig";
   public static final String RETENTION_PERIOD_KEY = "retentionPeriod";
   public static final String CUSTOMER_ID_KEY = "customerId";
+  public static final String COLUMNS_TO_CONVERT_KEY = "columnsToConvert";
 }
