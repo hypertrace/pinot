@@ -191,6 +191,11 @@ public class CustomerBasedRetentionTaskGeneratorTest {
 
   }
 
+  @Test
+  public void testGetWatermark() {
+
+  }
+
   private TableConfig getOfflineTableConfig(Map<String, Map<String, String>> taskConfigsMap) {
     return new TableConfigBuilder(TableType.OFFLINE).setTableName(RAW_TABLE_NAME).setTaskConfig(new TableTaskConfig(taskConfigsMap)).build();
   }

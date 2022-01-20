@@ -243,8 +243,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return Long.parseLong(waterMark);
   }
 
-  private void setPropertyStore()
-      throws NoSuchFieldException, IllegalAccessException {
+  private void setPropertyStore() throws NoSuchFieldException, IllegalAccessException {
     Field pinotHelixResourceManagerField = ClusterInfoAccessor.class.getDeclaredField("_pinotHelixResourceManager");
     pinotHelixResourceManagerField.setAccessible(true);
     propertyStore = (HelixPropertyStore<ZNRecord>) pinotHelixResourceManagerField.get(_clusterInfoAccessor);
