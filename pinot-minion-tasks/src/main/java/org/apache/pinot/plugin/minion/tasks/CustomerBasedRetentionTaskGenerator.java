@@ -173,8 +173,7 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
     return offlineSegmentZKMetadataList;
   }
 
-  @VisibleForTesting
-  long getWindowStartTime(String offlineTableName, String retentionPeriod, List<String>sortedDistinctRetentionPeriods) {
+  private long getWindowStartTime(String offlineTableName, String retentionPeriod, List<String>sortedDistinctRetentionPeriods) {
     long windowStartMs = 0;
     try {
       windowStartMs = getWatermarkMs(offlineTableName, retentionPeriod, sortedDistinctRetentionPeriods);
@@ -198,7 +197,8 @@ public class CustomerBasedRetentionTaskGenerator implements PinotTaskGenerator{
    * If the ZNode is null, computes the watermark using the min start time of all
    * segments from segment metadata + the retention period.
    */
-  private long getWatermarkMs(String offlineTableName, String watermarkKey, List<String> sortedDistinctRetentionPeriods)
+  @VisibleForTesting
+  long getWatermarkMs(String offlineTableName, String watermarkKey, List<String> sortedDistinctRetentionPeriods)
       throws NoSuchFieldException, IllegalAccessException {
     setPropertyStore();
 

@@ -100,7 +100,7 @@ public class CustomerBasedRetentionTaskGeneratorTest {
   }
 
   @Test
-  public void testGenerateTasksNoSegments() {
+  public void testGenerateTasksNoSegments() throws NoSuchFieldException, IllegalAccessException {
     Map<String, Map<String, String>> taskConfigsMap = new HashMap<>();
     taskConfigsMap.put(TASK_TYPE, new HashMap<>());
     TableConfig offlineTableConfig = getOfflineTableConfig(taskConfigsMap);
@@ -116,14 +116,14 @@ public class CustomerBasedRetentionTaskGeneratorTest {
 
     // mock watermark
     CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGeneratorSpy = Mockito.spy(customerBasedRetentionTaskGenerator);
-    Mockito.doReturn(0L).when(customerBasedRetentionTaskGeneratorSpy).getWindowStartTime(Mockito.any(),Mockito.any(),Mockito.any());
+    Mockito.doReturn(0L).when(customerBasedRetentionTaskGeneratorSpy).getWatermarkMs(Mockito.any(),Mockito.any(),Mockito.any());
 
     List<PinotTaskConfig> pinotTaskConfigs = customerBasedRetentionTaskGeneratorSpy.generateTasks(Lists.newArrayList(offlineTableConfig));
     assertTrue(pinotTaskConfigs.isEmpty());
   }
 
   @Test
-  public void testGenerateTasksWithConvertedSegments() {
+  public void testGenerateTasksWithConvertedSegments() throws NoSuchFieldException, IllegalAccessException {
     Map<String, Map<String, String>> taskConfigsMap = new HashMap<>();
     taskConfigsMap.put(TASK_TYPE, new HashMap<>());
     TableConfig offlineTableConfig = getOfflineTableConfig(taskConfigsMap);
@@ -143,14 +143,14 @@ public class CustomerBasedRetentionTaskGeneratorTest {
 
     // mock watermark
     CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGeneratorSpy = Mockito.spy(customerBasedRetentionTaskGenerator);
-    Mockito.doReturn(0L).when(customerBasedRetentionTaskGeneratorSpy).getWindowStartTime(Mockito.any(),Mockito.any(),Mockito.any());
+    Mockito.doReturn(0L).when(customerBasedRetentionTaskGeneratorSpy).getWatermarkMs(Mockito.any(),Mockito.any(),Mockito.any());
 
     List<PinotTaskConfig> pinotTaskConfigs = customerBasedRetentionTaskGeneratorSpy.generateTasks(Lists.newArrayList(offlineTableConfig));
     assertTrue(pinotTaskConfigs.isEmpty());
   }
 
   @Test
-  public void testGenerateTasksWithUnconvertedSegments() {
+  public void testGenerateTasksWithUnconvertedSegments() throws NoSuchFieldException, IllegalAccessException {
     Map<String, Map<String, String>> taskConfigsMap = new HashMap<>();
     taskConfigsMap.put(TASK_TYPE, new HashMap<>());
     TableConfig offlineTableConfig = getOfflineTableConfig(taskConfigsMap);
@@ -168,7 +168,7 @@ public class CustomerBasedRetentionTaskGeneratorTest {
 
     // mock watermark
     CustomerBasedRetentionTaskGenerator customerBasedRetentionTaskGeneratorSpy = Mockito.spy(customerBasedRetentionTaskGenerator);
-    Mockito.doReturn(0L).when(customerBasedRetentionTaskGeneratorSpy).getWindowStartTime(Mockito.any(),Mockito.any(),Mockito.any());
+    Mockito.doReturn(0L).when(customerBasedRetentionTaskGeneratorSpy).getWatermarkMs(Mockito.any(),Mockito.any(),Mockito.any());
 
     List<PinotTaskConfig> pinotTaskConfigs = customerBasedRetentionTaskGeneratorSpy.generateTasks(Lists.newArrayList(offlineTableConfig));
     assertEquals(pinotTaskConfigs.size(), 1);
