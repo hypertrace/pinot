@@ -1,9 +1,13 @@
 {{- if .Values.server.enabled }}
 {{- range $name,$tierConfig := omit .Values.server.tiers "default" }}
-{{- $tier := mergeOverwrite (omit $.Values.server "tiers") $.Values.server.tiers.default $tierConfig }}
+{{- $tier := mergeOverwrite (deepCopy (omit $.Values.server "tiers")) (deepCopy $.Values.server.tiers.default) (deepCopy $tierConfig) }}
 {{- if $tier.podDisruptionBudget.enabled }}
 ---
+{{- if $.Capabilities.APIVersions.Has "policy/v1/PodDisruptionBudget" }}
+apiVersion: policy/v1
+{{- else }}
 apiVersion: policy/v1beta1
+{{- end }}
 kind: PodDisruptionBudget
 metadata:
   {{- if eq $name "tier1" }}
