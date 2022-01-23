@@ -43,7 +43,7 @@ spec:
               done
               sleep 5
               {{- range $name,$tierConfig := omit .Values.server.tiers "default" }}
-              {{- $tier := mergeOverwrite (omit $.Values.server "tiers") $.Values.server.tiers.default $tierConfig }}
+              {{- $tier := mergeOverwrite (deepCopy (omit $.Values.server "tiers")) (deepCopy $.Values.server.tiers.default) (deepCopy $tierConfig) }}
               {{- if $tier.tags }}
               i=0
               while [ $i -lt {{ int $tier.replicaCount }} ]; do
