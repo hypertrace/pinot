@@ -27,7 +27,7 @@ spec:
         values:
           - {{ .Values.minion.name }}
   endpoints:
-    - port: prometheus-jmx
+    - port: http-metrics
       interval: {{ .Values.minion.servicemonitor.interval }}
       {{- if .Values.minion.servicemonitor.secure }}
       scheme: https

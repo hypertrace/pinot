@@ -84,16 +84,12 @@ spec:
           imagePullPolicy: "{{ .Values.broker.prometheus.jmx.image.pullPolicy }}"
           command:
             - java
-            - -XX:+UnlockExperimentalVMOptions
-            - -XX:+UseCGroupMemoryLimitForHeap
-            - -XX:MaxRAMFraction=1
-            - -XshowSettings:vm
             - -jar
             - jmx_prometheus_httpserver.jar
             - {{ .Values.broker.prometheus.jmx.port | quote }}
             - /etc/jmx-config/prometheus-pinot-broker.yml
           ports:
-            - name: prometheus-jmx
+            - name: http-metrics
               containerPort: {{ .Values.broker.prometheus.jmx.port }}
           resources:
             {{- toYaml .Values.broker.prometheus.jmx.resources | nindent 12 }}
