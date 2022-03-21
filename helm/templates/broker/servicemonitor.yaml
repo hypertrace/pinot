@@ -27,7 +27,7 @@ spec:
         values:
           - {{ .Values.broker.name }}
   endpoints:
-    - port: prometheus-jmx
+    - port: http-metrics
       interval: {{ .Values.broker.servicemonitor.interval }}
       {{- if .Values.broker.servicemonitor.secure }}
       scheme: https

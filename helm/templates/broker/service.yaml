@@ -15,7 +15,7 @@ spec:
     - name: request
       port: {{ .Values.broker.service.port }}
     {{- if .Values.broker.prometheus.jmx.enabled }}
-    - name: prometheus-jmx
+    - name: http-metrics
       port: {{ .Values.broker.prometheus.jmx.port }}
     {{- end }}
   selector:

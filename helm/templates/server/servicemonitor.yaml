@@ -43,7 +43,7 @@ spec:
           - {{ $.Values.server.name }}-{{ $name }}
           {{- end }}
   endpoints:
-    - port: prometheus-jmx
+    - port: http-metrics
       interval: {{ $tier.servicemonitor.interval }}
       {{- if $tier.servicemonitor.secure }}
       scheme: https
