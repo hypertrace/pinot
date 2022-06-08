@@ -1,7 +1,7 @@
 apiVersion: v2
 # This version is same as of base image in Dockerfile. Make sure to update it in both files.
 # Helm chart uses .Chart.Version for image tag.
-appVersion: 0.7.1
+appVersion: 0.10.0
 name: pinot
 type: application
 description: Apache Pinot helm chart

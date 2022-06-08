@@ -20,24 +20,24 @@ public class HypertraceScalarFunctions {
   public static final String CONCAT_SKIP_NULL_FUNCTION_NAME = "concatSkipNull";
   public static final String STRING_EQUALS_FUNCTION_NAME = "stringEquals";
 
-  @ScalarFunction(name = HASH_FUNCTION_NAME)
+  @ScalarFunction(names = {HASH_FUNCTION_NAME})
   public static String hash(String value) {
     return replaceNullWithNullString(Hash.hash(replaceNullStringWithNull(value)));
   }
 
-  @ScalarFunction(name = DEFAULT_STRING_FUNCTION_NAME)
+  @ScalarFunction(names = {DEFAULT_STRING_FUNCTION_NAME})
   public static String defaultString(String value, String defaultValue) {
     return replaceNullWithNullString(
         DefaultValue.defaultString(
             replaceNullStringWithNull(value), replaceNullStringWithNull(defaultValue)));
   }
 
-  @ScalarFunction(name = STRING_EQUALS_FUNCTION_NAME)
+  @ScalarFunction(names = {STRING_EQUALS_FUNCTION_NAME})
   public static String stringEquals(String s1, String s2) {
     return String.valueOf(Equals.stringEquals(s1, s2));
   }
 
-  @ScalarFunction(name = CONDITIONAL_FUNCTION_NAME)
+  @ScalarFunction(names = {CONDITIONAL_FUNCTION_NAME})
   public static String conditional(String condition, String s1, String s2) {
     // Pinot should never pass in a null condition but in case it does, make sure that it behaves
     // the same as passing in "null" condition.
@@ -53,7 +53,7 @@ public class HypertraceScalarFunctions {
    * from pinot's out of the box implementation which concatenates the null string with the defined
    * arg, or concatenates two null strings if both are.
    */
-  @ScalarFunction(name = CONCAT_OR_NULL_FUNCTION_NAME)
+  @ScalarFunction(names = {CONCAT_OR_NULL_FUNCTION_NAME})
   public static String concatOrNull(String s1, String s2) {
     return replaceNullWithNullString(
         ConcatenateOrNull.concatenate(
@@ -66,7 +66,7 @@ public class HypertraceScalarFunctions {
    * implementation which concatenates the null string with the defined arg, or concatenates two
    * null strings if both are.
    */
-  @ScalarFunction(name = CONCAT_SKIP_NULL_FUNCTION_NAME)
+  @ScalarFunction(names = {CONCAT_SKIP_NULL_FUNCTION_NAME})
   public static String concatSkipNull(String s1, String s2) {
     return replaceNullWithNullString(
         Concatenate.concatenate(replaceNullStringWithNull(s1), replaceNullStringWithNull(s2)));

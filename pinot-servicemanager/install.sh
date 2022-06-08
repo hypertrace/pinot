@@ -38,10 +38,10 @@ appender.console.layout.pattern=%d{ABSOLUTE} %-5p [%t] %C{2} (%F:%L) - %m%n
 rootLogger.level=info
 rootLogger.appenderRefs=stdout
 rootLogger.appenderRef.stdout.ref=STDOUT
-# Hush reflections similarly to https://github.com/apache/incubator-pinot/pull/5001
+# Hush reflections similarly to https://github.com/apache/pinot/pull/5001
 logger.reflections.name=org.reflections
 logger.reflections.level=fatal
-# Hush Helix warnings until https://github.com/apache/incubator-pinot/issues/5974
+# Hush Helix warnings until https://github.com/apache/pinot/issues/5974
 logger.helix.name=org.apache.helix
 logger.helix.level=fatal
 # Ensure we can see timing messages
