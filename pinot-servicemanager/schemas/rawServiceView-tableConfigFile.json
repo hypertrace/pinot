@@ -16,6 +16,7 @@
   },
   "tableIndexConfig": {
     "streamConfigs": {
+      "group.id": "rawServiceView",
       "streamType": "kafka",
       "stream.kafka.consumer.type": "LowLevel",
       "stream.kafka.decoder.class.name": "org.hypertrace.pinot.plugins.GenericAvroMessageDecoder",
