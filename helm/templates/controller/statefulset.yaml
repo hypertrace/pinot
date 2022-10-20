@@ -45,13 +45,19 @@ spec:
               exitCode=1
               i=0
               while [ $i -le {{ .Values.zookeeper.retries }} ]; do
-                bin/zookeeper-shell.sh ZooKeeper -server {{ include "zookeeper.url" . | quote }} create {{ .Values.zookeeper.path | quote }} ""
+                bin/zookeeper-shell.sh ZooKeeper -server {{ include "zookeeper.url" . | quote }} ls {{ .Values.zookeeper.path | quote }}
                 if [ $? -eq 0 ]; then
                   exitCode=0
                   break
+                else
+                  bin/zookeeper-shell.sh ZooKeeper -server {{ include "zookeeper.url" . | quote }} create {{ .Values.zookeeper.path | quote }} ""
+                  if [ $? -eq 0 ]; then
+                    exitCode=0
+                    break
+                  fi
+                  sleep {{ .Values.zookeeper.retryInterval }}
+                  i=`expr $i + 1`
                 fi
-                sleep {{ .Values.zookeeper.retryInterval }}
-                i=`expr $i + 1`
               done
               exit $exitCode
       {{- end }}
