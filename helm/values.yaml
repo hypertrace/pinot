@@ -33,6 +33,7 @@ controller:
     size: 2Gi
     mountPath: /var/pinot/controller/data
     storageClass: "standard"
+    existingClaim: ""
 
   data:
     dir: /var/pinot/controller/data
@@ -130,7 +131,7 @@ controller:
       port: 7071
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.0
+        tag: 0.1.1
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -246,7 +247,7 @@ broker:
       port: 7071
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.0
+        tag: 0.1.1
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -352,7 +353,7 @@ minion:
       port: 7071
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.0
+        tag: 0.1.1
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -457,7 +458,7 @@ server:
       port: 7071
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.0
+        tag: 0.1.1
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -565,7 +566,7 @@ zookeeper:
   retries: 10
   retryInterval: 5
   image:
-    repository: "solsson/kafka"
-    tag: "2.1.0@sha256:ac3f06d87d45c7be727863f31e79fbfdcb9c610b51ba9cf03c75a95d602f15e1"
+    repository: "hypertrace/kafka"
+    tag: "0.2.0"
     pullPolicy: IfNotPresent
     pullSecret: ""

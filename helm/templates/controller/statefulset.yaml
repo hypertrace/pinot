@@ -45,13 +45,19 @@ spec:
               exitCode=1
               i=0
               while [ $i -le {{ .Values.zookeeper.retries }} ]; do
-                bin/zookeeper-shell.sh ZooKeeper -server {{ include "zookeeper.url" . | quote }} create {{ .Values.zookeeper.path | quote }} ""
+                bin/zookeeper-shell.sh ZooKeeper -server {{ include "zookeeper.url" . | quote }} ls {{ .Values.zookeeper.path | quote }}
                 if [ $? -eq 0 ]; then
                   exitCode=0
                   break
+                else
+                  bin/zookeeper-shell.sh ZooKeeper -server {{ include "zookeeper.url" . | quote }} create {{ .Values.zookeeper.path | quote }} ""
+                  if [ $? -eq 0 ]; then
+                    exitCode=0
+                    break
+                  fi
+                  sleep {{ .Values.zookeeper.retryInterval }}
+                  i=`expr $i + 1`
                 fi
-                sleep {{ .Values.zookeeper.retryInterval }}
-                i=`expr $i + 1`
               done
               exit $exitCode
       {{- end }}
@@ -133,9 +139,15 @@ spec:
         - name: log-config
           configMap:
             name: {{ include "pinot.controller.fullname" . }}-log-config
-        {{- if not .Values.controller.persistence.enabled }}
+        {{- if .Values.controller.persistence.existingClaim }}
+        - name: pinot-controller-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.controller.persistence.existingClaim | quote }}
+        {{- else }}
+          {{- if not .Values.controller.persistence.enabled }}
         - name: pinot-controller-storage
           emptyDir: {}
+          {{- end }}
         {{- end }}
         {{- if eq .Values.cluster.storage.scheme "gs" }}
         - name: gcs-iam-secret
@@ -163,6 +175,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
   {{- if .Values.controller.persistence.enabled }}
+    {{- if not .Values.controller.persistence.existingClaim }}
   volumeClaimTemplates:
     - metadata:
         name: pinot-controller-storage
@@ -179,5 +192,6 @@ spec:
         resources:
           requests:
             storage: {{ .Values.controller.persistence.size | quote}}
+    {{- end }}
   {{- end }}
 {{- end }}
