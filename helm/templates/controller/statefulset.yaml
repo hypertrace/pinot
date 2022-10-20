@@ -133,9 +133,15 @@ spec:
         - name: log-config
           configMap:
             name: {{ include "pinot.controller.fullname" . }}-log-config
-        {{- if not .Values.controller.persistence.enabled }}
+        {{- if .Values.controller.persistence.existingClaim }}
+        - name: pinot-controller-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.controller.persistence.existingClaim | quote }}
+        {{- else }}
+          {{- if not .Values.controller.persistence.enabled }}
         - name: pinot-controller-storage
           emptyDir: {}
+          {{- end }}
         {{- end }}
         {{- if eq .Values.cluster.storage.scheme "gs" }}
         - name: gcs-iam-secret
@@ -163,6 +169,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
   {{- if .Values.controller.persistence.enabled }}
+    {{- if not .Values.controller.persistence.existingClaim }}
   volumeClaimTemplates:
     - metadata:
         name: pinot-controller-storage
@@ -179,5 +186,6 @@ spec:
         resources:
           requests:
             storage: {{ .Values.controller.persistence.size | quote}}
+    {{- end }}
   {{- end }}
 {{- end }}
