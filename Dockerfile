@@ -30,6 +30,7 @@ FROM eclipse-temurin:11-jre-jammy
 LABEL maintainer="Hypertrace https://www.hypertrace.org/"
 
 ENV PINOT_HOME=/opt/pinot
+RUN apt update && apt upgrade -y && rm -rf /var/lib/apt/lists/*
 
 VOLUME ["${PINOT_HOME}/configs", "${PINOT_HOME}/data"]
 
