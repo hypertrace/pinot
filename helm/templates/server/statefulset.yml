@@ -172,6 +172,10 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if $tier.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- end }}
   {{- if $tier.persistence.enabled }}
   volumeClaimTemplates:
     - metadata:

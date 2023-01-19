@@ -102,6 +102,8 @@ controller:
 
   securityContext: {}
 
+  hostNetwork: false
+
   serviceAccount:
     create: true
     name: ""
@@ -218,6 +220,8 @@ broker:
 
   securityContext: {}
 
+  hostNetwork: false
+
   serviceAccount:
     create: true
     name: ""
@@ -238,13 +242,13 @@ broker:
 
   jmx:
     enabled: false
-    port: 7022
-    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7022 -Dcom.sun.management.jmxremote.rmi.port=7022 -Djava.rmi.server.hostname=127.0.0.1"
+    port: 7023
+    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7023 -Dcom.sun.management.jmxremote.rmi.port=7023 -Djava.rmi.server.hostname=127.0.0.1"
 
   prometheus:
     jmx:
       enabled: false
-      port: 7071
+      port: 7072
       image:
         repository: hypertrace/prometheus-jmx-exporter
         tag: 0.1.1
@@ -324,6 +328,8 @@ minion:
 
   securityContext: {}
 
+  hostNetwork: false
+
   serviceAccount:
     create: true
     name: ""
@@ -344,13 +350,13 @@ minion:
 
   jmx:
     enabled: false
-    port: 7022
-    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7022 -Dcom.sun.management.jmxremote.rmi.port=7022 -Djava.rmi.server.hostname=127.0.0.1"
+    port: 7025
+    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7025 -Dcom.sun.management.jmxremote.rmi.port=7025 -Djava.rmi.server.hostname=127.0.0.1"
 
   prometheus:
     jmx:
       enabled: false
-      port: 7071
+      port: 7074
       image:
         repository: hypertrace/prometheus-jmx-exporter
         tag: 0.1.1
@@ -429,6 +435,8 @@ server:
 
   securityContext: {}
 
+  hostNetwork: false
+
   serviceAccount:
     create: true
     name: ""
@@ -449,13 +457,13 @@ server:
 
   jmx:
     enabled: false
-    port: 7022
-    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7022 -Dcom.sun.management.jmxremote.rmi.port=7022 -Djava.rmi.server.hostname=127.0.0.1"
+    port: 7024
+    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7024 -Dcom.sun.management.jmxremote.rmi.port=7024 -Djava.rmi.server.hostname=127.0.0.1"
 
   prometheus:
     jmx:
       enabled: false
-      port: 7071
+      port: 7073
       image:
         repository: hypertrace/prometheus-jmx-exporter
         tag: 0.1.1
