@@ -243,7 +243,7 @@ broker:
   jmx:
     enabled: false
     port: 7023
-    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7023 -Dcom.sun.management.jmxremote.rmi.port=7022 -Djava.rmi.server.hostname=127.0.0.1"
+    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7023 -Dcom.sun.management.jmxremote.rmi.port=7023 -Djava.rmi.server.hostname=127.0.0.1"
 
   prometheus:
     jmx:
@@ -351,7 +351,7 @@ minion:
   jmx:
     enabled: false
     port: 7025
-    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7025 -Dcom.sun.management.jmxremote.rmi.port=7022 -Djava.rmi.server.hostname=127.0.0.1"
+    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7025 -Dcom.sun.management.jmxremote.rmi.port=7025 -Djava.rmi.server.hostname=127.0.0.1"
 
   prometheus:
     jmx:
@@ -458,7 +458,7 @@ server:
   jmx:
     enabled: false
     port: 7024
-    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7024 -Dcom.sun.management.jmxremote.rmi.port=7022 -Djava.rmi.server.hostname=127.0.0.1"
+    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7024 -Dcom.sun.management.jmxremote.rmi.port=7024 -Djava.rmi.server.hostname=127.0.0.1"
 
   prometheus:
     jmx:
