@@ -24,6 +24,7 @@ data:
     pinot.set.instance.id.to.hostname=true
     controller.data.dir={{ .Values.controller.data.dir }}
     controller.deleted.segments.retentionInDays={{ int .Values.controller.deleted.segments.retentionInDays }}
+    controller.offline.segment.interval.checker.frequencyPeriod = {{ .Values.controller.offline.segment.interval.checker.frequencyPeriod }}
     {{- if eq .Values.cluster.storage.scheme "gs" }}
     {{- if .Values.cluster.splitCommitEnabled }}
     controller.allow.hlc.tables=false
