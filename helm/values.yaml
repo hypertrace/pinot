@@ -46,6 +46,12 @@ controller:
     segments:
       retentionInDays: 2
 
+  offline:
+    segment:
+      interval:
+        checker:
+          frequencyPeriod: 3h
+
   taskScheduler:
     enabled: false
     frequencyInSeconds: 3600
