@@ -257,7 +257,7 @@ broker:
       port: 7072
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.1
+        tag: 0.1.2
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -365,7 +365,7 @@ minion:
       port: 7074
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.1
+        tag: 0.1.2
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -472,7 +472,7 @@ server:
       port: 7073
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.1
+        tag: 0.1.2
         pullPolicy: IfNotPresent
       resources:
         requests:
