@@ -139,7 +139,7 @@ controller:
       port: 7071
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.1
+        tag: 0.1.2
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -581,6 +581,6 @@ zookeeper:
   retryInterval: 5
   image:
     repository: "hypertrace/kafka"
-    tag: "0.2.0"
+    tag: "0.2.2"
     pullPolicy: IfNotPresent
     pullSecret: ""
