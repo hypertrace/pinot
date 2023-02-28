@@ -11,38 +11,5 @@ jobs:
   dependency-check:
     runs-on: ubuntu-20.04
     steps:
-       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: create checksum file
-        uses: hypertrace/github-actions/checksum@main
-
-      - name: Cache packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle
-          key: gradle-packages-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/checksum.txt') }}
-          restore-keys: |
-            gradle-packages-${{ runner.os }}-${{ github.job }}
-            gradle-packages-${{ runner.os }}
-
       - name: Dependency Check
-        uses: hypertrace/github-actions/gradle@main
-        with:
-          args: dependencyCheckAggregate
-
-      - name: Upload dependency check report
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: Dependency check report
-          path: ${{github.workspace}}/build/reports
-
-      - name: Upload dependency check report to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
-        with:
-          sarif_file: ${{github.workspace}}/build/reports/dependency-check-report.sarif
+        uses: hypertrace/github-actions/dependency-check@dependency-check-trivy-image-scan
