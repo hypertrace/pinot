@@ -7,7 +7,7 @@ on:
 
 jobs:
   merge-publish:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
        # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
