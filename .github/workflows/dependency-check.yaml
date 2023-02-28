@@ -29,7 +29,7 @@ jobs:
             gradle-packages-${{ runner.os }}-${{ github.job }}
             gradle-packages-${{ runner.os }}
 
-      - name: Build with Gradle
+      - name: Dependency Check
         uses: hypertrace/github-actions/gradle@main
         with:
           args: dependencyCheckAggregate
