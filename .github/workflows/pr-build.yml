@@ -4,7 +4,7 @@ on:
     branches:
       - main
   pull_request:
-    branches: 
+    branches:
       - main
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0
-      
+
       - name: create checksum file
         uses: hypertrace/github-actions/checksum@main
 
@@ -28,11 +28,31 @@ jobs:
           restore-keys: |
             gradle-packages-${{ runner.os }}-${{ github.job }}
             gradle-packages-${{ runner.os }}
-      
+
       - name: Build with Gradle
         uses: hypertrace/github-actions/gradle@main
-        with: 
+        with:
           args: build dockerBuildImages
+
+      - name: Determine container tag
+        id: tag
+        run: echo tag=$(./gradlew -q printDockerImageDefaultTag | head -1) >> $GITHUB_OUTPUT
+
+      - name: Scan container image
+        uses: azure/container-scan@v0.1
+        with:
+          image-name: hypertrace/pinot:${{ steps.tag.outputs.tag }}
+        env:
+          DOCKLE_HOST: "unix:///var/run/docker.sock"
+        continue-on-error: true
+
+      - name: Scan container image
+        uses: azure/container-scan@v0.1
+        with:
+          image-name: hypertrace/pinot-servicemanager:${{ steps.tag.outputs.tag }}
+        env:
+          DOCKLE_HOST: "unix:///var/run/docker.sock"
+        continue-on-error: true
 
   validate-helm-charts:
     runs-on: ubuntu-20.04
@@ -44,4 +64,3 @@ jobs:
 
       - name: validate charts
         uses: hypertrace/github-actions/validate-charts@main
-
