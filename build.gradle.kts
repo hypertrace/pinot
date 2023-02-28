@@ -1,7 +1,8 @@
 plugins {
   id("org.hypertrace.repository-plugin") version "0.4.0"
-  id("org.hypertrace.docker-plugin") version "0.9.0"
-  id("org.hypertrace.docker-publish-plugin") version "0.9.0"
+  id("org.hypertrace.docker-plugin") version "0.9.9"
+  id("org.hypertrace.docker-publish-plugin") version "0.9.9"
+  id("org.owasp.dependencycheck") version "8.1.1"
 }
 
 hypertraceDocker {
@@ -31,4 +32,11 @@ subprojects {
       targetCompatibility = JavaVersion.VERSION_11
     }
   }
+}
+
+dependencyCheck {
+  format = "ALL"
+  suppressionFile = "owasp-suppressions.xml"
+  scanConfigurations.add("runtimeClasspath")
+  failBuildOnCVSS = 7.0F
 }
