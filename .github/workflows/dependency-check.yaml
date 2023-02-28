@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  build:
+  dependency-check:
     runs-on: ubuntu-20.04
     steps:
        # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
