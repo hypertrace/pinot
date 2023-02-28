@@ -21,9 +21,13 @@ RUN curl -L -o $PINOT_HOME/lib/pinot-all-${JITPACK_TAG}-shaded.jar \
         https://jitpack.io/com/github/${JITPACK_REPO}/pinot-distribution/${JITPACK_TAG}/pinot-distribution-${JITPACK_TAG}-shaded.jar
 
 # Fetch plugin jars
-RUN for artifactId in pinot-kafka-2.0 pinot-kinesis pinot-thrift pinot-json pinot-csv pinot-confluent-avro pinot-avro pinot-protobuf pinot-batch-ingestion-standalone pinot-batch-ingestion-hadoop pinot-hdfs pinot-adls pinot-gcs pinot-s3 pinot-minion-builtin-tasks pinot-segment-uploader-default pinot-segment-writer-file-based pinot-dropwizard pinot-yammer; do \
+RUN for artifactId in pinot-kafka-2.0 pinot-kinesis pinot-thrift pinot-json pinot-csv pinot-confluent-avro pinot-avro pinot-protobuf pinot-batch-ingestion-standalone pinot-batch-ingestion-hadoop pinot-hdfs pinot-adls pinot-gcs pinot-s3 pinot-dropwizard; do \
       curl -L -o $PINOT_HOME/plugins/${artifactId}-${JITPACK_TAG}-shaded.jar \
           https://jitpack.io/com/github/${JITPACK_REPO}/${artifactId}/${JITPACK_TAG}/${artifactId}-${JITPACK_TAG}-shaded.jar; \
+    done; \
+    for artifactId in pinot-minion-builtin-tasks pinot-segment-uploader-default pinot-segment-writer-file-based; do \
+      curl -L -o $PINOT_HOME/plugins/${artifactId}-${JITPACK_TAG}.jar \
+          https://jitpack.io/com/github/${JITPACK_REPO}/${artifactId}/${JITPACK_TAG}/${artifactId}-${JITPACK_TAG}.jar; \
     done
 
 FROM eclipse-temurin:11-jre-jammy
