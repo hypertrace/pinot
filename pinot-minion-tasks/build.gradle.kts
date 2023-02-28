@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly("org.apache.pinot:pinot-core:0.10.0")
+    compileOnly("org.apache.pinot:pinot-core:0.12.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
 }
