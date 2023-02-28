@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
        # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
@@ -35,12 +35,12 @@ jobs:
           args: build dockerBuildImages
 
       - name: Run Trivy vulnerability scanner
-        uses: hypertrace/github-actions/trivy-image-scan@dependency-check-trivy-image-scan
+        uses: hypertrace/github-actions/trivy-image-scan@main
         with:
-          image-ref: hypertrace/pinot
+          image: hypertrace/pinot
 
   validate-helm-charts:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Check out code
         uses: actions/checkout@v2.3.4
