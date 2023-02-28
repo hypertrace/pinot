@@ -38,21 +38,34 @@ jobs:
         id: tag
         run: echo tag=$(./gradlew -q printDockerImageDefaultTag | head -1) >> $GITHUB_OUTPUT
 
-      - name: Scan container image
-        uses: azure/container-scan@v0.1
-        with:
-          image-name: hypertrace/pinot:${{ steps.tag.outputs.tag }}
-        env:
-          DOCKLE_HOST: "unix:///var/run/docker.sock"
-        continue-on-error: true
+      # - name: Scan container image
+      #   uses: azure/container-scan@v0.1
+      #   with:
+      #     image-name: hypertrace/pinot:${{ steps.tag.outputs.tag }}
+      #   env:
+      #     DOCKLE_HOST: "unix:///var/run/docker.sock"
+      #   continue-on-error: true
+      #
+      # - name: Scan container image
+      #   uses: azure/container-scan@v0.1
+      #   with:
+      #     image-name: hypertrace/pinot-servicemanager:${{ steps.tag.outputs.tag }}
+      #   env:
+      #     DOCKLE_HOST: "unix:///var/run/docker.sock"
+      #   continue-on-error: true
 
-      - name: Scan container image
-        uses: azure/container-scan@v0.1
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
         with:
-          image-name: hypertrace/pinot-servicemanager:${{ steps.tag.outputs.tag }}
-        env:
-          DOCKLE_HOST: "unix:///var/run/docker.sock"
-        continue-on-error: true
+          image-ref: hypertrace/pinot:${{ steps.tag.outputs.tag }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
 
   validate-helm-charts:
     runs-on: ubuntu-20.04
