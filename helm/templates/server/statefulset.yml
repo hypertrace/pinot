@@ -66,7 +66,7 @@ spec:
           ]
           env:
             - name: JAVA_OPTS
-              value: "{{ $tier.jvmOpts }} -Dlog4j2.configurationFile={{ $tier.log4j2ConfFile }} -Dplugins.dir={{ $tier.pluginsDir }}  {{ if $tier.jmx.enabled }}{{ $tier.jmx.opts }}{{ end }}"
+              value: "{{ $tier.jvmOpts }} -Dlog4j2.configurationFile={{ $tier.log4j2ConfFile }} -Dplugins.dir={{ $tier.pluginsDir }} -Djute.maxbuffer=4194304  {{ if $tier.jmx.enabled }}{{ $tier.jmx.opts }}{{ end }}"
           ports:
             - name: request
               containerPort: {{ $tier.ports.netty }}

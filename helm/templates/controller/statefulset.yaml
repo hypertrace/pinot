@@ -68,7 +68,7 @@ spec:
           args: [ "StartController", "-configFileName", "/var/pinot/controller/config/pinot-controller.conf" ]
           env:
             - name: JAVA_OPTS
-              value: "{{ .Values.controller.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.controller.log4j2ConfFile }} -Dplugins.dir={{ .Values.controller.pluginsDir }} {{ if .Values.controller.jmx.enabled }}{{ .Values.controller.jmx.opts }}{{ end }}"
+              value: "{{ .Values.controller.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.controller.log4j2ConfFile }} -Dplugins.dir={{ .Values.controller.pluginsDir }} -Djute.maxbuffer=4194304 {{ if .Values.controller.jmx.enabled }}{{ .Values.controller.jmx.opts }}{{ end }}"
           ports:
             - name: rest
               containerPort: {{ .Values.controller.port }}
