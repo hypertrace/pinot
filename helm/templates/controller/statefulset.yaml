@@ -105,6 +105,10 @@ spec:
             periodSeconds: {{ .Values.controller.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.controller.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.controller.readinessProbe.failureThreshold }}
+          {{- with .Values.controller.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.controller.resources | nindent 12 }}
         {{- if .Values.controller.prometheus.jmx.enabled }}

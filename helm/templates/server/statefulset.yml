@@ -106,6 +106,10 @@ spec:
             periodSeconds: {{ $tier.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ $tier.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ $tier.readinessProbe.failureThreshold }}
+          {{- with $tier.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources: {{ toYaml $tier.resources | nindent 12 }}
         {{- if $tier.prometheus.jmx.enabled }}
         - name: prometheus-jmx-exporter
