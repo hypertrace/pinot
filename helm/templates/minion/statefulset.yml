@@ -44,7 +44,7 @@ spec:
           ]
           env:
             - name: JAVA_OPTS
-              value: "{{ .Values.minion.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.minion.log4j2ConfFile }} -Dplugins.dir={{ .Values.minion.pluginsDir }} {{ if .Values.minion.jmx.enabled }}{{ .Values.minion.jmx.opts }}{{ end }}"
+              value: "{{ .Values.minion.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.minion.log4j2ConfFile }} -Dplugins.dir={{ .Values.minion.pluginsDir }} -Djute.maxbuffer=4194304 {{ if .Values.minion.jmx.enabled }}{{ .Values.minion.jmx.opts }}{{ end }}"
           ports:
             - name: request
               containerPort: {{ .Values.minion.port }}

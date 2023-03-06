@@ -5,8 +5,8 @@ plugins {
 }
 
 dependencies {
-  implementation("org.hypertrace.core.attribute.service:attribute-projection-functions:0.12.0")
-  compileOnly("org.apache.pinot:pinot-common:0.10.0")
+  implementation("org.hypertrace.core.attribute.service:attribute-projection-functions:0.14.18")
+  compileOnly("org.apache.pinot:pinot-common:0.12.0")
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
 }
