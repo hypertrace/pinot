@@ -426,12 +426,14 @@ server:
     type: RollingUpdate
 
   livenessProbe:
+    enabled: false
     initialDelaySeconds: 60
     periodSeconds: 10
     timeoutSeconds: 1
     failureThreshold: 3
 
   readinessProbe:
+    enabled: true
     initialDelaySeconds: 60
     periodSeconds: 10
     timeoutSeconds: 1
