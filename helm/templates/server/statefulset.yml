@@ -91,6 +91,7 @@ spec:
             - name: gcs-iam-secret
               mountPath: "/account"
             {{- end }}
+          {{- if $tier.livenessProbe.enabled }}
           livenessProbe:
             tcpSocket:
               port: {{ $tier.ports.netty }}
@@ -98,6 +99,8 @@ spec:
             periodSeconds: {{ $tier.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ $tier.livenessProbe.timeoutSeconds }}
             failureThreshold: {{ $tier.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if $tier.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
               path: /health
@@ -106,6 +109,7 @@ spec:
             periodSeconds: {{ $tier.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ $tier.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ $tier.readinessProbe.failureThreshold }}
+          {{- end }}
           {{- with $tier.startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}
