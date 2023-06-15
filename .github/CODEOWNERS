@@ -2,3 +2,6 @@
 
 # global
 * @hypertrace/data-platform-owners
+
+# GH action
+.github/ @hypertrace/ci-owners
