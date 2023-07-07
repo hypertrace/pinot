@@ -2,7 +2,7 @@ plugins {
   id("org.hypertrace.repository-plugin") version "0.4.0"
   id("org.hypertrace.docker-plugin") version "0.9.9"
   id("org.hypertrace.docker-publish-plugin") version "0.9.9"
-  id("org.owasp.dependencycheck") version "8.1.2"
+  id("org.owasp.dependencycheck") version "8.2.1"
 }
 
 hypertraceDocker {
