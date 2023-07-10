@@ -2,6 +2,7 @@ fullnameOverride: ""
 nameOverride: ""
 
 image:
+  registry: ""
   repository: hypertrace/pinot
   pullPolicy: IfNotPresent
   tagOverride: ""
