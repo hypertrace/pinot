@@ -9,13 +9,13 @@ on:
     branches:
       - main
   # workflow_dispatch will let us manually trigger the workflow from GitHub actions dashboard.
-  # See https://docs.github.com/en/free-pro-team@latest/actions/managing-workflow-runs/manually-running-a-workflow 
+  # See https://docs.github.com/en/free-pro-team@latest/actions/managing-workflow-runs/manually-running-a-workflow
   workflow_dispatch:
 
 jobs:
   build-on-linux:
-      # Ubuntu-20.04 runner comes with docker 19.03 and OpenJDK 11 and we are using that here. 
-    runs-on: ubuntu-20.04
+      # Ubuntu-20.04 runner comes with docker 19.03 and OpenJDK 11 and we are using that here.
+    runs-on: ubuntu-22.04
     name: Build and run Docker images
     steps:
       - name: Checkout Repository
@@ -25,24 +25,11 @@ jobs:
           repository: ${{github.event.pull_request.head.repo.full_name}}
           fetch-depth: 0
 
-      - name: create checksum file
-        uses: hypertrace/github-actions/checksum@main
-
-      - name: Cache packages
-        id: cache-packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle
-          key: gradle-packages-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/checksum.txt') }}
-          restore-keys: |
-            gradle-packages-${{ runner.os }}-${{ github.job }}
-            gradle-packages-${{ runner.os }}
-            
       - name: Build with Gradle
         uses: hypertrace/github-actions/gradle@main
-        with: 
+        with:
           args: dockerBuildImages
-          
+
       - name: Verify pinot-servicemanager image
         working-directory: ./.github/workflows/servicemanager
         # Below tests a docker-compose.yml service named 'sut' with a valid HEALTHCHECK instruction:
@@ -58,4 +45,4 @@ jobs:
           exit 1
       - name: Time pinot-servicemanager bootstrap
         working-directory: ./.github/workflows/servicemanager
-        run: docker-compose logs sut |grep since
+        run: docker-compose logs sut | grep since

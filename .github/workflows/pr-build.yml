@@ -40,3 +40,9 @@ jobs:
 
       - name: validate charts
         uses: hypertrace/github-actions/validate-charts@main
+
+  dependency-check:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Dependency Check
+        uses: hypertrace/github-actions/dependency-check@main
