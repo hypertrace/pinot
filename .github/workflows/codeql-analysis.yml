@@ -31,9 +31,6 @@ jobs:
       - name: create checksum file
         uses: hypertrace/github-actions/checksum@main
 
-      - name: create checksum file
-        uses: hypertrace/github-actions/checksum@main
-
       - name: Cache packages
         uses: actions/cache@v2
         with:
