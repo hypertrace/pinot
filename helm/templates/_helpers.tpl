@@ -219,6 +219,9 @@ Docker image to use for service manager
 Docker image to use for controller, broker, minion and server
 */}}
 {{- define "pinot.image" -}}
+  {{- if .Values.image.registry -}}
+    {{- printf "%s/" .Values.image.registry }}
+  {{- end -}}
   {{- if and .Values.image.tagOverride  -}}
     {{- printf "%s:%s" .Values.image.repository .Values.image.tagOverride }}
   {{- else -}}
