@@ -26,10 +26,6 @@ data:
     controller.deleted.segments.retentionInDays={{ int .Values.controller.deleted.segments.retentionInDays }}
     controller.offline.segment.interval.checker.frequencyPeriod = {{ .Values.controller.offline.segment.interval.checker.frequencyPeriod }}
     {{- if eq .Values.cluster.storage.scheme "gs" }}
-    {{- if .Values.cluster.splitCommitEnabled }}
-    controller.allow.hlc.tables=false
-    controller.enable.split.commit=true
-    {{- end }}
     controller.local.temp.dir={{ .Values.controller.local.temp.dir }}
     pinot.controller.storage.factory.class.gs=org.apache.pinot.plugin.filesystem.GcsPinotFS
     pinot.controller.storage.factory.gs.projectId={{ .Values.cluster.storage.gs.projectId }}
@@ -44,5 +40,10 @@ data:
     pinot.controller.segment.fetcher.protocols=file,http,s3
     pinot.controller.segment.fetcher.s3.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
     pinot.controller.storage.factory.s3.disableAcl=false
+    {{- end }}
+    {{- if .Values.cluster.splitCommitEnabled }}
+    controller.allow.hlc.tables=false
+    controller.enable.split.commit=true
+    controller.realtime.segment.deepStoreUploadRetryEnabled=true
     {{- end }}
 {{- end }}

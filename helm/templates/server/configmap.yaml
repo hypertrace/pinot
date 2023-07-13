@@ -40,10 +40,6 @@ data:
     {{- end }}
     {{- end }}
     {{- if eq $.Values.cluster.storage.scheme "gs" }}
-    {{- if $.Values.cluster.splitCommitEnabled }}
-    pinot.server.instance.enable.split.commit=true
-    pinot.server.instance.segment.store.uri={{ $.Values.controller.data.dir }}
-    {{- end }}
     pinot.server.storage.factory.class.gs=org.apache.pinot.plugin.filesystem.GcsPinotFS
     pinot.server.storage.factory.gs.projectId={{ $.Values.cluster.storage.gs.projectId }}
     pinot.server.storage.factory.gs.gcpKey={{ $.Values.cluster.storage.gs.gcpKey }}
@@ -56,6 +52,10 @@ data:
     pinot.server.segment.fetcher.protocols=file,http,s3
     pinot.server.segment.fetcher.s3.class=org.apache.pinot.common.utils.fetcher.PinotFSSegmentFetcher
     pinot.controller.storage.factory.s3.disableAcl=false
+    {{- end }}
+    {{- if $.Values.cluster.splitCommitEnabled }}
+    pinot.server.instance.enable.split.commit=true
+    pinot.server.instance.segment.store.uri={{ $.Values.controller.data.dir }}
     {{- end }}
 {{- end }}
 {{- end }}
