@@ -44,5 +44,6 @@ data:
     {{- if .Values.cluster.splitCommitEnabled }}
     controller.allow.hlc.tables=false
     controller.enable.split.commit=true
+    controller.realtime.segment.deepStoreUploadRetryEnabled=true
     {{- end }}
 {{- end }}
