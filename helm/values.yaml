@@ -13,7 +13,7 @@ cluster:
   name: pinot
   storage:
     scheme: file
-  splitCommitEnabled: false
+  splitCommitEnabled: true
 
 controller:
   name: controller
