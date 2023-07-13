@@ -506,6 +506,7 @@ server:
     tier1: {}
 
   tagJobEnabled: false
+  tagJobWaitforSideCar: true
 
 servicemanager:
   name: servicemanager
