@@ -36,7 +36,9 @@ spec:
                 exit $code
               }
               trap finish EXIT
+              {{- if .Values.server.tagJobWaitforSideCar }}
               until curl -s --head localhost:15000; do echo "$(date) waiting for sidecar"; sleep 3; done
+              {{- end }}
               until [ "$(curl -s --head --connect-timeout 3 -o /dev/null -w '%{http_code}\n' 'http://{{ include "pinot.controller.fullname" . }}-svc:{{ int $.Values.controller.service.port }}/')" == "200" ]; do
                 echo "$(date) waiting for {{ include "pinot.controller.fullname" . }} service"
                 sleep 3
