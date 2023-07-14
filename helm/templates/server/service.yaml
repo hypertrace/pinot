@@ -25,9 +25,21 @@ spec:
   ports:
     - name: request
       port: {{ $tier.ports.netty }}
+      protocol: TCP
+      targetPort: request
+    - name: http-admin
+      port: {{ $tier.ports.admin }}
+      protocol: TCP
+      targetPort: http-admin
+    - name: grpc
+      port: {{ $tier.ports.grpc }}
+      protocol: TCP
+      targetPort: grpc
     {{- if $tier.prometheus.jmx.enabled }}
     - name: http-metrics
       port: {{ $tier.prometheus.jmx.port }}
+      protocol: TCP
+      targetPort: http-metrics
     {{- end }}
   selector:
     app: {{ include "pinot.name" $ }}

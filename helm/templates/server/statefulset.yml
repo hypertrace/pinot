@@ -71,8 +71,11 @@ spec:
             - name: request
               containerPort: {{ $tier.ports.netty }}
               protocol: TCP
-            - name: admin
+            - name: http-admin
               containerPort: {{ $tier.ports.admin }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ $tier.ports.grpc }}
               protocol: TCP
             {{- if $tier.jmx.enabled }}
             - name: jmx

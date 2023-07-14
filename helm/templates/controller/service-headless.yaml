@@ -11,8 +11,10 @@ metadata:
 spec:
   clusterIP: None
   ports:
-    - name: rest
+    - name: http-controller
       port: {{ .Values.controller.service.port }}
+      protocol: TCP
+      targetPort: http-controller
   selector:
     app: {{ include "pinot.name" . }}
     release: {{ .Release.Name }}

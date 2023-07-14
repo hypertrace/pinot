@@ -12,8 +12,10 @@ metadata:
 spec:
   type: {{ .Values.broker.external.type }}
   ports:
-    - name: external-broker
+    - name: http-broker
       port: {{ .Values.broker.external.port }}
+      protocol: TCP
+      targetPort: http-broker
   selector:
     app: {{ include "pinot.name" . }}
     release: {{ .Release.Name }}

@@ -387,6 +387,7 @@ server:
   ports:
     netty: 8098
     admin: 8097
+    grpc: 8090
 
   replicaCount: 1
 

@@ -12,11 +12,15 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: request
+    - name: http-broker
       port: {{ .Values.broker.service.port }}
+      protocol: TCP
+      targetPort: http-broker
     {{- if .Values.broker.prometheus.jmx.enabled }}
     - name: http-metrics
       port: {{ .Values.broker.prometheus.jmx.port }}
+      protocol: TCP
+      targetPort: http-metrics
     {{- end }}
   selector:
     app: {{ include "pinot.name" . }}

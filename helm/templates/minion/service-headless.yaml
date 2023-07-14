@@ -12,7 +12,10 @@ metadata:
 spec:
   clusterIP: None
   ports:
-    - port: {{ .Values.minion.service.port }}
+    - name: http-minion
+      port: {{ .Values.minion.service.port }}
+      protocol: TCP
+      targetPort: http-minion
   selector:
     app: {{ include "pinot.name" . }}
     release: {{ .Release.Name }}
