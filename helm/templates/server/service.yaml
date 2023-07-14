@@ -23,10 +23,10 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: http-netty
+    - name: request
       port: {{ $tier.ports.netty }}
       protocol: TCP
-      targetPort: http-netty
+      targetPort: request
     - name: http-admin
       port: {{ $tier.ports.admin }}
       protocol: TCP
