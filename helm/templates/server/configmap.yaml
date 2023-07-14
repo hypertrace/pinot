@@ -24,6 +24,8 @@ data:
   pinot-server.conf: |-
     pinot.server.netty.port={{ $tier.ports.netty }}
     pinot.server.adminapi.port={{ $tier.ports.admin }}
+    pinot.server.grpc.port={{ $tier.ports.grpc }}
+    pinot.server.grpc.enable=true
     pinot.server.instance.dataDir={{ $tier.dataDir }}
     pinot.server.instance.segmentTarDir={{ $tier.segmentTarDir }}
     pinot.set.instance.id.to.hostname=true

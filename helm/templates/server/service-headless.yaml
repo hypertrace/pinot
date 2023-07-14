@@ -26,8 +26,18 @@ spec:
   clusterIP: None
   publishNotReadyAddresses: true
   ports:
-    - name: request
+    - name: http-netty
       port: {{ $tier.ports.netty }}
+      protocol: TCP
+      targetPort: http-netty
+    - name: http-admin
+      port: {{ $tier.ports.admin }}
+      protocol: TCP
+      targetPort: http-admin
+    - name: grpc
+      port: {{ $tier.ports.grpc }}
+      protocol: TCP
+      targetPort: grpc
   selector:
     app: {{ include "pinot.name" $ }}
     release: {{ $.Release.Name }}

@@ -12,11 +12,15 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: rest
+    - name: http-controller
       port: {{ .Values.controller.service.port }}
+      protocol: TCP
+      targetPort: http-controller
     {{- if .Values.controller.prometheus.jmx.enabled }}
     - name: http-metrics
       port: {{ .Values.controller.prometheus.jmx.port }}
+      protocol: TCP
+      targetPort: http-metrics
     {{- end }}
   selector:
     app: {{ include "pinot.name" . }}

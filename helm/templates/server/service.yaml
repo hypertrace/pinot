@@ -23,11 +23,23 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: request
+    - name: http-netty
       port: {{ $tier.ports.netty }}
+      protocol: TCP
+      targetPort: http-netty
+    - name: http-admin
+      port: {{ $tier.ports.admin }}
+      protocol: TCP
+      targetPort: http-admin
+    - name: grpc
+      port: {{ $tier.ports.grpc }}
+      protocol: TCP
+      targetPort: grpc
     {{- if $tier.prometheus.jmx.enabled }}
     - name: http-metrics
       port: {{ $tier.prometheus.jmx.port }}
+      protocol: TCP
+      targetPort: http-metrics
     {{- end }}
   selector:
     app: {{ include "pinot.name" $ }}

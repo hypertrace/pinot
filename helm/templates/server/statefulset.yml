@@ -68,11 +68,14 @@ spec:
             - name: JAVA_OPTS
               value: "{{ $tier.jvmOpts }} -Dlog4j2.configurationFile={{ $tier.log4j2ConfFile }} -Dplugins.dir={{ $tier.pluginsDir }} -Djute.maxbuffer=4194304  {{ if $tier.jmx.enabled }}{{ $tier.jmx.opts }}{{ end }}"
           ports:
-            - name: request
+            - name: http-netty
               containerPort: {{ $tier.ports.netty }}
               protocol: TCP
-            - name: admin
+            - name: http-admin
               containerPort: {{ $tier.ports.admin }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ $tier.ports.grpc }}
               protocol: TCP
             {{- if $tier.jmx.enabled }}
             - name: jmx

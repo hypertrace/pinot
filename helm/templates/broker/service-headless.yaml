@@ -12,7 +12,10 @@ metadata:
 spec:
   clusterIP: None
   ports:
-    - port: {{ .Values.broker.service.port }}
+    - name: http-broker
+      port: {{ .Values.broker.service.port }}
+      protocol: TCP
+      targetPort: http-broker
   selector:
     app: {{ include "pinot.name" . }}
     release: {{ .Release.Name }}
