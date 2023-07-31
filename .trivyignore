@@ -1,5 +1,11 @@
-# org.yaml:snakeyaml (from upstream opensource dependency)
+# org.yaml:snakeyaml (from upstream opensource shaded dependency. will be taken care during upgrade.)
 CVE-2022-1471 exp:2023-09-30
 
-# net.minidev:json-smart (from upstream opensource dependency)
+# net.minidev:json-smart (from upstream opensource shaded dependency. will be taken care during upgrade.)
 CVE-2023-1370 exp:2023-09-30
+
+# com.google.guava:guava (from upstream opensource shaded dependency. will be taken care during upgrade.)
+CVE-2023-2976 exp:2023-09-30
+
+# org.apache.helix:helix-core (from upstream opensource shaded dependency. will be taken care during upgrade.)
+CVE-2023-38647 exp:2023-09-30
