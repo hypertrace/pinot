@@ -5,7 +5,7 @@ FROM cimg/openjdk:14.0.2 AS install
 
 # Override to build an image from a fork. Ex. kotharironak
 ARG JITPACK_USER=hypertrace
-ARG JITPACK_TAG=hypertrace-0.12.0-8
+ARG JITPACK_TAG=hypertrace-0.12.0-10
 
 USER root
 WORKDIR /install
