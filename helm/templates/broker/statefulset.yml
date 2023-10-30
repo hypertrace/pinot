@@ -61,9 +61,6 @@ spec:
               containerPort: {{ .Values.broker.jmx.port }}
               protocol: TCP
             {{- end }}
-            {{- with .Values.extraEnvs }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
           volumeMounts:
             - name: config
               mountPath: /var/pinot/broker/config
