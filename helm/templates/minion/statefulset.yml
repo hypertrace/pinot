@@ -32,6 +32,10 @@ spec:
       annotations:
         {{- toYaml .Values.minion.podAnnotations | nindent 8 }}
     spec:
+      {{- with .Values.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: pinot-minion
           image: {{ include "pinot.image" . }}
@@ -45,6 +49,9 @@ spec:
           env:
             - name: JAVA_OPTS
               value: "{{ .Values.minion.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.minion.log4j2ConfFile }} -Dplugins.dir={{ .Values.minion.pluginsDir }} -Djute.maxbuffer=4194304 {{ if .Values.minion.jmx.enabled }}{{ .Values.minion.jmx.opts }}{{ end }}"
+            {{- with .Values.extraEnvs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           ports:
             - name: http-minion
               containerPort: {{ .Values.minion.port }}
@@ -67,6 +74,9 @@ spec:
             {{- if .Values.minion.persistence.enabled }}
             - name: pinot-minion-storage
               mountPath: "{{ .Values.minion.persistence.mountPath }}"
+            {{- end }}
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
             {{- end }}
 #          livenessProbe:
 #            httpGet:
@@ -122,6 +132,9 @@ spec:
         - name: gcs-iam-secret
           secret:
             secretName: {{ .Values.cluster.storage.gs.secretName }}
+        {{- end }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:

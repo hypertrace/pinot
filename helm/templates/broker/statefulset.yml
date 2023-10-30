@@ -32,6 +32,10 @@ spec:
       annotations:
         {{- toYaml .Values.broker.podAnnotations | nindent 8 }}
     spec:
+      {{- with .Values.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: pinot-broker
           image: {{ include "pinot.image" . }}
@@ -45,6 +49,9 @@ spec:
           env:
             - name: JAVA_OPTS
               value: "{{ .Values.broker.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.broker.log4j2ConfFile }} -Dplugins.dir={{ .Values.broker.pluginsDir }} -Djute.maxbuffer=4194304 {{ if .Values.broker.jmx.enabled }}{{ .Values.broker.jmx.opts }}{{ end }}"
+            {{- with .Values.extraEnvs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           ports:
             - name: http-broker
               containerPort: {{ .Values.broker.port }}
@@ -54,12 +61,18 @@ spec:
               containerPort: {{ .Values.broker.jmx.port }}
               protocol: TCP
             {{- end }}
+            {{- with .Values.extraEnvs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             - name: config
               mountPath: /var/pinot/broker/config
             - name: log-config
               mountPath: /opt/pinot/conf/pinot-broker-log4j2.xml
               subPath: "pinot-broker-log4j2.xml"
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /health
@@ -114,6 +127,9 @@ spec:
         - name: log-config
           configMap:
             name: {{ include "pinot.broker.fullname" . }}-log-config
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml .Values.imagePullSecrets | nindent 8 }}

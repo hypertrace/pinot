@@ -9,6 +9,14 @@ image:
 
 imagePullSecrets: []
 
+initContainers: []
+
+extraVolumes: []
+
+extraVolumeMounts: []
+
+extraEnvs: []
+
 cluster:
   name: pinot
   storage:
