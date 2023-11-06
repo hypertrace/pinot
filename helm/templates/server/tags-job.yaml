@@ -25,7 +25,7 @@ spec:
       serviceAccountName: {{ include "pinot.server.serviceAccountName" . }}
       containers:
         - name: {{ include "pinot.server.fullname" . }}-tags
-          image: curlimages/curl:latest
+          image: {{ .Values.server.tagJob.image.repository }}:{{ .Values.server.tagJob.image.tag }}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c"]
           args:

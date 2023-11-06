@@ -516,6 +516,10 @@ server:
 
   tagJobEnabled: false
   tagJobWaitforSideCar: true
+  tagJob:
+    image:
+      repository: curlimages/curl
+      tag: latest
 
 servicemanager:
   name: servicemanager
