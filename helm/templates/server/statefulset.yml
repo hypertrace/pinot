@@ -54,7 +54,7 @@ spec:
       {{- end }}
       annotations: {{ toYaml $tier.podAnnotations | nindent 8 }}
     spec:
-      {{- with .Values.initContainers }}
+      {{- with $.Values.initContainers }}
       initContainers:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -86,7 +86,7 @@ spec:
               containerPort: {{ $tier.jmx.port }}
               protocol: TCP
             {{- end }}
-            {{- with .Values.extraEnvs }}
+            {{- with $.Values.extraEnvs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           volumeMounts:
@@ -101,7 +101,7 @@ spec:
             - name: gcs-iam-secret
               mountPath: "/account"
             {{- end }}
-            {{- with .Values.extraVolumeMounts }}
+            {{- with $.Values.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- if $tier.livenessProbe.enabled }}
@@ -173,7 +173,7 @@ spec:
           secret:
             secretName: {{ $.Values.cluster.storage.gs.secretName }}
         {{- end }}
-        {{- with .Values.extraVolumes }}
+        {{- with $.Values.extraVolumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- if $.Values.imagePullSecrets }}
