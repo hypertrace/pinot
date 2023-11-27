@@ -12,3 +12,6 @@ CVE-2023-39410 exp:2023-12-31
 
 # org.apache.zookeeper:zookeeper (from upstream opensource shaded dependency. will be taken care during upgrade.)
 CVE-2023-44981 exp:2023-12-31
+
+# io.netty:netty-codec-http2 (from upstream opensource shaded dependency. will be taken care during upgrade.)
+GHSA-xpw8-rcwv-8f8p exp:2023-12-31
