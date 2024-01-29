@@ -1,4 +1,4 @@
-FROM alpine:latest AS builder
+FROM amd64/ubuntu:jammy AS builder
 
 ARG PINOT_VERSION=1.0.0
 ARG JITPACK_REPO=hypertrace/incubator-pinot
@@ -6,7 +6,7 @@ ARG JITPACK_TAG=hhypertrace-1.0.0-rc2
 
 ENV PINOT_HOME=/opt/pinot
 
-RUN apk add --update curl
+RUN apt-get -y update && apt-get -y install curl libjemalloc-dev
 
 # Create directory structure
 RUN curl -L https://archive.apache.org/dist/pinot/apache-pinot-$PINOT_VERSION/apache-pinot-$PINOT_VERSION-bin.tar.gz | tar -xzf- && \
@@ -30,7 +30,7 @@ RUN for artifactId in pinot-kafka-2.0 pinot-kinesis pinot-thrift pinot-json pino
           https://jitpack.io/com/github/${JITPACK_REPO}/${artifactId}/${JITPACK_TAG}/${artifactId}-${JITPACK_TAG}.jar; \
     done
 
-FROM eclipse-temurin:11-jre-jammy
+FROM amd64/eclipse-temurin:11-jre-jammy
 LABEL maintainer="Hypertrace https://www.hypertrace.org/"
 
 ENV PINOT_HOME=/opt/pinot
@@ -40,6 +40,10 @@ VOLUME ["${PINOT_HOME}/configs", "${PINOT_HOME}/data"]
 
 COPY --from=builder ${PINOT_HOME} ${PINOT_HOME}
 COPY build/plugins "${PINOT_HOME}/plugins"
+
+# use jemalloc
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libjemalloc* /usr/lib/x86_64-linux-gnu/
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
 
 # expose ports for controller/broker/server/admin
 EXPOSE 9000 8099 8098 8097 8096 9514
