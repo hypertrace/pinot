@@ -15,3 +15,10 @@ CVE-2023-44981 exp:2024-02-28
 
 # io.netty:netty-codec-http2 (from upstream opensource shaded dependency. will be taken care during upgrade.)
 GHSA-xpw8-rcwv-8f8p exp:2024-02-28
+
+# com.fasterxml.jackson
+CVE-2022-42003 exp:2024-02-28
+CVE-2022-42004 exp:2024-02-28
+
+# com.google.oauth-client:google-oauth-client
+CVE-2021-22573 exp:2024-02-28
