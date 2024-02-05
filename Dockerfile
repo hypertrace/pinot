@@ -30,7 +30,7 @@ RUN for artifactId in pinot-kafka-2.0 pinot-kinesis pinot-thrift pinot-json pino
           https://jitpack.io/com/github/${JITPACK_REPO}/${artifactId}/${JITPACK_TAG}/${artifactId}-${JITPACK_TAG}.jar; \
     done
 
-FROM amd64/eclipse-temurin:11-jre-jammy
+FROM amd64/eclipse-temurin:11-jdk-jammy
 LABEL maintainer="Hypertrace https://www.hypertrace.org/"
 
 ENV PINOT_HOME=/opt/pinot
