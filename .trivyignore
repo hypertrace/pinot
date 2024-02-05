@@ -1,2 +1,5 @@
 # org.apache.helix:helix-core (from upstream opensource shaded dependency. will be taken care during upgrade.)
-CVE-2023-38647 exp:2024-03-31
+CVE-2023-38647 exp:2024-06-30
+
+# org.apache.avro:avro (from upstream opensource shaded dependency. will be taken care during upgrade.)
+CVE-2023-39410 exp:2024-06-30

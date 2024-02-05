@@ -2,7 +2,7 @@ FROM amd64/ubuntu:jammy AS builder
 
 ARG PINOT_VERSION=1.0.0
 ARG JITPACK_REPO=hypertrace/incubator-pinot
-ARG JITPACK_TAG=hypertrace-1.0.0-rc5
+ARG JITPACK_TAG=hypertrace-1.0.0-rc6
 
 ENV PINOT_HOME=/opt/pinot
 
