@@ -6,7 +6,7 @@ ARG JITPACK_TAG=hypertrace-0.12.0-11
 
 ENV PINOT_HOME=/opt/pinot
 
-RUN apt-get -y update && apt-get -y install curl libjemalloc-dev
+RUN apt-get -y update && apt-get -y install curl
 
 # Create directory structure
 RUN curl -L https://archive.apache.org/dist/pinot/apache-pinot-$PINOT_VERSION/apache-pinot-$PINOT_VERSION-bin.tar.gz | tar -xzf- && \
@@ -34,19 +34,19 @@ FROM amd64/eclipse-temurin:11-jdk-jammy
 LABEL maintainer="Hypertrace https://www.hypertrace.org/"
 
 ENV PINOT_HOME=/opt/pinot
-RUN apt update && apt upgrade -y && apt install curl -y && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt upgrade -y && apt install curl libunwind-dev -y && rm -rf /var/lib/apt/lists/*
 
 VOLUME ["${PINOT_HOME}/configs", "${PINOT_HOME}/data"]
 
 COPY --from=builder ${PINOT_HOME} ${PINOT_HOME}
 COPY build/plugins "${PINOT_HOME}/plugins"
 
-# use jemalloc
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libjemalloc* /usr/lib/x86_64-linux-gnu/
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
-
 # async profiler for debugging
-RUN cd /opt && curl -L https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz -o async-profiler.tar.gz && tar -xzf async-profiler.tar.gz && rm async-profiler.tar.gz
+RUN cd /opt && curl -L -o async-profiler.tar.gz https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz && tar -xzf async-profiler.tar.gz && rm async-profiler.tar.gz
+
+# jemalloc custom install
+RUN cd /opt && curl -L -o jemalloc.tar.gz https://github.com/jemalloc/jemalloc/archive/refs/tags/5.3.0.tar.gz && tar -xzf jemalloc.tar.gz && rm jemalloc.tar.gz && cd jemalloc-5.3.0 && ./configure --prefix=/home/kishan/install/jemalloc --enable-prof --enable-prof-libunwind --enable-stats && make && make install
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
 
 # expose ports for controller/broker/server/admin
 EXPOSE 9000 8099 8098 8097 8096 9514
