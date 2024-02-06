@@ -46,7 +46,9 @@ RUN cd /opt && curl -L -o async-profiler.tar.gz https://github.com/async-profile
 
 # jemalloc custom install
 RUN cd /opt && curl -L -o jemalloc-5.3.0.tar.bz2 https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && tar -xjf jemalloc-5.3.0.tar.bz2 && rm jemalloc-5.3.0.tar.bz2 && cd jemalloc-5.3.0 && ./configure --enable-prof --enable-prof-libunwind --enable-stats && make && make install
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
+
+ENV PATH = "${PATH}:/opt/async-profiler-3.0-linux-x64/bin"
+# ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
 
 # expose ports for controller/broker/server/admin
 EXPOSE 9000 8099 8098 8097 8096 9514
