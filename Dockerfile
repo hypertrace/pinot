@@ -34,7 +34,7 @@ FROM amd64/eclipse-temurin:11-jdk-jammy
 LABEL maintainer="Hypertrace https://www.hypertrace.org/"
 
 ENV PINOT_HOME=/opt/pinot
-RUN apt update && apt upgrade -y && apt install curl bzip2 libunwind-dev -y && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt upgrade -y && apt install curl build-essential bzip2 libunwind-dev -y && rm -rf /var/lib/apt/lists/*
 
 VOLUME ["${PINOT_HOME}/configs", "${PINOT_HOME}/data"]
 
