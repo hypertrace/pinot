@@ -34,7 +34,7 @@ FROM amd64/eclipse-temurin:11-jdk-jammy
 LABEL maintainer="Hypertrace https://www.hypertrace.org/"
 
 ENV PINOT_HOME=/opt/pinot
-RUN apt update && apt upgrade -y && apt install curl libunwind-dev -y && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt upgrade -y && apt install curl bzip2 libunwind-dev -y && rm -rf /var/lib/apt/lists/*
 
 VOLUME ["${PINOT_HOME}/configs", "${PINOT_HOME}/data"]
 
@@ -45,7 +45,7 @@ COPY build/plugins "${PINOT_HOME}/plugins"
 RUN cd /opt && curl -L -o async-profiler.tar.gz https://github.com/async-profiler/async-profiler/releases/download/v3.0/async-profiler-3.0-linux-x64.tar.gz && tar -xzf async-profiler.tar.gz && rm async-profiler.tar.gz
 
 # jemalloc custom install
-RUN cd /opt && curl -L -o jemalloc-5.3.0.tar.bz2 https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && tar -xjf jemalloc-5.3.0.tar.bz2 && rm jemalloc-5.3.0.tar.bz2 && cd jemalloc-5.3.0 && ./configure --prefix=/home/kishan/install/jemalloc --enable-prof --enable-prof-libunwind --enable-stats && make && make install
+RUN cd /opt && curl -L -o jemalloc-5.3.0.tar.bz2 https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && tar -xjf jemalloc-5.3.0.tar.bz2 && rm jemalloc-5.3.0.tar.bz2 && cd jemalloc-5.3.0 && ./configure --enable-prof --enable-prof-libunwind --enable-stats && make && make install
 ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
 
 # expose ports for controller/broker/server/admin
