@@ -172,7 +172,7 @@ controller:
     namespace: monitoring
 
   logging:
-    level: info
+    level: error
 
 broker:
   name: broker
@@ -278,7 +278,7 @@ broker:
           memory: "256Mi"
 
   logging:
-    level: info
+    level: error
 
 minion:
   name: minion
@@ -386,7 +386,7 @@ minion:
           memory: "256Mi"
 
   logging:
-    level: info
+    level: error
 
 server:
   name: server
@@ -508,7 +508,7 @@ server:
       type: pd-standard
 
   logging:
-    level: info
+    level: error
 
   tiers:
     default: {}
