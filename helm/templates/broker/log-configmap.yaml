@@ -25,7 +25,7 @@ data:
           <AppenderRef ref="console"/>
         </Root>
         <AsyncLogger name="org.reflections" level="error" additivity="false"/>
-        <AsyncLogger name="org.apache.pinot.broker.querylog.QueryLogger" level="info"/>
+        <AsyncLogger name="org.apache.pinot.broker.querylog.QueryLogger" level="info" additivity="false"/>
       </Loggers>
     </Configuration>
 {{- end }}
