@@ -11,7 +11,7 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   pinot-controller-log4j2.xml: |-
-    <Configuration>
+    <Configuration monitorInterval="30">
       <Appenders>
         <Console name="console" target="SYSTEM_OUT">
           <PatternLayout>

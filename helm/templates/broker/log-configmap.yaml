@@ -11,7 +11,7 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   pinot-broker-log4j2.xml: |-
-    <Configuration>
+    <Configuration monitorInterval="30">
       <Appenders>
         <Console name="console" target="SYSTEM_OUT">
           <PatternLayout>
@@ -25,7 +25,7 @@ data:
           <AppenderRef ref="console"/>
         </Root>
         <AsyncLogger name="org.reflections" level="error" additivity="false"/>
-        <AsyncLogger name="org.apache.pinot.broker.querylog.QueryLogger" level="info" additivity="false"/>
+        <Logger name="org.apache.pinot.broker.querylog.QueryLogger" level="info" additivity="false"/>
       </Loggers>
     </Configuration>
 {{- end }}
