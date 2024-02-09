@@ -15,17 +15,21 @@ data:
       <Appenders>
         <Console name="console" target="SYSTEM_OUT">
           <PatternLayout>
-            <pattern>%d{yyyy/MM/dd HH:mm:ss.SSS} %p [%c{1}] [%t] %m%n</pattern>
+            <pattern>%d{yyyy/MM/dd HH:mm:ss.SSS} %p [%c{1.}] [%t] %m%n</pattern>
           </PatternLayout>
         </Console>
 
       </Appenders>
       <Loggers>
         <Root level={{ .Values.controller.logging.level | quote }} additivity="false">
-          <!-- Display most logs on the console -->
           <AppenderRef ref="console"/>
         </Root>
-        <AsyncLogger name="org.reflections" level="error" additivity="false"/>
+        <AsyncLogger name="org.reflections" level="error" additivity="false">
+          <AppenderRef ref="console"/>
+        </AsyncLogger>
+        <Logger name="org.apache.pinot.shaded.org.apache.kakfa" level="error" additivity="false">
+          <AppenderRef ref="console"/>
+        </Logger>
       </Loggers>
     </Configuration>
 {{- end }}
