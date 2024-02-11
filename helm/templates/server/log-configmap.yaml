@@ -26,7 +26,7 @@ data:
         <AsyncLogger name="org.reflections" level="error" additivity="false">
           <AppenderRef ref="console"/>
         </AsyncLogger>
-        <Logger name="org.apache.pinot.shaded.org.apache.kakfa" level="error" additivity="false">
+        <Logger name="org.apache.pinot.shaded.org.apache.kafka" level="error" additivity="false">
           <AppenderRef ref="console"/>
         </Logger>
       </Loggers>
