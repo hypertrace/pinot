@@ -7,9 +7,9 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-provisioner: {{ .Values.server.storageclass.provisioner }}
-reclaimPolicy: {{ .Values.server.storageclass.reclaimPolicy }}
-volumeBindingMode: {{ .Values.server.storageclass.volumeBindingMode }}
+provisioner: {{ .Values.servicemanager.storageclass.provisioner }}
+reclaimPolicy: {{ .Values.servicemanager.storageclass.reclaimPolicy }}
+volumeBindingMode: {{ .Values.servicemanager.storageclass.volumeBindingMode }}
 {{- with .Values.servicemanager.storageclass.parameters }}
 parameters:
   {{- toYaml . | nindent 2 }}
