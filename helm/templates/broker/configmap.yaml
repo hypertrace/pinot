@@ -1,4 +1,4 @@
-{{- if .Values.broker.enabled }}
+{{- if or .Values.broker.enabled .Values.servicemanager.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,6 +11,7 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   pinot-broker.conf: |-
+    pinot.service.role = BROKER
     pinot.broker.client.queryPort={{ .Values.broker.port }}
     pinot.broker.routing.table.builder.class={{ .Values.broker.routingTable.builderClass }}
     pinot.preferHostnameInDefaultInstanceId=true

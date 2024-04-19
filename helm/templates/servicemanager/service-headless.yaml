@@ -12,12 +12,18 @@ metadata:
 spec:
   clusterIP: None
   ports:
+    - name: servicemanager
+      port: {{ .Values.servicemanager.service.port }}
     - name: controller
       port: {{ .Values.controller.service.port }}
     - name: server-netty
       port: {{ .Values.server.ports.netty }}
     - name: broker
       port: {{ .Values.broker.service.port }}
+    {{- if .Values.servicemanager.minion.enabled }}
+    - name: minion
+      port: {{ .Values.minion.service.port }}
+    {{- end }}
   selector:
     app: {{ include "pinot.name" . }}
     release: {{ .Release.Name }}

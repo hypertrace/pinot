@@ -12,12 +12,22 @@ metadata:
 spec:
   type: ClusterIP
   ports:
+    - name: servicemanager
+      port: {{ .Values.servicemanager.service.port }}
     - name: controller
       port: {{ .Values.controller.service.port }}
     - name: server-netty
       port: {{ .Values.server.ports.netty }}
     - name: broker
       port: {{ .Values.broker.service.port }}
+    {{- if .Values.servicemanager.minion.enabled }}
+    - name: minion
+      port: {{ .Values.minion.service.port }}
+    {{- end }}
+    {{- if .Values.servicemanager.prometheus.jmx.enabled }}
+    - name: http-metrics
+      port: {{ .Values.servicemanager.prometheus.jmx.port }}
+    {{- end }}
   selector:
     app: {{ include "pinot.name" . }}
     release: {{ .Release.Name }}

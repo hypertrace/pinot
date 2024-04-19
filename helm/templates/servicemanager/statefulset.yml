@@ -56,27 +56,43 @@ spec:
       {{- end }}
       containers:
         - name: pinot-servicemanager
-          image: {{ include "pinot.servicemanager.image" .}}
+          image: {{ include "pinot.image" $ }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args: [
             "StartServiceManager",
             "-clusterName", {{ .Values.cluster.name | quote }},
             "-zkAddress", {{ include "zookeeper.path" . | quote }},
             "-port", {{ .Values.servicemanager.port | quote }},
+            "-bootstrapServices",
+            "CONTROLLER",
+            "BROKER",
+            "SERVER",
+            {{- if .Values.servicemanager.minion.enabled }}
+            "MINION"
+            {{- end }}
             "-bootstrapConfigPaths",
-            "/var/pinot/servicemanager/config/pinot-controller.conf",
-            "/var/pinot/servicemanager/config/pinot-broker.conf",
-            "/var/pinot/servicemanager/config/pinot-server.conf"
+            "/var/config/pinot/pinot-controller.conf",
+            "/var/config/pinot/pinot-broker.conf",
+            {{- if .Values.servicemanager.minion.enabled }}
+            "/var/config/pinot/pinot-minion.conf",
+            {{- end }}
+            "/var/config/pinot/pinot-server.conf"
           ]
           env:
             - name: JAVA_OPTS
-              value: "{{ .Values.servicemanager.jvmOpts }} -Dlog4j2.configurationFile={{ .Values.servicemanager.log4j2ConfFile }} -Dplugins.dir={{ .Values.servicemanager.pluginsDir }}"
+              value: "{{ .Values.servicemanager.jvmOpts }} -Djute.maxbuffer=4194304 -Dlog4j2.configurationFile={{ .Values.servicemanager.log4j2ConfFile }} -Dplugins.dir={{ .Values.servicemanager.pluginsDir }} {{ if .Values.broker.jmx.enabled }}{{ .Values.servicemanager.jmx.opts }}{{ end }}"
           ports:
+            - name: servicemanager
+              containerPort: {{ .Values.servicemanager.port }}
+              protocol: TCP
             - name: controller
               containerPort: {{ .Values.controller.port }}
               protocol: TCP
             - name: broker
               containerPort: {{ .Values.broker.port }}
+              protocol: TCP
+            - name: minion
+              containerPort: {{ .Values.minion.port }}
               protocol: TCP
             - name: server-netty
               containerPort: {{ .Values.server.ports.netty }}
@@ -84,37 +100,91 @@ spec:
             - name: server-admin
               containerPort: {{ .Values.server.ports.admin }}
               protocol: TCP
+            {{- if .Values.controller.jmx.enabled }}
+            - name: jmx
+              containerPort: {{ .Values.controller.jmx.port }}
+              protocol: TCP
+            {{- end }}
           volumeMounts:
-            - name: config
-              mountPath: /var/pinot/servicemanager/config
+            - name: combined-config
+              mountPath: /var/config/pinot/ # required to break convention for servicemanager
             - name: pinot-servicemanager-storage
               mountPath: "{{ .Values.servicemanager.persistence.mountPath }}"
+            - name: log-config
+              mountPath: /opt/pinot/conf/pinot-servicemanager-log4j2.xml
+              subPath: "pinot-servicemanager-log4j2.xml"
+            {{- if eq .Values.cluster.storage.scheme "gs" }}
+            - name: gcs-iam-secret
+              mountPath: "/account"
+            {{- end }}
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           livenessProbe:
             httpGet:
-              path: /pinot-controller/admin
-              port: {{ .Values.controller.port }}
+              path: /health
+              port: {{ .Values.servicemanager.port }}
             initialDelaySeconds: {{ .Values.servicemanager.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.servicemanager.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.servicemanager.livenessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.servicemanager.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
-              path: /pinot-controller/admin
-              port: {{ .Values.controller.port }}
+              path: /health
+              port: {{ .Values.servicemanager.port }}
             initialDelaySeconds: {{ .Values.servicemanager.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.servicemanager.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.servicemanager.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.servicemanager.readinessProbe.failureThreshold }}
           resources: {{ toYaml .Values.servicemanager.resources | nindent 12 }}
+      {{- if .Values.servicemanager.prometheus.jmx.enabled }}
+        - name: prometheus-jmx-exporter
+          image: "{{ .Values.servicemanager.prometheus.jmx.image.repository }}:{{ .Values.servicemanager.prometheus.jmx.image.tag }}"
+          imagePullPolicy: "{{ .Values.servicemanager.prometheus.jmx.image.pullPolicy }}"
+          command:
+            - java
+            - -jar
+            - jmx_prometheus_httpserver.jar
+            - {{ .Values.servicemanager.prometheus.jmx.port | quote }}
+            - /etc/jmx-config/prometheus-pinot-controller.yml
+          ports:
+            - name: http-metrics
+              containerPort: {{ .Values.servicemanager.prometheus.jmx.port }}
+          resources:
+                  {{- toYaml .Values.servicemanager.prometheus.jmx.resources | nindent 12 }}
+          volumeMounts:
+            - name: jmx-config
+              mountPath: /etc/jmx-config
+      {{- end }}
       restartPolicy: Always
       serviceAccountName: {{ include "pinot.servicemanager.serviceAccountName" . }}
       volumes:
-        - name: config
+        - name: combined-config
+          projected:
+            sources:
+              - configMap:
+                  name: {{ include "pinot.broker.fullname" . }}-config
+              - configMap:
+                  name: {{ include "pinot.server.fullname" . }}-config
+              - configMap:
+                  name: {{ include "pinot.minion.fullname" . }}-config
+        - name: jmx-config
           configMap:
-            name: {{ include "pinot.servicemanager.fullname" . }}-config
+            name: {{ include "pinot.servicemanager.fullname" . }}-jmx-config
+        - name: log-config
+          configMap:
+            name: {{ include "pinot.servicemanager.fullname" . }}-log-config
         {{- if not .Values.servicemanager.persistence.enabled }}
         - name: pinot-servicemanager-storage
           emptyDir: {}
+        {{- end }}
+        {{- if eq .Values.cluster.storage.scheme "gs" }}
+        - name: gcs-iam-secret
+          secret:
+            secretName: {{ .Values.cluster.storage.gs.secretName }}
+        {{- end }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:

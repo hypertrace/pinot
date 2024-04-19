@@ -1,4 +1,4 @@
-{{- if .Values.minion.enabled }}
+{{- if or .Values.minion.enabled .Values.servicemanager.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,6 +11,7 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   pinot-minion.conf: |-
+    pinot.service.role = MINION
     pinot.minion.port={{ .Values.minion.port }}
     pinot.set.instance.id.to.hostname=true
     {{- if .Values.minion.persistence.enabled }}
