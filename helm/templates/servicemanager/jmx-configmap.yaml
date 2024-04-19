@@ -1,4 +1,4 @@
-{{- if .Values.servicemanager.enabled }}
+{{- if and .Values.servicemanager.enabled .Values.servicemanager.jmx.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

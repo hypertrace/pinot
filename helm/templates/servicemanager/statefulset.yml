@@ -80,7 +80,7 @@ spec:
           ]
           env:
             - name: JAVA_OPTS
-              value: "{{ .Values.servicemanager.jvmOpts }} -Djute.maxbuffer=4194304 -Dlog4j2.configurationFile={{ .Values.servicemanager.log4j2ConfFile }} -Dplugins.dir={{ .Values.servicemanager.pluginsDir }} {{ if .Values.broker.jmx.enabled }}{{ .Values.servicemanager.jmx.opts }}{{ end }}"
+              value: "{{ .Values.servicemanager.jvmOpts }} -Djute.maxbuffer=4194304 -Dlog4j2.configurationFile={{ .Values.servicemanager.log4j2ConfFile }} -Dplugins.dir={{ .Values.servicemanager.pluginsDir }} {{ if .Values.servicemanager.jmx.enabled }}{{ .Values.servicemanager.jmx.opts }}{{ end }}"
           ports:
             - name: servicemanager
               containerPort: {{ .Values.servicemanager.port }}
