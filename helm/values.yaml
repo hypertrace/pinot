@@ -533,16 +533,6 @@ servicemanager:
   data:
     dir: /var/pinot/servicemanager/data
 
-  storageclass:
-    enabled: false
-    name: pinot-servicemanager
-    annotations: { }
-    provisioner: kubernetes.io/gce-pd
-    reclaimPolicy: Delete
-    volumeBindingMode: Immediate
-    parameters:
-      type: pd-standard
-
   jvmOpts: "-Xms128M -Xmx320M"
 
   logging:
