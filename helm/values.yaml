@@ -526,7 +526,7 @@ servicemanager:
     enabled: true
     accessMode: ReadWriteOnce
     size: 2Gi
-    mountPath: /var/pinot/servicemanager/data
+    mountPath: /var/pinot/
     storageClass: "standard"
 
   data:
@@ -534,8 +534,32 @@ servicemanager:
 
   jvmOpts: "-Xms128M -Xmx320M"
 
+  logging:
+    level: warn
+
   log4j2ConfFile: /opt/pinot/conf/pinot-servicemanager-log4j2.xml
   pluginsDir: /opt/pinot/plugins
+
+  minion:
+    enabled: false
+
+  jmx:
+    enabled: false
+    port: 7024
+    opts: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7024 -Dcom.sun.management.jmxremote.rmi.port=7024 -Djava.rmi.server.hostname=127.0.0.1"
+
+  prometheus:
+    jmx:
+      enabled: false
+      port: 7073
+      image:
+        repository: hypertrace/prometheus-jmx-exporter
+        tag: 0.1.6
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: "0.25"
+          memory: "256Mi"
 
   service:
     enabled: true
@@ -563,13 +587,13 @@ servicemanager:
   livenessProbe:
     initialDelaySeconds: 60
     periodSeconds: 10
-    timeoutSeconds: 1
+    timeoutSeconds: 10
     failureThreshold: 3
 
   readinessProbe:
     initialDelaySeconds: 60
     periodSeconds: 10
-    timeoutSeconds: 1
+    timeoutSeconds: 10
     failureThreshold: 3
 
   nodeSelector: {}

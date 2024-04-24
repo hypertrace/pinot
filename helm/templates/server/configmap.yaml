@@ -1,4 +1,4 @@
-{{- if .Values.server.enabled }}
+{{- if or .Values.server.enabled .Values.servicemanager.enabled }}
 {{- range $name,$tierConfig := omit .Values.server.tiers "default" }}
 {{- $tier := mergeOverwrite (deepCopy (omit $.Values.server "tiers")) (deepCopy $.Values.server.tiers.default) (deepCopy $tierConfig) }}
 ---
@@ -22,6 +22,7 @@ metadata:
     heritage: {{ $.Release.Service }}
 data:
   pinot-server.conf: |-
+    pinot.service.role = SERVER
     pinot.server.netty.port={{ $tier.ports.netty }}
     pinot.server.adminapi.port={{ $tier.ports.admin }}
     pinot.server.grpc.port={{ $tier.ports.grpc }}

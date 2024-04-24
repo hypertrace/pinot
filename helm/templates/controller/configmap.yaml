@@ -1,4 +1,4 @@
-{{- if .Values.controller.enabled }}
+{{- if or .Values.controller.enabled .Values.servicemanager.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,6 +11,7 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   pinot-controller.conf: |-
+    pinot.service.role = CONTROLLER
     controller.helix.cluster.name={{ .Values.cluster.name }}
     controller.port={{ .Values.controller.port }}
     {{- if .Values.controller.vip.enabled }}
