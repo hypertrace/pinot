@@ -555,7 +555,7 @@ servicemanager:
       port: 7073
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.5
+        tag: 0.1.6
         pullPolicy: IfNotPresent
       resources:
         requests:
