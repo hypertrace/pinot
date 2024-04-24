@@ -150,7 +150,7 @@ controller:
       port: 7071
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.5
+        tag: 0.1.6
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -266,7 +266,7 @@ broker:
       port: 7072
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.5
+        tag: 0.1.6
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -374,7 +374,7 @@ minion:
       port: 7074
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.5
+        tag: 0.1.6
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -486,7 +486,7 @@ server:
       port: 7073
       image:
         repository: hypertrace/prometheus-jmx-exporter
-        tag: 0.1.5
+        tag: 0.1.6
         pullPolicy: IfNotPresent
       resources:
         requests:
@@ -511,7 +511,6 @@ server:
     tier1: {}
 
   tagJobEnabled: false
-  tagJobWaitforSideCar: true
   tagJob:
     image:
       repository: curlimages/curl
