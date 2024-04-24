@@ -91,9 +91,11 @@ spec:
             - name: broker
               containerPort: {{ .Values.broker.port }}
               protocol: TCP
+            {{- if .Values.servicemanager.minion.enabled }}
             - name: minion
               containerPort: {{ .Values.minion.port }}
               protocol: TCP
+            {{- end }}
             - name: server-netty
               containerPort: {{ .Values.server.ports.netty }}
               protocol: TCP
