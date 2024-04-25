@@ -68,7 +68,7 @@ spec:
             "BROKER",
             "SERVER",
             {{- if .Values.servicemanager.minion.enabled }}
-            "MINION"
+            "MINION",
             {{- end }}
             "-bootstrapConfigPaths",
             "/var/config/pinot/pinot-controller.conf",
@@ -139,7 +139,7 @@ spec:
             timeoutSeconds: {{ .Values.servicemanager.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.servicemanager.readinessProbe.failureThreshold }}
           resources: {{ toYaml .Values.servicemanager.resources | nindent 12 }}
-      {{- if .Values.servicemanager.prometheus.jmx.enabled }}
+      {{- if and .Values.servicemanager.prometheus.jmx.enabled .Values.servicemanager.jmx.enabled }}
         - name: prometheus-jmx-exporter
           image: "{{ .Values.servicemanager.prometheus.jmx.image.repository }}:{{ .Values.servicemanager.prometheus.jmx.image.tag }}"
           imagePullPolicy: "{{ .Values.servicemanager.prometheus.jmx.image.pullPolicy }}"
@@ -148,7 +148,7 @@ spec:
             - -jar
             - jmx_prometheus_httpserver.jar
             - {{ .Values.servicemanager.prometheus.jmx.port | quote }}
-            - /etc/jmx-config/prometheus-pinot-controller.yml
+            - /etc/jmx-config/prometheus-pinot-servicemanager.yml
           ports:
             - name: http-metrics
               containerPort: {{ .Values.servicemanager.prometheus.jmx.port }}
@@ -170,9 +170,11 @@ spec:
                   name: {{ include "pinot.server.fullname" . }}-config
               - configMap:
                   name: {{ include "pinot.minion.fullname" . }}-config
+        {{- if .Values.controller.jmx.enabled }}
         - name: jmx-config
           configMap:
             name: {{ include "pinot.servicemanager.fullname" . }}-jmx-config
+        {{- end }}
         - name: log-config
           configMap:
             name: {{ include "pinot.servicemanager.fullname" . }}-log-config
