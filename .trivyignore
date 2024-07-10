@@ -1,9 +1,12 @@
 # org.apache.helix:helix-core (from upstream opensource shaded dependency. will be taken care during upgrade.)
-CVE-2023-38647 exp:2024-06-30
+CVE-2023-38647 exp:2024-08-31
 
 # org.apache.avro:avro (from upstream opensource shaded dependency. will be taken care during upgrade.)
-CVE-2023-39410 exp:2024-06-30
+CVE-2023-39410 exp:2024-08-31
 
 # org.apache.commons:commons-compress
-CVE-2024-25710 exp:2024-06-30
-CVE-2024-26308 exp:2024-06-30
+CVE-2024-25710 exp:2024-08-31
+CVE-2024-26308 exp:2024-08-31
+
+# io.airlift:aircompressor
+CVE-2024-36114 exp:2024-08-31

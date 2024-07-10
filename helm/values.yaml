@@ -130,9 +130,13 @@ controller:
 
   servicemonitor:
     enabled: false
-    interval: 15s
+    interval: 30s
     secure: false
     tlsConfig: {}
+
+  prometheusrule:
+    annotations: {}
+    additionalRuleLabels: {}
 
   podDisruptionBudget:
     enabled: false

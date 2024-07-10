@@ -11,6 +11,10 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     monitoring: shared
+  {{- if .Values.controller.prometheusrule.annotations }}
+  annotations:
+    {{- toYaml .Values.controller.prometheusrule.annotations | nindent 4 }}
+  {{- end }}
 spec:
   groups:
   - name: pinot
@@ -21,7 +25,10 @@ spec:
         message: '{{`{{ $value }}`}} segments in table {{`{{ $labels.table }}`}} are in Error state'
       expr: sum by(pod, table, tabletype) (pinot_controller_segmentsinerrorstate_value) > 0
       for: 10s
+      for: {{ dig "PinotErrorSegments" "for" "1m" .Values.controller.prometheusrule }}
       labels:
-        severity: critical
-        productgroup: platform-infrastructure
+        severity: {{ dig "PinotErrorSegments" "severity" "critical" .Values.controller.prometheusrule }}
+        {{- with .Values.controller.prometheusrule.additionalRuleLabels }}
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
 {{- end }}
