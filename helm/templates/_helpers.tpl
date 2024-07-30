@@ -183,43 +183,12 @@ Create the name of the service account to use
 {{- end -}}
 
 {{/*
-Create a default fully qualified pinot servicemanager name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-*/}}
-{{- define "pinot.servicemanager.fullname" -}}
-{{- printf "%s-%s" (include "pinot.fullname" .) .Values.servicemanager.name }}
-{{- end -}}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "pinot.servicemanager.serviceAccountName" -}}
-{{- if .Values.servicemanager.serviceAccount.create -}}
-{{ default (include "pinot.servicemanager.fullname" .) .Values.servicemanager.serviceAccount.name }}
-{{- else -}}
-{{ default "default" .Values.servicemanager.serviceAccount.name }}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Docker image to use for service manager
-*/}}
-{{/*{{- define "pinot.servicemanager.image" -}}*/}}
-{{/*  {{- if and .Values.servicemanager.image.repository .Values.servicemanager.image.tag -}}*/}}
-{{/*    {{- printf "%s:%s" .Values.servicemanager.image.repository .Values.servicemanager.image.tag }}*/}}
-{{/*    {{- if .Values.servicemanager.image.sha256 -}}*/}}
-{{/*      {{- printf "@sha256:%s" .Values.servicemanager.image.sha256 }}*/}}
-{{/*    {{- end -}}*/}}
-{{/*  {{- else -}}*/}}
-{{/*    {{- printf "%s:%s" .Values.image.repository .Chart.Version }}*/}}
-{{/*  {{- end -}}*/}}
-{{/*{{- end -}}*/}}
-
-{{/*
 Docker image to use for controller, broker, minion and server
 */}}
 {{- define "pinot.image" -}}
-  {{- if .Values.image.registry -}}
+  {{- if .Values.global.image.registry -}}
+    {{- printf "%s/" .Values.global.image.registry }}
+  {{- else if .Values.image.registry -}}
     {{- printf "%s/" .Values.image.registry }}
   {{- end -}}
   {{- if and .Values.image.tagOverride  -}}
