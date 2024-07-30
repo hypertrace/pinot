@@ -96,6 +96,10 @@ spec:
 #            failureThreshold: {{ .Values.minion.readinessProbe.failureThreshold }}
           resources:
             {{- toYaml .Values.minion.resources | nindent 12 }}
+          {{- with .Values.minion.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- if .Values.minion.prometheus.jmx.enabled }}
         - name: prometheus-jmx-exporter
           image: "{{ .Values.minion.prometheus.jmx.image.repository }}:{{ .Values.minion.prometheus.jmx.image.tag }}"
@@ -114,6 +118,10 @@ spec:
           volumeMounts:
             - name: jmx-config
               mountPath: /etc/jmx-config
+          {{- with .Values.minion.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- end }}
       restartPolicy: Always
       serviceAccountName: {{ include "pinot.minion.serviceAccountName" . }}
@@ -152,7 +160,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.minion.securityContext }}
+      {{- with .Values.minion.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}

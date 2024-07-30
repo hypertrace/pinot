@@ -92,6 +92,10 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.broker.resources | nindent 12 }}
+          {{- with .Values.broker.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- if .Values.broker.prometheus.jmx.enabled }}
         - name: prometheus-jmx-exporter
           image: "{{ .Values.broker.prometheus.jmx.image.repository }}:{{ .Values.broker.prometheus.jmx.image.tag }}"
@@ -110,6 +114,10 @@ spec:
           volumeMounts:
             - name: jmx-config
               mountPath: /etc/jmx-config
+          {{- with .Values.broker.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- end }}
       restartPolicy: Always
       serviceAccountName: {{ include "pinot.broker.serviceAccountName" . }}
@@ -143,7 +151,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.broker.securityContext }}
+      {{- with .Values.broker.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
