@@ -188,7 +188,7 @@ Docker image to use for controller, broker, minion and server
 {{- define "pinot.image" -}}
   {{- if .Values.global.image.registry -}}
     {{- printf "%s/" .Values.global.image.registry }}
-  {{- else if .Values.global.image.registry -}}
+  {{- else if .Values.image.registry -}}
     {{- printf "%s/" .Values.image.registry }}
   {{- end -}}
   {{- if and .Values.image.tagOverride  -}}
