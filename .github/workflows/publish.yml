@@ -16,19 +16,46 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_READ_USER }}
-          password: ${{ secrets.DOCKERHUB_READ_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_PUBLISH_USER }}
+          password: ${{ secrets.DOCKERHUB_PUBLISH_TOKEN }}
 
-      - name: publish docker image
+      - name: Build Java artifacts
         uses: hypertrace/github-actions/gradle@main
-        with: 
-          args: dockerPushImages
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_PUBLISH_USER }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PUBLISH_TOKEN }}
+        with:
+          args: build copyPlugins :pinot-servicemanager:copyPlugins
+
+      - name: Extract version
+        id: extract-version
+        run: |
+          VERSION=$(./gradlew properties -q | grep '^version:' | awk '{print $2}')
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Build and push pinot image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: hypertrace/pinot:${{ steps.extract-version.outputs.VERSION }}
+
+      - name: Build and push pinot-servicemanager image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./pinot-servicemanager
+          file: ./pinot-servicemanager/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: hypertrace/pinot-servicemanager:${{ steps.extract-version.outputs.VERSION }}
 
   publish-helm-charts:
     needs: publish-artifacts

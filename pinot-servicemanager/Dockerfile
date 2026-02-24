@@ -1,14 +1,16 @@
 # Choose libraries we need from Pinot's image.
 
-# Using the same image as we use in CircleCI to avoid transfer costs
-FROM cimg/openjdk:14.0.2 AS install
+# Download/install stage runs on the build host's native arch since Java JARs are arch-independent
+FROM --platform=$BUILDPLATFORM ubuntu:jammy AS install
 
 # Override to build an image from a fork. Ex. kotharironak
 ARG JITPACK_USER=hypertrace
 ARG JITPACK_TAG=hypertrace-1.0.0-1
 
-USER root
 WORKDIR /install
+
+RUN apt-get update && apt-get install -y --no-install-recommends wget unzip && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy hypertrace plugins
 COPY build/plugins plugins/
@@ -19,7 +21,7 @@ COPY install.sh /tmp/
 RUN /tmp/install.sh && rm /tmp/install.sh
 
 # Share the same base image to reduce layers used in testing
-FROM hypertrace/java:11
+FROM eclipse-temurin:11-jre-jammy
 LABEL MAINTAINER Hypertrace "https://www.hypertrace.org/"
 
 # Add HEALTHCHECK and ENTRYPOINT scripts into the default search path
@@ -30,7 +32,7 @@ ARG USER=pinot
 WORKDIR /opt/pinot
 
 # Ensure the process doesn't run as root
-RUN adduser -g '' -h ${PWD} -D ${USER}
+RUN adduser --disabled-password --gecos '' --home ${PWD} ${USER}
 USER ${USER}
 
 # Copy binaries and config we installed earlier

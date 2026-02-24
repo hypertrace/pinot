@@ -1,4 +1,5 @@
-FROM amd64/ubuntu:jammy AS builder
+# Download stage runs on the build host's native arch (no QEMU) since Java JARs are arch-independent
+FROM --platform=$BUILDPLATFORM ubuntu:jammy AS downloader
 
 ARG PINOT_VERSION=1.0.0
 ARG JITPACK_REPO=hypertrace/incubator-pinot
@@ -6,7 +7,7 @@ ARG JITPACK_TAG=hypertrace-1.0.0-1
 
 ENV PINOT_HOME=/opt/pinot
 
-RUN apt-get -y update && apt-get -y install curl libjemalloc-dev
+RUN apt-get -y update && apt-get -y install curl
 
 # Create directory structure
 RUN curl -L https://archive.apache.org/dist/pinot/apache-pinot-$PINOT_VERSION/apache-pinot-$PINOT_VERSION-bin.tar.gz | tar -xzf- && \
@@ -30,7 +31,13 @@ RUN for artifactId in pinot-kafka-2.0 pinot-thrift pinot-json pinot-csv pinot-co
           https://jitpack.io/com/github/${JITPACK_REPO}/${artifactId}/${JITPACK_TAG}/${artifactId}-${JITPACK_TAG}.jar; \
     done
 
-FROM amd64/eclipse-temurin:11-jre-jammy
+# Jemalloc stage runs on the target arch to get the correct native library
+FROM ubuntu:jammy AS jemalloc
+RUN apt-get -y update && apt-get -y install libjemalloc-dev && \
+    mkdir -p /opt/jemalloc && \
+    cp /usr/lib/$(uname -m)-linux-gnu/libjemalloc* /opt/jemalloc/
+
+FROM eclipse-temurin:11-jre-jammy
 LABEL maintainer="Hypertrace https://www.hypertrace.org/"
 
 ENV PINOT_HOME=/opt/pinot
@@ -38,12 +45,12 @@ RUN apt update && apt upgrade -y && rm -rf /var/lib/apt/lists/*
 
 VOLUME ["${PINOT_HOME}/configs", "${PINOT_HOME}/data"]
 
-COPY --from=builder ${PINOT_HOME} ${PINOT_HOME}
+COPY --from=downloader ${PINOT_HOME} ${PINOT_HOME}
 COPY build/plugins "${PINOT_HOME}/plugins"
 
 # use jemalloc
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libjemalloc* /usr/lib/x86_64-linux-gnu/
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
+COPY --from=jemalloc /opt/jemalloc/ /usr/lib/jemalloc/
+ENV LD_PRELOAD=/usr/lib/jemalloc/libjemalloc.so
 
 # expose ports for controller/broker/server/admin
 EXPOSE 9000 8099 8098 8097 8096 9514
